@@ -1,0 +1,101 @@
+name: CI/CD - Frontend (build, test y deploy a S3 + CloudFront)
+
+# Este workflow realiza:
+# 1. Linting y pruebas unitarias de Frontend (Vitest & Oxlint).
+# 2. Build de producción con Vite.
+# 3. Sincronizacion del build a S3 e invalidacion de cache en CloudFront.
+#
+# Reemplaza al pipeline anterior (Docker + nginx desplegado en EC2 via SSH):
+# ya no hay ninguna instancia EC2 para el frontend, y una SPA estatica no
+# necesita un servidor propio -- S3 + CloudFront la sirve mas simple y mas
+# barato.
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch: {}
+
+env:
+  AWS_REGION: us-east-1
+  S3_BUCKET: artagram-frontend
+  CLOUDFRONT_DISTRIBUTION_ID: E2FJFS7QLT0BH6
+
+jobs:
+  test:
+    name: Pruebas y Linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Linting de código
+        run: npm run lint
+
+      - name: Pruebas unitarias (Vitest)
+        run: npm run test
+
+  build-and-deploy:
+    name: Build y deploy a S3 + CloudFront
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Determinar URLs del backend
+        id: backend_urls
+        run: |
+          GATEWAY_HOST="${{ vars.GATEWAY_PUBLIC_URL }}"
+          echo "api_url=http://${GATEWAY_HOST}" >> "$GITHUB_OUTPUT"
+          echo "ws_url=ws://${GATEWAY_HOST}/ws" >> "$GITHUB_OUTPUT"
+          echo "Compilando frontend apuntando al backend en: API=http://${GATEWAY_HOST}, WS=ws://${GATEWAY_HOST}/ws"
+
+      - name: Build de producción (Vite)
+        env:
+          VITE_API_BASE_URL: ${{ steps.backend_urls.outputs.api_url }}
+          VITE_WS_URL: ${{ steps.backend_urls.outputs.ws_url }}
+        run: npm run build
+
+      - name: Configurar credenciales AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Sincronizar assets con cache largo (hash en el nombre, inmutables)
+        run: |
+          aws s3 sync dist/ "s3://${S3_BUCKET}" \
+            --delete \
+            --cache-control "public, max-age=31536000, immutable" \
+            --exclude "*" \
+            --include "assets/*"
+
+      - name: Sincronizar el resto (index.html, etc.) sin cache
+        run: |
+          aws s3 sync dist/ "s3://${S3_BUCKET}" \
+            --delete \
+            --cache-control "no-cache" \
+            --exclude "assets/*"
+
+      - name: Invalidar cache de CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${CLOUDFRONT_DISTRIBUTION_ID}" \
+            --paths "/*"

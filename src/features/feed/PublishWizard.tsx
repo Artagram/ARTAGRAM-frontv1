@@ -5,6 +5,18 @@ import { Button } from '../../components/ui/Button';
 import { TextField } from '../../components/ui/TextField';
 import type { PublicacionDto, SugerenciaEtiquetasResultado } from '../../types';
 
+function archivoABase64(archivo: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const resultado = reader.result as string;
+      resolve(resultado.split(',')[1] ?? resultado);
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(archivo);
+  });
+}
+
 export function PublishWizard({
   archivoInicial,
   onPublicado,
@@ -44,9 +56,12 @@ export function PublishWizard({
     setError(null);
     setSugiriendoIa(true);
     try {
-      const form = new FormData();
-      form.append('imagen', obraFinal);
-      const { data } = await api.post<SugerenciaEtiquetasResultado>('/api/ia/sugerencias', form);
+      const imagenBase64 = await archivoABase64(obraFinal);
+      const { data } = await api.post<SugerenciaEtiquetasResultado>('/api/ia/sugerencias', {
+        imagenBase64,
+        tituloBorrador: titulo,
+        descripcionBorrador: descripcion,
+      });
       if (data.tituloSugerido && !titulo.trim()) {
         setTitulo(data.tituloSugerido);
       }

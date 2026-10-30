@@ -71,6 +71,18 @@ export function CommunityBannerMural({
     };
   }
 
+  // Igual que aLocal pero sin recortar a [0,1]: se usa solo para el punto de
+  // empalme que se duplica al cruzar de región, para que conserve su posición
+  // real (fuera del cuadro de la región nueva) en vez de pegarse al borde.
+  function aLocalSinRecorte(punto: Punto, regionIndex: number): Punto {
+    const col = regionIndex % REGIONES_POR_LADO;
+    const fila = Math.floor(regionIndex / REGIONES_POR_LADO);
+    return {
+      x: (punto.x - col * TAMANO_REGION) / TAMANO_REGION,
+      y: (punto.y - fila * TAMANO_REGION) / TAMANO_REGION,
+    };
+  }
+
   const redibujarTodo = useCallback(async () => {
     const canvas = canvasRef.current;
     const ctx = ctxRef.current;
@@ -325,7 +337,14 @@ export function CommunityBannerMural({
       const reg = regionDe(p);
       const puntoLoc = aLocal(p, reg);
       if (!segmentoActual || segmentoActual.regionIndex !== reg) {
-        segmentoActual = { regionIndex: reg, puntos: [puntoLoc] };
+        // Al cruzar de región, arrastramos el último punto del segmento anterior
+        // (reproyectado a la región nueva) como primer punto de este segmento,
+        // para no perder el tramo de línea que cruza el borde entre regiones.
+        const anterior = segmentoActual
+          ? aGlobal(segmentoActual.regionIndex, segmentoActual.puntos[segmentoActual.puntos.length - 1])
+          : null;
+        const puntosIniciales: Punto[] = anterior ? [aLocalSinRecorte(anterior, reg), puntoLoc] : [puntoLoc];
+        segmentoActual = { regionIndex: reg, puntos: puntosIniciales };
         segmentosPorRegion.push(segmentoActual);
       } else {
         segmentoActual.puntos.push(puntoLoc);

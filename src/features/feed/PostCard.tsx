@@ -7,6 +7,7 @@ import { api, extraerMensajeError } from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
 import { stompService } from '../../lib/stompClient';
 import { ESTADO_PENDIENTE, esperarAnalisis } from './analisisApi';
+import { descargarObra } from './descargaApi';
 import { alternarDestacada } from '../profile/obrasApi';
 import type {
   AnalisisObraDto,
@@ -37,7 +38,9 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
   const [borrando, setBorrando] = useState(false);
   const [errorBorrado, setErrorBorrado] = useState<string | null>(null);
 
-  const [errorDestacada, setErrorDestacada] = useState<string | null>(null);
+  const [errorAccion, setErrorAccion] = useState<string | null>(null);
+
+  const [descargando, setDescargando] = useState(false);
 
   // Estados de Edición
   const [editando, setEditando] = useState(false);
@@ -174,13 +177,25 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
   }
 
   async function alternarEstrella() {
-    setErrorDestacada(null);
+    setErrorAccion(null);
     try {
       const actualizada = await alternarDestacada(pub);
       setPub(actualizada);
       onActualizada?.(actualizada);
     } catch (err) {
-      setErrorDestacada(extraerMensajeError(err, 'No pudimos actualizar la obra'));
+      setErrorAccion(extraerMensajeError(err, 'No pudimos actualizar la obra'));
+    }
+  }
+
+  async function descargar() {
+    setErrorAccion(null);
+    setDescargando(true);
+    try {
+      await descargarObra(pub.id);
+    } catch (err) {
+      setErrorAccion(extraerMensajeError(err, 'No pudimos descargar la obra'));
+    } finally {
+      setDescargando(false);
     }
   }
 
@@ -293,7 +308,7 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
         </div>
       </div>
 
-      {errorDestacada && <p className="px-5 pt-2 text-xs text-coral-light">{errorDestacada}</p>}
+      {errorAccion && <p className="px-5 pt-2 text-xs text-coral-light">{errorAccion}</p>}
 
       {/* Alerta de confirmación de borrado */}
       <AnimatePresence>
@@ -468,6 +483,17 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
             </button>
           </div>
 
+          <div className="flex items-center gap-2">
+          <button
+            onClick={descargar}
+            disabled={descargando}
+            title="Descargar con marca de agua"
+            className="flex items-center gap-1 rounded-full border border-ink-700 px-2.5 py-1 text-xs text-paper-dim transition-all hover:border-paper-dim hover:text-paper disabled:opacity-60"
+          >
+            <span aria-hidden>⬇</span>
+            <span>{descargando ? 'Preparando…' : 'Descargar'}</span>
+          </button>
+
           {/* Botón Análisis IA */}
           <button
             onClick={toggleIa}
@@ -480,6 +506,7 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
             <span>✨</span>
             <span>Feedback IA</span>
           </button>
+          </div>
         </div>
 
         {/* Panel de Comentarios en Vivo (Linear / Flat) */}

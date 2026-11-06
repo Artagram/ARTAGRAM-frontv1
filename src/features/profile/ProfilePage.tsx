@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { api, extraerMensajeError } from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
 import { BotonSeguir } from '../feed/BotonSeguir';
+import { BotonPro } from '../suscripcion/BotonPro';
 import { Button } from '../../components/ui/Button';
 import { TextField } from '../../components/ui/TextField';
 import type { PerfilResponse, Seguimiento } from '../../types';
@@ -165,6 +166,11 @@ export function ProfilePage() {
               </span>
             )}
           </div>
+          {esPropio && !perfil.premium && !sesion?.premium && (
+            <div className="mt-3">
+              <BotonPro />
+            </div>
+          )}
 
           {!editando ? (
             <>

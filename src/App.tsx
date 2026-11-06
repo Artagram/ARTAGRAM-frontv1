@@ -5,6 +5,7 @@ import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { AdminRoute } from './components/layout/AdminRoute';
 import { LandingPage } from './features/auth/LandingPage';
 import { LoginPage } from './features/auth/LoginPage';
+import { SuscripcionResultadoPage } from './features/suscripcion/SuscripcionResultadoPage';
 import { FeedPage } from './features/feed/FeedPage';
 import { ProfilePage } from './features/profile/ProfilePage';
 import { CommunityListPage } from './features/community/CommunityListPage';
@@ -49,6 +50,7 @@ function AnimatedRoutes() {
           <Route path="/fiesta/:id" element={<ProtectedRoute><PartyRoomPage /></ProtectedRoute>} />
 
           <Route path="/mensajes" element={<ProtectedRoute><PersonalChatPage /></ProtectedRoute>} />
+          <Route path="/suscripcion/resultado" element={<ProtectedRoute><SuscripcionResultadoPage /></ProtectedRoute>} />
 
           <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
 

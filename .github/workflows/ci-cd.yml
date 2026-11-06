@@ -19,6 +19,9 @@ env:
   AWS_REGION: us-east-1
   S3_BUCKET: artagram-frontend
   CLOUDFRONT_DISTRIBUTION_ID: E2FJFS7QLT0BH6
+  # La API y el WebSocket van por el mismo dominio HTTPS del frontend:
+  # CloudFront los reenvia al ALB (ver AWS_DEPLOYMENT.md, seccion 11).
+  PUBLIC_HOST: dm9jdgs6nc89v.cloudfront.net
 
 jobs:
   test:
@@ -57,18 +60,10 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
-      - name: Determinar URLs del backend
-        id: backend_urls
-        run: |
-          GATEWAY_HOST="${{ vars.GATEWAY_PUBLIC_URL }}"
-          echo "api_url=http://${GATEWAY_HOST}" >> "$GITHUB_OUTPUT"
-          echo "ws_url=ws://${GATEWAY_HOST}/ws" >> "$GITHUB_OUTPUT"
-          echo "Compilando frontend apuntando al backend en: API=http://${GATEWAY_HOST}, WS=ws://${GATEWAY_HOST}/ws"
-
       - name: Build de producción (Vite)
         env:
-          VITE_API_BASE_URL: ${{ steps.backend_urls.outputs.api_url }}
-          VITE_WS_URL: ${{ steps.backend_urls.outputs.ws_url }}
+          VITE_API_BASE_URL: https://${{ env.PUBLIC_HOST }}
+          VITE_WS_URL: wss://${{ env.PUBLIC_HOST }}/ws
         run: npm run build
 
       - name: Configurar credenciales AWS

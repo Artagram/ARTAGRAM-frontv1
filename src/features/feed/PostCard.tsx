@@ -9,6 +9,7 @@ import { stompService } from '../../lib/stompClient';
 import { ESTADO_PENDIENTE, esperarAnalisis } from './analisisApi';
 import { descargarObra } from './descargaApi';
 import { alternarDestacada } from '../profile/obrasApi';
+import { ModalReportar } from '../moderacion/ModalReportar';
 import type {
   AnalisisObraDto,
   AnalisisTecnicoResultado,
@@ -41,6 +42,9 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
   const [errorAccion, setErrorAccion] = useState<string | null>(null);
 
   const [descargando, setDescargando] = useState(false);
+
+  const [reportando, setReportando] = useState(false);
+  const [reportada, setReportada] = useState(false);
 
   // Estados de Edición
   const [editando, setEditando] = useState(false);
@@ -310,6 +314,12 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
 
       {errorAccion && <p className="px-5 pt-2 text-xs text-coral-light">{errorAccion}</p>}
 
+      {pub.oculta && (
+        <p className="mx-5 mt-2 rounded-lg bg-coral/10 px-3 py-1.5 text-xs text-coral-light">
+          Oculta mientras se revisa. Solo tú y los administradores pueden verla.
+        </p>
+      )}
+
       {/* Alerta de confirmación de borrado */}
       <AnimatePresence>
         {confirmandoBorrado && (
@@ -484,6 +494,15 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
           </div>
 
           <div className="flex items-center gap-2">
+          {sesion && !esAutor && (
+            <button
+              onClick={() => setReportando(true)}
+              disabled={reportada}
+              className="text-xs text-paper-dim transition-colors hover:text-coral disabled:hover:text-paper-dim"
+            >
+              {reportada ? 'Reportada' : 'Reportar'}
+            </button>
+          )}
           <button
             onClick={descargar}
             disabled={descargando}
@@ -670,6 +689,17 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
           )}
         </AnimatePresence>
       </div>
+
+      {reportando && (
+        <ModalReportar
+          publicacionId={pub.id}
+          onCerrar={() => setReportando(false)}
+          onReportada={() => {
+            setReportando(false);
+            setReportada(true);
+          }}
+        />
+      )}
     </motion.article>
   );
 }

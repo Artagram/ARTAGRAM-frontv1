@@ -231,6 +231,7 @@ export interface PublicacionDto {
   version?: number;
   editadoEn?: string | null;
   destacada: boolean;
+  oculta: boolean;
 }
 
 export interface LikeResponse {

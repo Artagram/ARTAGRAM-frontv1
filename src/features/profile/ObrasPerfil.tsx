@@ -10,6 +10,11 @@ function ObraTile({ obra, editable, onAlternar }: { obra: PublicacionDto; editab
     <div className="relative overflow-hidden rounded-xl">
       <img src={obra.obraFinalUrl} alt={obra.titulo} className="aspect-square w-full object-cover" />
       <p className="mt-1 truncate text-xs text-paper-muted">{obra.titulo}</p>
+      {obra.oculta && (
+        <span className="absolute left-1.5 top-1.5 rounded-full bg-ink-950/80 px-2 py-0.5 text-[10px] text-coral-light">
+          En revisión
+        </span>
+      )}
       {editable && (
         <button
           type="button"

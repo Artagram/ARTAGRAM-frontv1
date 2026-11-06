@@ -5,6 +5,7 @@ import { api, extraerMensajeError } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
 import { FondoEstudio } from '../../components/layout/FondoEstudio';
 import { TextField } from '../../components/ui/TextField';
+import { ComunidadesRecomendadas } from './ComunidadesRecomendadas';
 import type { ComunidadResponse } from '../../types';
 
 export function CommunityListPage() {
@@ -151,6 +152,8 @@ export function CommunityListPage() {
           ))}
         </div>
       )}
+
+      <ComunidadesRecomendadas onUnida={() => void cargarMisComunidades()} />
     </div>
     </FondoEstudio>
   );

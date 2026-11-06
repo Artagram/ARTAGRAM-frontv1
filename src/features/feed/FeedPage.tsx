@@ -7,6 +7,8 @@ import { PostCard } from './PostCard';
 import { PublishWizard } from './PublishWizard';
 import { BuscarArtistas } from './BuscarArtistas';
 import { DibujandoAhora } from './DibujandoAhora';
+import { ArtistasRecomendados } from './ArtistasRecomendados';
+import { cargarArtistasRecomendados, type ArtistaRecomendado } from './recomendacionesApi';
 import type { FeedResponse, PublicacionDto } from '../../types';
 
 export function FeedPage() {
@@ -17,6 +19,7 @@ export function FeedPage() {
   const [cargandoMas, setCargandoMas] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mostrarPublicar, setMostrarPublicar] = useState(false);
+  const [recomendados, setRecomendados] = useState<ArtistaRecomendado[]>([]);
 
   async function cargar(desdeInicio: boolean) {
     try {
@@ -32,6 +35,7 @@ export function FeedPage() {
 
   useEffect(() => {
     cargar(true).finally(() => setCargando(false));
+    cargarArtistasRecomendados().then(setRecomendados).catch(() => undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -43,7 +47,8 @@ export function FeedPage() {
 
   return (
     <FondoEstudio>
-    <div className="mx-auto max-w-2xl px-4 py-8">
+    <div className="mx-auto flex max-w-6xl justify-center gap-6 px-4 py-8">
+    <div className="w-full min-w-0 max-w-2xl">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl font-semibold">Feed</h1>
@@ -59,6 +64,12 @@ export function FeedPage() {
         mostrarSugerencias={!cargando && publicaciones.length === 0}
         onSeguimientoCambiado={() => void cargar(true)}
       />
+
+      {recomendados.length > 0 && (
+        <div className="lg:hidden">
+          <ArtistasRecomendados artistas={recomendados} onSeguimientoCambiado={() => void cargar(true)} />
+        </div>
+      )}
 
       <AnimatePresence>
         {mostrarPublicar && (
@@ -103,6 +114,14 @@ export function FeedPage() {
           </Button>
         </div>
       )}
+    </div>
+    {recomendados.length > 0 && (
+      <aside className="hidden w-72 flex-shrink-0 lg:block">
+        <div className="sticky top-20">
+          <ArtistasRecomendados artistas={recomendados} onSeguimientoCambiado={() => void cargar(true)} />
+        </div>
+      </aside>
+    )}
     </div>
     </FondoEstudio>
   );

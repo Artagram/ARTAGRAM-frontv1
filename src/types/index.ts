@@ -230,6 +230,7 @@ export interface PublicacionDto {
   contadorComentarios?: number;
   version?: number;
   editadoEn?: string | null;
+  destacada: boolean;
 }
 
 export interface LikeResponse {

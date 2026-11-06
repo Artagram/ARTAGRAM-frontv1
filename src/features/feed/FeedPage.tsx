@@ -10,7 +10,7 @@ import type { FeedResponse, PublicacionDto } from '../../types';
 
 export function FeedPage() {
   const [publicaciones, setPublicaciones] = useState<PublicacionDto[]>([]);
-  const [cursor, setCursor] = useState<{ fecha: string; id: string } | null>(null);
+  const [pagina, setPagina] = useState(0);
   const [hayMas, setHayMas] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [cargandoMas, setCargandoMas] = useState(false);
@@ -19,12 +19,11 @@ export function FeedPage() {
 
   async function cargar(desdeInicio: boolean) {
     try {
-      const { data } = await api.get<FeedResponse>('/api/feed', {
-        params: desdeInicio || !cursor ? {} : { cursorFecha: cursor.fecha, cursorId: cursor.id },
-      });
+      const siguiente = desdeInicio ? 0 : pagina + 1;
+      const { data } = await api.get<FeedResponse>('/api/feed', { params: { pagina: siguiente } });
       setPublicaciones((prev) => (desdeInicio ? data.publicaciones : [...prev, ...data.publicaciones]));
       setHayMas(data.hayMas);
-      setCursor(data.cursorFechaSiguiente && data.cursorIdSiguiente ? { fecha: data.cursorFechaSiguiente, id: data.cursorIdSiguiente } : null);
+      setPagina(siguiente);
     } catch (err) {
       setError(extraerMensajeError(err));
     }

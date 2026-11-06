@@ -6,6 +6,7 @@ import { useAuthStore } from '../../lib/authStore';
 import { BotonSeguir } from '../feed/BotonSeguir';
 import { BotonPro } from '../suscripcion/BotonPro';
 import { TablaPlanes } from '../suscripcion/TablaPlanes';
+import { ObrasPerfil } from './ObrasPerfil';
 import { Button } from '../../components/ui/Button';
 import { TextField } from '../../components/ui/TextField';
 import type { PerfilResponse, Seguimiento } from '../../types';
@@ -13,11 +14,6 @@ import type { PerfilResponse, Seguimiento } from '../../types';
 interface EnlaceForm {
   etiqueta: string;
   url: string;
-}
-interface ObraForm {
-  titulo: string;
-  rutaImagen: string;
-  previewUrl: string;
 }
 
 export function ProfilePage() {
@@ -30,7 +26,6 @@ export function ProfilePage() {
 
   const [biografia, setBiografia] = useState('');
   const [enlaces, setEnlaces] = useState<EnlaceForm[]>([]);
-  const [obras, setObras] = useState<ObraForm[]>([]);
   const [guardando, setGuardando] = useState(false);
   const [subiendoFoto, setSubiendoFoto] = useState(false);
   // Se guarda junto al id del perfil: al navegar a otro perfil no se muestra el estado del anterior
@@ -45,7 +40,6 @@ export function ProfilePage() {
         setPerfil(r.data);
         setBiografia(r.data.biografia ?? '');
         setEnlaces(r.data.enlaces.map((e) => ({ etiqueta: e.etiqueta, url: e.url })));
-        setObras(r.data.obrasDestacadas.map((o) => ({ titulo: o.titulo, rutaImagen: '', previewUrl: o.imagenUrl })));
       })
       .catch((err) => setError(extraerMensajeError(err, 'No encontramos a ese artista')))
       .finally(() => setCargando(false));
@@ -78,19 +72,6 @@ export function ProfilePage() {
     }
   }
 
-  async function agregarObra(e: React.ChangeEvent<HTMLInputElement>) {
-    const archivo = e.target.files?.[0];
-    if (!archivo || obras.length >= 3) return;
-    try {
-      const form = new FormData();
-      form.append('archivo', archivo);
-      const { data } = await api.post<{ rutaImagen: string }>('/api/perfil/me/obras/imagen', form);
-      setObras((prev) => [...prev, { titulo: '', rutaImagen: data.rutaImagen, previewUrl: URL.createObjectURL(archivo) }]);
-    } catch (err) {
-      setError(extraerMensajeError(err));
-    }
-  }
-
   async function guardar() {
     setGuardando(true);
     setError(null);
@@ -98,7 +79,6 @@ export function ProfilePage() {
       const { data } = await api.put<PerfilResponse>('/api/perfil/me', {
         biografia,
         enlaces: enlaces.filter((e) => e.etiqueta.trim() && e.url.trim()),
-        obrasDestacadas: obras.filter((o) => o.titulo.trim() && o.rutaImagen).map((o) => ({ titulo: o.titulo, rutaImagen: o.rutaImagen })),
       });
       setPerfil(data);
       setEditando(false);
@@ -188,19 +168,6 @@ export function ProfilePage() {
                   ))}
                 </div>
               )}
-              {perfil.obrasDestacadas.length > 0 && (
-                <div className="mt-6">
-                  <p className="label mb-2">Obras destacadas</p>
-                  <div className="grid grid-cols-3 gap-3">
-                    {perfil.obrasDestacadas.map((o, i) => (
-                      <div key={i} className="overflow-hidden rounded-xl">
-                        <img src={o.imagenUrl} alt={o.titulo} className="aspect-square w-full object-cover" />
-                        <p className="mt-1 truncate text-xs text-paper-muted">{o.titulo}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </>
           ) : (
             <div className="mt-4 flex flex-col gap-5">
@@ -251,38 +218,6 @@ export function ProfilePage() {
                 </div>
               </div>
 
-              <div>
-                <div className="mb-1.5 flex items-center justify-between">
-                  <p className="label">Obras destacadas (máx. 3)</p>
-                  {obras.length < 3 && (
-                    <label className="cursor-pointer text-xs text-violet hover:underline">
-                      + agregar imagen
-                      <input type="file" accept="image/*" className="hidden" onChange={agregarObra} />
-                    </label>
-                  )}
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  {obras.map((o, i) => (
-                    <div key={i} className="relative overflow-hidden rounded-xl">
-                      <img src={o.previewUrl} alt="" className="aspect-square w-full object-cover" />
-                      <input
-                        className="mt-1 w-full rounded-md border border-ink-700 bg-ink-900 px-2 py-1 text-xs"
-                        placeholder="Título"
-                        value={o.titulo}
-                        onChange={(e) => setObras((prev) => prev.map((x, j) => (j === i ? { ...x, titulo: e.target.value } : x)))}
-                      />
-                      <button
-                        type="button"
-                        className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-ink-950/70 text-xs text-coral-light"
-                        onClick={() => setObras((prev) => prev.filter((_, j) => j !== i))}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               {error && <p className="rounded-lg bg-coral/10 px-3 py-2 text-sm text-coral-light">{error}</p>}
 
               <div className="flex justify-end gap-2">
@@ -295,6 +230,7 @@ export function ProfilePage() {
               </div>
             </div>
           )}
+          {!editando && <ObrasPerfil key={perfil.usuarioId} autorId={perfil.usuarioId} esPropio={Boolean(esPropio)} />}
         </div>
       </motion.div>
     </div>

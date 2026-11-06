@@ -4,6 +4,7 @@ const BENEFICIOS = [
   { nombre: 'Análisis y sugerencias con IA', gratis: '5 al mes', pro: 'Ilimitados' },
   { nombre: 'Obras publicadas', gratis: '50', pro: '500' },
   { nombre: 'Tamaño por imagen', gratis: '10 MB', pro: '25 MB' },
+  { nombre: 'Obras destacadas', gratis: '3', pro: '10' },
 ];
 
 export function TablaPlanes() {

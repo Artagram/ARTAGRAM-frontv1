@@ -7,6 +7,7 @@ import { api, extraerMensajeError } from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
 import { stompService } from '../../lib/stompClient';
 import { ESTADO_PENDIENTE, esperarAnalisis } from './analisisApi';
+import { alternarDestacada } from '../profile/obrasApi';
 import type {
   AnalisisObraDto,
   AnalisisTecnicoResultado,
@@ -35,6 +36,8 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
   const [confirmandoBorrado, setConfirmandoBorrado] = useState(false);
   const [borrando, setBorrando] = useState(false);
   const [errorBorrado, setErrorBorrado] = useState<string | null>(null);
+
+  const [errorDestacada, setErrorDestacada] = useState<string | null>(null);
 
   // Estados de Edición
   const [editando, setEditando] = useState(false);
@@ -170,6 +173,17 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
     }
   }
 
+  async function alternarEstrella() {
+    setErrorDestacada(null);
+    try {
+      const actualizada = await alternarDestacada(pub);
+      setPub(actualizada);
+      onActualizada?.(actualizada);
+    } catch (err) {
+      setErrorDestacada(extraerMensajeError(err, 'No pudimos actualizar la obra'));
+    }
+  }
+
   // Alternar like
   async function alternarLike() {
     const anteriorMeGusta = meGusta;
@@ -252,6 +266,15 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
           {esAutor && (
             <div className="flex items-center gap-2">
               <button
+                onClick={alternarEstrella}
+                title={pub.destacada ? 'Quitar de destacadas' : 'Destacar obra'}
+                aria-label={pub.destacada ? 'Quitar de destacadas' : 'Destacar obra'}
+                aria-pressed={pub.destacada}
+                className={`text-sm transition-colors ${pub.destacada ? 'text-amber-300' : 'text-paper-dim hover:text-amber-300'}`}
+              >
+                {pub.destacada ? '★' : '☆'}
+              </button>
+              <button
                 onClick={() => setEditando(true)}
                 title="Editar publicación"
                 className="text-paper-dim transition-colors hover:text-amber-400 text-sm"
@@ -269,6 +292,8 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
           )}
         </div>
       </div>
+
+      {errorDestacada && <p className="px-5 pt-2 text-xs text-coral-light">{errorDestacada}</p>}
 
       {/* Alerta de confirmación de borrado */}
       <AnimatePresence>

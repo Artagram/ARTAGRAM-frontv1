@@ -1,20 +1,20 @@
-const PROPORCION_FUENTE = 40;
+const PROPORCION_FUENTE = 90;
 const FUENTE_MINIMA = 10;
 
 export function dibujarMarca(ctx: CanvasRenderingContext2D, ancho: number, alto: number, texto: string) {
-  const margen = Math.max(8, ancho / 60);
+  const margen = Math.max(6, ancho / 100);
   let tamano = Math.max(FUENTE_MINIMA, ancho / PROPORCION_FUENTE);
-  ctx.font = `bold ${tamano}px sans-serif`;
+  ctx.font = `${tamano}px sans-serif`;
   while (tamano > FUENTE_MINIMA && ctx.measureText(texto).width > ancho - 2 * margen) {
     tamano -= 1;
-    ctx.font = `bold ${tamano}px sans-serif`;
+    ctx.font = `${tamano}px sans-serif`;
   }
   ctx.textAlign = 'right';
   ctx.textBaseline = 'bottom';
-  ctx.lineWidth = Math.max(2, tamano / 6);
-  ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
   ctx.strokeText(texto, ancho - margen, alto - margen);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
   ctx.fillText(texto, ancho - margen, alto - margen);
 }
 

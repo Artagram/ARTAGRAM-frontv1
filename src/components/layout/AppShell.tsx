@@ -4,19 +4,44 @@ import { motion } from 'framer-motion';
 import { useAuthStore } from '../../lib/authStore';
 import { Button } from '../ui/Button';
 import { AvisoPlanLimite } from '../../features/suscripcion/AvisoPlanLimite';
+import { contadorVisible } from '../../features/notifications/notificacionesApi';
+import { useNotificacionesStore } from '../../features/notifications/notificacionesStore';
+import { useNotificacionesEnVivo } from '../../features/notifications/useNotificacionesEnVivo';
 
 const enlaces = [
   { a: '/feed', texto: 'Feed' },
   { a: '/comunidades', texto: 'Comunidades' },
   { a: '/fiesta', texto: 'Modo fiesta' },
-  { a: '/mensajes', texto: 'Mensajes' },
 ];
+
+function BotonNav({ a, titulo, cantidad, children }: { a: string; titulo: string; cantidad: number; children: ReactNode }) {
+  return (
+    <Link
+      to={a}
+      title={titulo}
+      aria-label={cantidad > 0 ? `${titulo}: ${cantidad} sin leer` : titulo}
+      className="relative grid h-9 w-9 place-items-center rounded-lg text-paper-muted hover:bg-ink-800 hover:text-paper"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden>
+        {children}
+      </svg>
+      {cantidad > 0 && (
+        <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-coral px-1 text-[10px] font-semibold text-ink-950">
+          {contadorVisible(cantidad)}
+        </span>
+      )}
+    </Link>
+  );
+}
 
 export function AppShell({ children }: { children: ReactNode }) {
   const sesion = useAuthStore((s) => s.sesion);
   const cerrarSesion = useAuthStore((s) => s.cerrarSesion);
   const navigate = useNavigate();
   const location = useLocation();
+  const noLeidas = useNotificacionesStore((s) => s.noLeidas);
+  const mensajes = useNotificacionesStore((s) => s.mensajes);
+  useNotificacionesEnVivo();
   const enlacesVisibles = sesion?.rolGlobal === 'ADMIN' ? [...enlaces, { a: '/admin', texto: 'Admin' }] : enlaces;
 
   return (
@@ -32,7 +57,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               whileHover={{ scale: 1.1, rotate: -8 }}
               transition={{ type: 'spring', stiffness: 300, damping: 15 }}
             />
-            <span className="font-display text-lg font-semibold tracking-tight">Artagram</span>
+            <span className="hidden font-display text-lg font-semibold tracking-tight sm:inline">Artagram</span>
           </Link>
 
           {sesion && (
@@ -64,6 +89,15 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-3">
             {sesion ? (
               <>
+                <div className="flex items-center gap-1">
+                  <BotonNav a="/mensajes" titulo="Mensajes" cantidad={mensajes}>
+                    <path d="M21 12a8 8 0 0 1-11.8 7L4 20l1-4.6A8 8 0 1 1 21 12Z" />
+                  </BotonNav>
+                  <BotonNav a="/notificaciones" titulo="Notificaciones" cantidad={noLeidas}>
+                    <path d="M6 9a6 6 0 1 1 12 0c0 6 2.5 7 2.5 7h-17S6 15 6 9Z" />
+                    <path d="M10 20a2.2 2.2 0 0 0 4 0" />
+                  </BotonNav>
+                </div>
                 <Link
                   to={`/perfil/${sesion.nombreArtista}`}
                   className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-paper-muted hover:bg-ink-800 hover:text-paper"

@@ -7,6 +7,8 @@ import { LandingPage } from './features/auth/LandingPage';
 import { LoginPage } from './features/auth/LoginPage';
 import { SuscripcionResultadoPage } from './features/suscripcion/SuscripcionResultadoPage';
 import { FeedPage } from './features/feed/FeedPage';
+import { ObraPage } from './features/feed/ObraPage';
+import { NotificationsPage } from './features/notifications/NotificationsPage';
 import { ProfilePage } from './features/profile/ProfilePage';
 import { CommunityListPage } from './features/community/CommunityListPage';
 import { CommunityDetailPage } from './features/community/CommunityDetailPage';
@@ -40,6 +42,8 @@ function AnimatedRoutes() {
           <Route path="/perfil/:nombreArtista" element={<ProfilePage />} />
 
           <Route path="/feed" element={<ProtectedRoute><FeedPage /></ProtectedRoute>} />
+          <Route path="/obra/:id" element={<ProtectedRoute><ObraPage /></ProtectedRoute>} />
+          <Route path="/notificaciones" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
 
           <Route path="/comunidades" element={<ProtectedRoute><CommunityListPage /></ProtectedRoute>} />
           <Route path="/comunidades/:id" element={<ProtectedRoute><CommunityDetailPage /></ProtectedRoute>} />

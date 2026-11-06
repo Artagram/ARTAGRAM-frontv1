@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../../lib/authStore';
 import { Button } from '../ui/Button';
+import { AvisoPlanLimite } from '../../features/suscripcion/AvisoPlanLimite';
 
 const enlaces = [
   { a: '/feed', texto: 'Feed' },
@@ -20,6 +21,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <AvisoPlanLimite />
       <header className="sticky top-0 z-40 border-b border-paper/10 bg-ink-950/35 backdrop-blur-lg">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <Link to="/feed" className="flex items-center gap-2 group">
@@ -70,6 +72,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                     {sesion.nombreArtista.slice(0, 2)}
                   </span>
                   <span className="hidden sm:inline">{sesion.nombreArtista}</span>
+                  {sesion.premium && (
+                    <span className="rounded-full border border-amber-400/40 bg-amber-400/10 px-1.5 text-[10px] font-semibold text-amber-300">
+                      PRO
+                    </span>
+                  )}
                 </Link>
                 <Button
                   variant="ghost"

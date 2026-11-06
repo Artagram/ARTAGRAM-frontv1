@@ -6,6 +6,7 @@ import { es } from 'date-fns/locale';
 import { api, extraerMensajeError } from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
 import { stompService } from '../../lib/stompClient';
+import { ESTADO_PENDIENTE, esperarAnalisis } from './analisisApi';
 import type {
   AnalisisObraDto,
   AnalisisTecnicoResultado,
@@ -58,7 +59,6 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
   const [analisisIa, setAnalisisIa] = useState<AnalisisTecnicoResultado | null>(null);
   const [cargandoIa, setCargandoIa] = useState(false);
   const [errorIa, setErrorIa] = useState<string | null>(null);
-  const [modeloIa, setModeloIa] = useState<string | null>(null);
 
   const esAutor = sesion?.usuarioId === pub.autorId;
 
@@ -211,10 +211,8 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
       setErrorIa(null);
       try {
         // Intentar obtener el último análisis guardado primero (historial)
-        const { data } = await api.get<AnalisisObraDto>(`/api/publicaciones/${pub.id}/analisis/ultimo?tipo=TECNICO`);
-        const parsed = JSON.parse(data.resultadoJson) as AnalisisTecnicoResultado;
-        setAnalisisIa(parsed);
-        setModeloIa(data.modelo);
+        const { data } = await api.get<AnalisisObraDto>(`/api/publicaciones/${pub.id}/analisis`);
+        setAnalisisIa(data.estado === ESTADO_PENDIENTE ? await esperarAnalisis(pub.id) : data);
       } catch {
         // Si no existe, dejamos listo para que el usuario solicite uno
         setAnalisisIa(null);
@@ -228,10 +226,8 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
     setCargandoIa(true);
     setErrorIa(null);
     try {
-      const { data } = await api.post<AnalisisObraDto>(`/api/publicaciones/${pub.id}/analisis?tipo=TECNICO`);
-      const parsed = JSON.parse(data.resultadoJson) as AnalisisTecnicoResultado;
-      setAnalisisIa(parsed);
-      setModeloIa(data.modelo);
+      await api.post(`/api/publicaciones/${pub.id}/analisis`);
+      setAnalisisIa(await esperarAnalisis(pub.id));
     } catch (err) {
       setErrorIa(extraerMensajeError(err, 'No se pudo generar el análisis de IA'));
     } finally {
@@ -548,7 +544,6 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
                   <span>🎨</span>
                   <span>Análisis Técnico de la Obra</span>
                 </div>
-                {modeloIa && <span className="text-[10px] text-paper-dim">Modelo: {modeloIa}</span>}
               </div>
 
               {cargandoIa ? (

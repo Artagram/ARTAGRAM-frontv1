@@ -135,7 +135,7 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
   // Eliminar comentario
   async function borrarComentario(comentarioId: string) {
     try {
-      await api.delete(`/api/comentarios/${comentarioId}`);
+      await api.delete(`/api/publicaciones/${pub.id}/comentarios/${comentarioId}`);
       setComentarios((prev) => prev.filter((c) => c.id !== comentarioId));
       setContadorComentarios((c) => Math.max(0, c - 1));
     } catch (err) {
@@ -156,7 +156,7 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
         .map((t) => t.trim())
         .filter(Boolean);
 
-      const { data } = await api.patch<PublicacionDto>(`/api/publicaciones/${pub.id}`, {
+      const { data } = await api.put<PublicacionDto>(`/api/publicaciones/${pub.id}`, {
         titulo: editTitulo.trim(),
         descripcion: editDescripcion.trim(),
         etiquetas: tagsArray,

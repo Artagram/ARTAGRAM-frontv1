@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { api, extraerMensajeError } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
+import type { Seguimiento } from '../../types';
 
 interface Props {
   usuarioId: string;
@@ -18,12 +19,8 @@ export function BotonSeguir({ usuarioId, loSigo, onCambio, className }: Props) {
     setEnviando(true);
     setError(null);
     try {
-      if (loSigo) {
-        await api.delete(`/api/artistas/${usuarioId}/seguir`);
-      } else {
-        await api.post(`/api/artistas/${usuarioId}/seguir`);
-      }
-      onCambio?.(!loSigo);
+      const { data } = await api.post<Seguimiento>(`/api/artistas/${usuarioId}/seguir`);
+      onCambio?.(data.loSigo);
     } catch (err) {
       setError(extraerMensajeError(err, 'No se pudo actualizar'));
     } finally {

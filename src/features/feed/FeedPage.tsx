@@ -6,6 +6,7 @@ import { FondoEstudio } from '../../components/layout/FondoEstudio';
 import { PostCard } from './PostCard';
 import { PublishWizard } from './PublishWizard';
 import { BuscarArtistas } from './BuscarArtistas';
+import { DibujandoAhora } from './DibujandoAhora';
 import type { FeedResponse, PublicacionDto } from '../../types';
 
 export function FeedPage() {
@@ -50,6 +51,8 @@ export function FeedPage() {
         </div>
         {!mostrarPublicar && <Button onClick={() => setMostrarPublicar(true)}>Publicar</Button>}
       </div>
+
+      <DibujandoAhora />
 
       {/* Buscar personas y seguirlas: el feed muestra tus obras y las de quienes sigues */}
       <BuscarArtistas

@@ -4,9 +4,7 @@ import { AppShell } from './components/layout/AppShell';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { AdminRoute } from './components/layout/AdminRoute';
 import { LandingPage } from './features/auth/LandingPage';
-import { RegisterPage } from './features/auth/RegisterPage';
 import { LoginPage } from './features/auth/LoginPage';
-import { VerifyPage } from './features/auth/VerifyPage';
 import { FeedPage } from './features/feed/FeedPage';
 import { ProfilePage } from './features/profile/ProfilePage';
 import { CommunityListPage } from './features/community/CommunityListPage';
@@ -37,9 +35,7 @@ function AnimatedRoutes() {
       >
         <Routes location={location}>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/registro" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/verificar" element={<VerifyPage />} />
           <Route path="/perfil/:nombreArtista" element={<ProfilePage />} />
 
           <Route path="/feed" element={<ProtectedRoute><FeedPage /></ProtectedRoute>} />

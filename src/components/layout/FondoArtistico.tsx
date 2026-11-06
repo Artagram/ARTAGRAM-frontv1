@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 
 /**
- * Fondo de acuarela para las páginas públicas (landing, login, registro).
+ * Fondo de acuarela para las páginas públicas (landing y login).
  * Fixed para que quede detrás también del header; el degradé de paper
  * encima asegura que el texto oscuro de estas páginas siga siendo legible
  * sin tapar del todo la ilustración.

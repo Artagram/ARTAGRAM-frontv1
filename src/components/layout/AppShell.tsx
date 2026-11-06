@@ -83,11 +83,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               </>
             ) : (
               <>
-                <Link to="/login" className="btn-ghost">
+                <Link to="/login" className="btn-primary">
                   Entrar
-                </Link>
-                <Link to="/registro" className="btn-primary">
-                  Crear cuenta
                 </Link>
               </>
             )}

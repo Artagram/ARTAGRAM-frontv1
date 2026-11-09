@@ -65,6 +65,7 @@ jobs:
           VITE_API_BASE_URL: https://${{ env.PUBLIC_HOST }}
           VITE_WS_URL: wss://${{ env.PUBLIC_HOST }}/ws
           VITE_GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
+          VITE_PAGOS_ACTIVOS: ${{ vars.PAGOS_ACTIVOS }}
         run: npm run build
 
       - name: Configurar credenciales AWS

@@ -52,7 +52,6 @@ function MenuAvatar({ nombreArtista, premium, onSalir }: { nombreArtista: string
       <button
         type="button"
         onClick={() => setAbierto((a) => !a)}
-        aria-haspopup="menu"
         aria-expanded={abierto}
         aria-label={`Menú de ${nombreArtista}${premium ? ', plan PRO' : ''}`}
         className="grid h-11 w-11 place-items-center rounded-full md:h-9 md:w-9"
@@ -67,9 +66,8 @@ function MenuAvatar({ nombreArtista, premium, onSalir }: { nombreArtista: string
         </span>
       </button>
       {abierto && (
-        <div role="menu" className="panel-flotante absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden py-1">
+        <div className="panel-flotante absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden py-1">
           <Link
-            role="menuitem"
             to={`/perfil/${nombreArtista}`}
             onClick={cerrar}
             className="block truncate px-4 py-2.5 text-sm text-paper hover:bg-paper/10"
@@ -78,7 +76,6 @@ function MenuAvatar({ nombreArtista, premium, onSalir }: { nombreArtista: string
             {premium && <span className="insignia-pro ml-2">PRO</span>}
           </Link>
           <button
-            role="menuitem"
             type="button"
             onClick={onSalir}
             className="block w-full px-4 py-2.5 text-left text-sm text-paper-muted hover:bg-paper/10 hover:text-paper"

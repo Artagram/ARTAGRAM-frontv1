@@ -709,7 +709,6 @@ function MenuObra({ opciones }: { opciones: OpcionMenu[] }) {
       <button
         type="button"
         onClick={() => setAbierto((a) => !a)}
-        aria-haspopup="menu"
         aria-expanded={abierto}
         aria-label="Más opciones"
         className="grid h-11 w-11 place-items-center rounded-full text-paper-muted hover:bg-paper/10 hover:text-paper sm:h-7 sm:w-7"
@@ -717,11 +716,10 @@ function MenuObra({ opciones }: { opciones: OpcionMenu[] }) {
         ⋯
       </button>
       {abierto && (
-        <div role="menu" className="panel-flotante absolute right-0 top-full z-20 mt-1 w-44 overflow-hidden py-1">
+        <div className="panel-flotante absolute right-0 top-full z-20 mt-1 w-44 overflow-hidden py-1">
           {opciones.map((o) => (
             <button
               key={o.texto}
-              role="menuitem"
               type="button"
               disabled={o.desactivada}
               onClick={() => {

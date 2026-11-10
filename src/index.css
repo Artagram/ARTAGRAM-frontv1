@@ -241,6 +241,25 @@
   }
 }
 
+/* Estas animaciones las usan reglas de este archivo, no clases animate-*: si
+   vivieran en tailwind.config.js, Tailwind no las emitiria y nada se moveria. */
+@keyframes mancha-a {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(20vw, 14vh, 0) scale(1.25); }
+}
+@keyframes mancha-b {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1.1); }
+  50% { transform: translate3d(-18vw, 18vh, 0) scale(0.85); }
+}
+@keyframes mancha-c {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(0.95); }
+  50% { transform: translate3d(16vw, -16vh, 0) scale(1.3); }
+}
+@keyframes brillo {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mancha,
   .carrusel-pista,

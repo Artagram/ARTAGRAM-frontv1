@@ -76,22 +76,6 @@ export default {
           '0%, 100%': { transform: 'scale(1)' },
           '50%': { transform: 'scale(1.04)' },
         },
-        'mancha-a': {
-          '0%, 100%': { transform: 'translate3d(0, 0, 0) scale(1)' },
-          '50%': { transform: 'translate3d(20vw, 14vh, 0) scale(1.25)' },
-        },
-        'mancha-b': {
-          '0%, 100%': { transform: 'translate3d(0, 0, 0) scale(1.1)' },
-          '50%': { transform: 'translate3d(-18vw, 18vh, 0) scale(0.85)' },
-        },
-        'mancha-c': {
-          '0%, 100%': { transform: 'translate3d(0, 0, 0) scale(0.95)' },
-          '50%': { transform: 'translate3d(16vw, -16vh, 0) scale(1.3)' },
-        },
-        'brillo': {
-          from: { transform: 'translateX(-100%)' },
-          to: { transform: 'translateX(100%)' },
-        },
       },
     },
   },

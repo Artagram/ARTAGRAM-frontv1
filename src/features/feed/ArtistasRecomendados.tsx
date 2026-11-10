@@ -26,9 +26,9 @@ export function ArtistasRecomendados({ artistas, onSeguimientoCambiado }: Props)
       <h2 className="mb-3 font-display text-base font-semibold">
         Artistas <span className="acento text-violet">para ti</span>
       </h2>
-      <ul className="flex gap-3 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+      <ul className="flex gap-3 overflow-x-auto pb-1 md:flex-col md:overflow-visible md:pb-0">
         {artistas.map((a) => (
-          <li key={a.usuarioId} className="flex w-44 flex-shrink-0 flex-col gap-2 lg:w-auto">
+          <li key={a.usuarioId} className="flex w-44 flex-shrink-0 flex-col gap-2 md:w-auto md:flex-row md:items-center md:justify-between">
             <Link to={`/perfil/${encodeURIComponent(a.nombreArtista)}`} className="flex min-w-0 items-center gap-2 hover:text-coral">
               {a.fotoUrl ? (
                 <img src={a.fotoUrl} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
@@ -46,7 +46,7 @@ export function ArtistasRecomendados({ artistas, onSeguimientoCambiado }: Props)
               usuarioId={a.usuarioId}
               loSigo={seguidos.has(a.usuarioId)}
               onCambio={(loSigo) => alCambiar(a.usuarioId, loSigo)}
-              className="w-full px-3 py-1 text-xs shadow-none"
+              className="w-full px-3 py-1 text-xs shadow-none md:w-auto"
             />
           </li>
         ))}

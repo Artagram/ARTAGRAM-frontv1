@@ -71,8 +71,8 @@ export function FeedPage() {
   const alCambiarSeguimiento = () => void cargar(pestana, true);
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-5 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-6">
-      <div className="min-w-0 lg:col-start-1 lg:row-start-1">
+    <div className="mx-auto grid max-w-6xl gap-5 px-4 py-6 md:grid-cols-[minmax(0,1fr)_240px] md:gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
+      <div className="min-w-0 md:col-start-1 md:row-start-1">
         <div className="mb-5">
           <h1 className="font-display text-[32px] font-semibold leading-tight">Feed</h1>
           <p className="text-sm text-paper-muted">Obras y su proceso, de la gente que sigues y de la comunidad.</p>
@@ -102,15 +102,15 @@ export function FeedPage() {
       </div>
 
       {/* Va entre los dos bloques del contenido para que en celular quede antes de las obras. */}
-      <aside className="min-w-0 lg:col-start-2 lg:row-span-2 lg:row-start-1">
-        <div className="flex flex-col gap-4 lg:sticky lg:top-[var(--alto-barra)]">
+      <aside className="min-w-0 md:col-start-2 md:row-span-2 md:row-start-1">
+        <div className="flex flex-col gap-4 md:sticky md:top-[var(--alto-barra)]">
           {/* Buscar personas y seguirlas: el feed muestra tus obras y las de quienes sigues */}
           <BuscarArtistas mostrarSugerencias={!cargando && publicaciones.length === 0} onSeguimientoCambiado={alCambiarSeguimiento} />
           {recomendados.length > 0 && <ArtistasRecomendados artistas={recomendados} onSeguimientoCambiado={alCambiarSeguimiento} />}
         </div>
       </aside>
 
-      <div className="min-w-0 lg:col-start-1 lg:row-start-2">
+      <div className="min-w-0 md:col-start-1 md:row-start-2">
         {error && <p className="banner-error mb-4">{error}</p>}
 
         {cargando ? (

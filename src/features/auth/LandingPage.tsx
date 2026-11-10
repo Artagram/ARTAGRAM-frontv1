@@ -39,11 +39,8 @@ export function LandingPage() {
             transition={{ delay: 0.15 }}
             className="mt-9 flex flex-wrap items-center justify-center gap-3"
           >
-            <Link to="/registro" className="btn-primary px-6 py-3 text-base">
+            <Link to="/login" className="btn-primary px-6 py-3 text-base">
               Empezar a dibujar
-            </Link>
-            <Link to="/login" className="btn-secondary px-6 py-3 text-base !bg-paper/80 !text-ink-950 !border-ink-950/15 hover:!text-violet-dark">
-              Ya tengo cuenta
             </Link>
           </motion.div>
 

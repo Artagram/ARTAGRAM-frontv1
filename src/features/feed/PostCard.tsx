@@ -6,6 +6,10 @@ import { es } from 'date-fns/locale';
 import { api, extraerMensajeError } from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
 import { stompService } from '../../lib/stompClient';
+import { ESTADO_PENDIENTE, esperarAnalisis } from './analisisApi';
+import { descargarObra } from './descargaApi';
+import { alternarDestacada } from '../profile/obrasApi';
+import { ModalReportar } from '../moderacion/ModalReportar';
 import type {
   AnalisisObraDto,
   AnalisisTecnicoResultado,
@@ -35,6 +39,13 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
   const [borrando, setBorrando] = useState(false);
   const [errorBorrado, setErrorBorrado] = useState<string | null>(null);
 
+  const [errorAccion, setErrorAccion] = useState<string | null>(null);
+
+  const [descargando, setDescargando] = useState(false);
+
+  const [reportando, setReportando] = useState(false);
+  const [reportada, setReportada] = useState(false);
+
   // Estados de Edición
   const [editando, setEditando] = useState(false);
   const [editTitulo, setEditTitulo] = useState(pub.titulo);
@@ -58,7 +69,6 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
   const [analisisIa, setAnalisisIa] = useState<AnalisisTecnicoResultado | null>(null);
   const [cargandoIa, setCargandoIa] = useState(false);
   const [errorIa, setErrorIa] = useState<string | null>(null);
-  const [modeloIa, setModeloIa] = useState<string | null>(null);
 
   const esAutor = sesion?.usuarioId === pub.autorId;
 
@@ -132,7 +142,7 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
   // Eliminar comentario
   async function borrarComentario(comentarioId: string) {
     try {
-      await api.delete(`/api/comentarios/${comentarioId}`);
+      await api.delete(`/api/publicaciones/${pub.id}/comentarios/${comentarioId}`);
       setComentarios((prev) => prev.filter((c) => c.id !== comentarioId));
       setContadorComentarios((c) => Math.max(0, c - 1));
     } catch (err) {
@@ -153,7 +163,7 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
         .map((t) => t.trim())
         .filter(Boolean);
 
-      const { data } = await api.patch<PublicacionDto>(`/api/publicaciones/${pub.id}`, {
+      const { data } = await api.put<PublicacionDto>(`/api/publicaciones/${pub.id}`, {
         titulo: editTitulo.trim(),
         descripcion: editDescripcion.trim(),
         etiquetas: tagsArray,
@@ -167,6 +177,29 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
       setErrorEdicion(extraerMensajeError(err, 'No se pudo guardar la edición'));
     } finally {
       setGuardandoEdicion(false);
+    }
+  }
+
+  async function alternarEstrella() {
+    setErrorAccion(null);
+    try {
+      const actualizada = await alternarDestacada(pub);
+      setPub(actualizada);
+      onActualizada?.(actualizada);
+    } catch (err) {
+      setErrorAccion(extraerMensajeError(err, 'No pudimos actualizar la obra'));
+    }
+  }
+
+  async function descargar() {
+    setErrorAccion(null);
+    setDescargando(true);
+    try {
+      await descargarObra(pub.id);
+    } catch (err) {
+      setErrorAccion(extraerMensajeError(err, 'No pudimos descargar la obra'));
+    } finally {
+      setDescargando(false);
     }
   }
 
@@ -211,10 +244,8 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
       setErrorIa(null);
       try {
         // Intentar obtener el último análisis guardado primero (historial)
-        const { data } = await api.get<AnalisisObraDto>(`/api/publicaciones/${pub.id}/analisis/ultimo?tipo=TECNICO`);
-        const parsed = JSON.parse(data.resultadoJson) as AnalisisTecnicoResultado;
-        setAnalisisIa(parsed);
-        setModeloIa(data.modelo);
+        const { data } = await api.get<AnalisisObraDto>(`/api/publicaciones/${pub.id}/analisis`);
+        setAnalisisIa(data.estado === ESTADO_PENDIENTE ? await esperarAnalisis(pub.id) : data);
       } catch {
         // Si no existe, dejamos listo para que el usuario solicite uno
         setAnalisisIa(null);
@@ -228,10 +259,8 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
     setCargandoIa(true);
     setErrorIa(null);
     try {
-      const { data } = await api.post<AnalisisObraDto>(`/api/publicaciones/${pub.id}/analisis?tipo=TECNICO`);
-      const parsed = JSON.parse(data.resultadoJson) as AnalisisTecnicoResultado;
-      setAnalisisIa(parsed);
-      setModeloIa(data.modelo);
+      await api.post(`/api/publicaciones/${pub.id}/analisis`);
+      setAnalisisIa(await esperarAnalisis(pub.id));
     } catch (err) {
       setErrorIa(extraerMensajeError(err, 'No se pudo generar el análisis de IA'));
     } finally {
@@ -256,6 +285,15 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
           {esAutor && (
             <div className="flex items-center gap-2">
               <button
+                onClick={alternarEstrella}
+                title={pub.destacada ? 'Quitar de destacadas' : 'Destacar obra'}
+                aria-label={pub.destacada ? 'Quitar de destacadas' : 'Destacar obra'}
+                aria-pressed={pub.destacada}
+                className={`text-sm transition-colors ${pub.destacada ? 'text-amber-300' : 'text-paper-dim hover:text-amber-300'}`}
+              >
+                {pub.destacada ? '★' : '☆'}
+              </button>
+              <button
                 onClick={() => setEditando(true)}
                 title="Editar publicación"
                 className="text-paper-dim transition-colors hover:text-amber-400 text-sm"
@@ -273,6 +311,14 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
           )}
         </div>
       </div>
+
+      {errorAccion && <p className="px-5 pt-2 text-xs text-coral-light">{errorAccion}</p>}
+
+      {pub.oculta && (
+        <p className="mx-5 mt-2 rounded-lg bg-coral/10 px-3 py-1.5 text-xs text-coral-light">
+          Oculta mientras se revisa. Solo tú y los administradores pueden verla.
+        </p>
+      )}
 
       {/* Alerta de confirmación de borrado */}
       <AnimatePresence>
@@ -447,6 +493,26 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
             </button>
           </div>
 
+          <div className="flex items-center gap-2">
+          {sesion && !esAutor && (
+            <button
+              onClick={() => setReportando(true)}
+              disabled={reportada}
+              className="text-xs text-paper-dim transition-colors hover:text-coral disabled:hover:text-paper-dim"
+            >
+              {reportada ? 'Reportada' : 'Reportar'}
+            </button>
+          )}
+          <button
+            onClick={descargar}
+            disabled={descargando}
+            title="Descargar con marca de agua"
+            className="flex items-center gap-1 rounded-full border border-ink-700 px-2.5 py-1 text-xs text-paper-dim transition-all hover:border-paper-dim hover:text-paper disabled:opacity-60"
+          >
+            <span aria-hidden>⬇</span>
+            <span>{descargando ? 'Preparando…' : 'Descargar'}</span>
+          </button>
+
           {/* Botón Análisis IA */}
           <button
             onClick={toggleIa}
@@ -459,6 +525,7 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
             <span>✨</span>
             <span>Feedback IA</span>
           </button>
+          </div>
         </div>
 
         {/* Panel de Comentarios en Vivo (Linear / Flat) */}
@@ -548,7 +615,6 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
                   <span>🎨</span>
                   <span>Análisis Técnico de la Obra</span>
                 </div>
-                {modeloIa && <span className="text-[10px] text-paper-dim">Modelo: {modeloIa}</span>}
               </div>
 
               {cargandoIa ? (
@@ -623,6 +689,17 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
           )}
         </AnimatePresence>
       </div>
+
+      {reportando && (
+        <ModalReportar
+          publicacionId={pub.id}
+          onCerrar={() => setReportando(false)}
+          onReportada={() => {
+            setReportando(false);
+            setReportada(true);
+          }}
+        />
+      )}
     </motion.article>
   );
 }

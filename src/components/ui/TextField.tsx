@@ -5,7 +5,7 @@ interface Props extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   ayuda?: string;
-  /** 'light' para usar sobre las páginas públicas con fondo claro (login/registro/landing). */
+  /** 'light' para usar sobre las páginas públicas con fondo claro (login/landing). */
   variant?: 'dark' | 'light';
 }
 

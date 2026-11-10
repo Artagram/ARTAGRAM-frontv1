@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { api, extraerMensajeError } from '../../lib/api';
+import { PanelReportes } from '../moderacion/PanelReportes';
 import type { KpiDetalle as KpiDetalleDto } from '../../types';
 
 interface DashboardInfo {
@@ -8,6 +9,13 @@ interface DashboardInfo {
   panelNegocioUrl: string;
   prometheusUrl: string;
 }
+
+type Pestana = 'negocio' | 'reportes';
+
+const PESTANAS: { id: Pestana; titulo: string }[] = [
+  { id: 'negocio', titulo: 'Negocio' },
+  { id: 'reportes', titulo: 'Reportes' },
+];
 
 const TENDENCIA_ICONO: Record<string, string> = { SUBE: '↑', BAJA: '↓', IGUAL: '→' };
 const TENDENCIA_COLOR: Record<string, string> = { SUBE: 'text-teal', BAJA: 'text-coral', IGUAL: 'text-paper-dim' };
@@ -17,6 +25,7 @@ export function AdminDashboardPage() {
   const [info, setInfo] = useState<DashboardInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(true);
+  const [pestana, setPestana] = useState<Pestana>('negocio');
 
   useEffect(() => {
     Promise.all([api.get<KpiDetalleDto[]>('/api/admin/kpis'), api.get<DashboardInfo>('/api/admin/dashboard')])
@@ -33,12 +42,33 @@ export function AdminDashboardPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <div className="mb-8">
+      <div className="mb-6">
         <p className="label">Solo administradores</p>
-        <h1 className="font-display text-3xl font-semibold">Panel de negocio</h1>
-        <p className="mt-1 text-paper-muted">Los 4 KPIs de negocio, calculados en vivo, con su fórmula y periodo.</p>
+        <h1 className="font-display text-3xl font-semibold">{pestana === 'negocio' ? 'Panel de negocio' : 'Reportes de obras'}</h1>
+        <p className="mt-1 text-paper-muted">
+          {pestana === 'negocio'
+            ? 'Los 4 KPIs de negocio, calculados en vivo, con su fórmula y periodo.'
+            : 'Obras reportadas por la comunidad, agrupadas y pendientes de revisión.'}
+        </p>
       </div>
 
+      <div role="tablist" className="mb-6 flex gap-4 border-b border-ink-800">
+        {PESTANAS.map((p) => (
+          <button
+            key={p.id}
+            role="tab"
+            aria-selected={pestana === p.id}
+            onClick={() => setPestana(p.id)}
+            className={`-mb-px border-b-2 px-1 pb-2 text-sm font-medium transition-colors ${
+              pestana === p.id ? 'border-coral text-paper' : 'border-transparent text-paper-muted hover:text-paper'
+            }`}
+          >
+            {p.titulo}
+          </button>
+        ))}
+      </div>
+
+      {pestana === 'reportes' ? <PanelReportes /> : <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {kpis.map((k, i) => (
           <motion.div
@@ -70,6 +100,7 @@ export function AdminDashboardPage() {
           <PanelEnlace titulo="Prometheus" descripcion="Métricas crudas expuestas por el backend." url={info.prometheusUrl} color="text-amber" />
         </div>
       )}
+      </>}
     </div>
   );
 }

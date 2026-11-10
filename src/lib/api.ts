@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { obtenerTokenActual, useAuthStore } from './authStore';
+import { usePlanLimiteStore } from './planLimiteStore';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
 export const WS_URL = import.meta.env.VITE_WS_URL ?? 'ws://localhost:8080/ws';
@@ -21,6 +22,9 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401 && useAuthStore.getState().sesion) {
       useAuthStore.getState().expirarSesion();
+    }
+    if (error.response?.status === 403 && error.response.data?.code === 'PLAN_LIMITE') {
+      usePlanLimiteStore.getState().abrir(error.response.data.message);
     }
     return Promise.reject(error);
   },

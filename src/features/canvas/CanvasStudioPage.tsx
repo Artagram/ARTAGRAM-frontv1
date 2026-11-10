@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api, extraerMensajeError } from '../../lib/api';
+import { exportarConMarca } from '../../lib/marcaAgua';
 import { stompService } from '../../lib/stompClient';
 import { useAuthStore } from '../../lib/authStore';
 import { anchoDeLineaPx, dibujarPunto, dibujarSegmento, dibujarTrazoCompleto, type EstiloPincel } from '../../lib/canvasEngine';
@@ -752,7 +753,7 @@ export function CanvasStudioPage() {
       .replace(/[^a-z0-9]/g, '-')
       .replace(/-+/g, '-');
     enlace.download = `${nombreLimpio}.png`;
-    enlace.href = canvas.toDataURL('image/png');
+    enlace.href = exportarConMarca(canvas, `© ${comunidad?.nombre ?? 'Lienzo'} · Artagram`);
     enlace.click();
   }
 

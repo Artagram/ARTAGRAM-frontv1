@@ -202,13 +202,10 @@ export interface AnalisisTecnicoResultado {
   scoreEstimado: number;
 }
 
-export interface AnalisisObraDto {
+export interface AnalisisObraDto extends AnalisisTecnicoResultado {
   id: string;
   publicacionId: string;
-  solicitanteId: string;
-  tipo: 'TECNICO' | 'SUGERENCIA_ETIQUETAS';
-  resultadoJson: string;
-  modelo: string;
+  estado: string;
   creadoEn: string;
 }
 
@@ -233,6 +230,8 @@ export interface PublicacionDto {
   contadorComentarios?: number;
   version?: number;
   editadoEn?: string | null;
+  destacada: boolean;
+  oculta: boolean;
 }
 
 export interface LikeResponse {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { api, extraerMensajeError } from '../../lib/api';
+import { exportarConMarca } from '../../lib/marcaAgua';
 import { stompService } from '../../lib/stompClient';
 import { useAuthStore } from '../../lib/authStore';
 import { Button } from '../../components/ui/Button';
@@ -615,7 +616,7 @@ export function PartyRoomPage() {
     if (!canvas) return;
     const enlace = document.createElement('a');
     enlace.download = `fiesta-${sala?.codigo || 'obra'}.png`;
-    enlace.href = canvas.toDataURL('image/png');
+    enlace.href = exportarConMarca(canvas, '© Modo fiesta · Artagram');
     enlace.click();
   }
 

@@ -4,10 +4,11 @@ import { AppShell } from './components/layout/AppShell';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { AdminRoute } from './components/layout/AdminRoute';
 import { LandingPage } from './features/auth/LandingPage';
-import { RegisterPage } from './features/auth/RegisterPage';
 import { LoginPage } from './features/auth/LoginPage';
-import { VerifyPage } from './features/auth/VerifyPage';
+import { SuscripcionResultadoPage } from './features/suscripcion/SuscripcionResultadoPage';
 import { FeedPage } from './features/feed/FeedPage';
+import { ObraPage } from './features/feed/ObraPage';
+import { NotificationsPage } from './features/notifications/NotificationsPage';
 import { ProfilePage } from './features/profile/ProfilePage';
 import { CommunityListPage } from './features/community/CommunityListPage';
 import { CommunityDetailPage } from './features/community/CommunityDetailPage';
@@ -37,12 +38,12 @@ function AnimatedRoutes() {
       >
         <Routes location={location}>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/registro" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/verificar" element={<VerifyPage />} />
           <Route path="/perfil/:nombreArtista" element={<ProfilePage />} />
 
           <Route path="/feed" element={<ProtectedRoute><FeedPage /></ProtectedRoute>} />
+          <Route path="/obra/:id" element={<ProtectedRoute><ObraPage /></ProtectedRoute>} />
+          <Route path="/notificaciones" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
 
           <Route path="/comunidades" element={<ProtectedRoute><CommunityListPage /></ProtectedRoute>} />
           <Route path="/comunidades/:id" element={<ProtectedRoute><CommunityDetailPage /></ProtectedRoute>} />
@@ -53,6 +54,7 @@ function AnimatedRoutes() {
           <Route path="/fiesta/:id" element={<ProtectedRoute><PartyRoomPage /></ProtectedRoute>} />
 
           <Route path="/mensajes" element={<ProtectedRoute><PersonalChatPage /></ProtectedRoute>} />
+          <Route path="/suscripcion/resultado" element={<ProtectedRoute><SuscripcionResultadoPage /></ProtectedRoute>} />
 
           <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
 

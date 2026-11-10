@@ -395,7 +395,7 @@ export function PostCard({ publicacion, onEliminada, onActualizada, variante = '
           type="button"
           onClick={() => setProcesoAbierto((v) => !v)}
           aria-expanded={procesoAbierto}
-          className="glass absolute bottom-3 left-3 rounded-full px-3 py-1.5 text-xs font-medium text-paper"
+          className="glass absolute bottom-3 left-3 min-h-11 rounded-full px-3 py-1.5 text-xs font-medium text-paper sm:min-h-0"
         >
           ▶ proceso · {fotosProceso} {fotosProceso === 1 ? 'foto' : 'fotos'}
         </button>
@@ -494,7 +494,7 @@ export function PostCard({ publicacion, onEliminada, onActualizada, variante = '
             disabled={descargando}
             title="Descargar con marca de agua"
             aria-label="Descargar con marca de agua"
-            className="flex h-11 items-center gap-1 text-sm text-paper-muted transition-colors hover:text-paper disabled:opacity-60 sm:h-8"
+            className="flex h-11 min-w-11 items-center justify-center gap-1 text-sm text-paper-muted transition-colors hover:text-paper disabled:opacity-60 sm:h-8 sm:min-w-0"
           >
             <span aria-hidden>{descargando ? '…' : '⬇'}</span>
           </button>
@@ -504,7 +504,7 @@ export function PostCard({ publicacion, onEliminada, onActualizada, variante = '
           onClick={toggleIa}
           aria-expanded={iaAbierta}
           aria-label="Análisis con IA"
-          className={`flex h-11 items-center gap-1 text-xs font-semibold text-teal transition-opacity sm:h-8 ${iaAbierta ? '' : 'opacity-80 hover:opacity-100'}`}
+          className={`flex h-11 min-w-11 items-center justify-end gap-1 text-xs font-semibold text-teal transition-opacity sm:h-8 sm:min-w-0 ${iaAbierta ? '' : 'opacity-80 hover:opacity-100'}`}
         >
           ✦ IA
         </button>

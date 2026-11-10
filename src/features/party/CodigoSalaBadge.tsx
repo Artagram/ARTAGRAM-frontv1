@@ -21,7 +21,7 @@ export function CodigoSalaBadge({ codigo, compacto }: { codigo: string; compacto
 
   if (compacto) {
     return (
-      <button type="button" onClick={copiar} title="Copiar código" className="chip font-mono font-semibold tracking-[0.2em] text-paper">
+      <button type="button" onClick={copiar} title="Copiar código" className="chip min-h-11 font-mono font-semibold tracking-[0.2em] text-paper sm:min-h-0">
         {codigo}
         <span className="font-sans tracking-normal text-paper-muted">{copiado ? '¡Copiado!' : '⧉'}</span>
       </button>
@@ -43,7 +43,7 @@ export function CodigoSalaBadge({ codigo, compacto }: { codigo: string; compacto
         <p className="label">Código de la sala · compártelo para que se unan</p>
         <p className="font-mono text-2xl font-semibold tracking-[0.3em] text-paper">{codigo}</p>
       </div>
-      <span className="ml-auto text-xs font-medium text-teal">{copiado ? '¡Copiado!' : 'Copiar ⧉'}</span>
+      <span className="ml-auto whitespace-nowrap text-xs font-medium text-teal">{copiado ? '¡Copiado!' : 'Copiar ⧉'}</span>
     </motion.button>
   );
 }

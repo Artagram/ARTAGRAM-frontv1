@@ -105,7 +105,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <AvisoPlanLimite />
       <header className="barra-vidrio sticky top-[18px] z-40 mx-[18px] mt-[18px]">
         <div className="flex items-center justify-between gap-3 px-4 py-1.5 md:py-2.5">
-          <Link to="/feed" className="font-display text-xl font-medium italic tracking-tight">
+          <Link to="/feed" className="py-2 font-display text-xl font-medium italic tracking-tight md:py-0">
             artagram<span className="text-coral">.</span>
           </Link>
 

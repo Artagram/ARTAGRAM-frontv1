@@ -197,7 +197,7 @@ export function BrushToolbar({
       )}
     >
       {/* Sección 1: Herramientas de trazo (con exclusividad por usuario en Modo Fiesta) */}
-      <div className="flex items-center gap-1.5 border-r border-paper/10 pr-3 flex-wrap">
+      <div className="flex items-center gap-1.5 flex-wrap lg:border-r lg:border-paper/10 lg:pr-3">
         <span className="text-[11px] font-medium text-paper-muted hidden sm:inline mr-1">
           {modoFiesta ? 'Herramientas (1 por persona)' : 'Pincel'}
         </span>
@@ -269,7 +269,7 @@ export function BrushToolbar({
       </div>
 
       {/* Sección 2: Trazo (Grosor y Opacidad) */}
-      <div className="flex items-center gap-3 border-r border-paper/10 pr-3">
+      <div className="flex items-center gap-3 lg:border-r lg:border-paper/10 lg:pr-3">
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center justify-between gap-2 text-[10px] text-paper-dim">
             <span>Grosor</span>
@@ -386,7 +386,7 @@ export function BrushToolbar({
 
       {/* Sección 4: Publicar (en estudio normal) */}
       {onPublicar && (
-        <div className="flex items-center gap-2 border-l border-paper/10 pl-3">
+        <div className="flex items-center gap-2 lg:border-l lg:border-paper/10 lg:pl-3">
           <button
             type="button"
             onClick={onPublicar}

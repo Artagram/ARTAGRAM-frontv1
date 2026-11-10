@@ -228,7 +228,7 @@ export function PartyLobbyPage() {
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-2">
-                        <CodigoSalaBadge codigo={s.codigo} />
+                        <CodigoSalaBadge codigo={s.codigo} compacto />
                         <span className="chip">
                           <span className="font-semibold tabular-nums text-paper">
                             {s.totalParticipantes}/{s.cupoMaximo}

@@ -438,7 +438,7 @@ export function CommunityBannerMural({
 
       {/* Barra de herramientas flotante estilo fiesta si está activo el modo pintor */}
       {interactivo && mostrarBarraHerramientas && (
-        <div className="absolute bottom-3 left-3 right-3 z-30 flex flex-col gap-2">
+        <div className="absolute bottom-3 left-3 right-3 z-30 flex flex-col gap-2 rounded-2xl border border-paper/10 bg-ink-800/95 p-3 shadow-2xl">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <BrushToolbar
               herramienta={herramienta}

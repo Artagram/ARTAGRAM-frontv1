@@ -7,7 +7,7 @@ const BENEFICIOS = [
   { nombre: 'Obras destacadas', gratis: '3', pro: '10' },
 ];
 
-const BRILLO_PRO = 'bg-amber/5 shadow-[inset_0_0_24px_rgba(255,194,75,0.08)]';
+const BRILLO_PRO = 'bg-amber/5';
 
 export function TablaPlanes() {
   return (

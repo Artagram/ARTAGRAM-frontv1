@@ -46,7 +46,7 @@ export function ArtistasRecomendados({ artistas, onSeguimientoCambiado }: Props)
               usuarioId={a.usuarioId}
               loSigo={seguidos.has(a.usuarioId)}
               onCambio={(loSigo) => alCambiar(a.usuarioId, loSigo)}
-              className="w-full px-3 py-1 text-xs"
+              className="w-full px-3 py-1 text-xs shadow-none"
             />
           </li>
         ))}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { api, extraerMensajeError } from '../../lib/api';
+import { useAuthStore } from '../../lib/authStore';
 import { Button } from '../../components/ui/Button';
 import { FondoEstudio } from '../../components/layout/FondoEstudio';
 import { TextField } from '../../components/ui/TextField';
@@ -9,6 +10,7 @@ import { ComunidadesRecomendadas } from './ComunidadesRecomendadas';
 import type { ComunidadResponse } from '../../types';
 
 export function CommunityListPage() {
+  const premium = useAuthStore((s) => s.sesion?.premium ?? false);
   const [comunidades, setComunidades] = useState<ComunidadResponse[]>([]);
   const [mostrarCrear, setMostrarCrear] = useState(false);
   const [nombre, setNombre] = useState('');
@@ -89,9 +91,19 @@ export function CommunityListPage() {
             <input type="checkbox" checked={publica} onChange={(e) => setPublica(e.target.checked)} className="accent-coral" />
             Pública (cualquiera se puede unir)
           </label>
-          <Button type="submit" cargando={enviando} className="self-start">
-            Crear
-          </Button>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button type="submit" cargando={enviando}>
+              Crear
+            </Button>
+            {!premium && (
+              <span className="text-xs text-paper-dim">
+                Plan gratis: hasta 3 comunidades creadas.{' '}
+                <Link to="/planes" className="text-violet hover:underline">
+                  Ilimitadas con PRO
+                </Link>
+              </span>
+            )}
+          </div>
         </motion.form>
       )}
 

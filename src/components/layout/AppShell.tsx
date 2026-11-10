@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useAuthStore } from '../../lib/authStore';
 import { Button } from '../ui/Button';
 import { AvisoPlanLimite } from '../../features/suscripcion/AvisoPlanLimite';
+import { CampanaNotificaciones } from './CampanaNotificaciones';
 import { contadorVisible } from '../../features/notifications/notificacionesApi';
 import { useNotificacionesStore } from '../../features/notifications/notificacionesStore';
 import { useNotificacionesEnVivo } from '../../features/notifications/useNotificacionesEnVivo';
@@ -39,10 +40,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   const cerrarSesion = useAuthStore((s) => s.cerrarSesion);
   const navigate = useNavigate();
   const location = useLocation();
-  const noLeidas = useNotificacionesStore((s) => s.noLeidas);
   const mensajes = useNotificacionesStore((s) => s.mensajes);
   useNotificacionesEnVivo();
-  const enlacesVisibles = sesion?.rolGlobal === 'ADMIN' ? [...enlaces, { a: '/admin', texto: 'Admin' }] : enlaces;
+  const enlacesConPlanes = [...enlaces, { a: '/planes', texto: sesion?.premium ? 'Mi plan' : 'Planes' }];
+  const enlacesVisibles =
+    sesion?.rolGlobal === 'ADMIN' ? [...enlacesConPlanes, { a: '/admin', texto: 'Admin' }] : enlacesConPlanes;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -93,17 +95,23 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <BotonNav a="/mensajes" titulo="Mensajes" cantidad={mensajes}>
                     <path d="M21 12a8 8 0 0 1-11.8 7L4 20l1-4.6A8 8 0 1 1 21 12Z" />
                   </BotonNav>
-                  <BotonNav a="/notificaciones" titulo="Notificaciones" cantidad={noLeidas}>
-                    <path d="M6 9a6 6 0 1 1 12 0c0 6 2.5 7 2.5 7h-17S6 15 6 9Z" />
-                    <path d="M10 20a2.2 2.2 0 0 0 4 0" />
-                  </BotonNav>
+                  <CampanaNotificaciones />
                 </div>
                 <Link
                   to={`/perfil/${sesion.nombreArtista}`}
                   className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-paper-muted hover:bg-ink-800 hover:text-paper"
                 >
-                  <span className="grid h-7 w-7 place-items-center rounded-full bg-ink-700 text-xs font-semibold uppercase">
+                  <span
+                    className={`relative grid h-7 w-7 place-items-center rounded-full bg-ink-700 text-xs font-semibold uppercase ${
+                      sesion.premium ? 'ring-2 ring-amber-400/70' : ''
+                    }`}
+                  >
                     {sesion.nombreArtista.slice(0, 2)}
+                    {sesion.premium && (
+                      <span className="absolute -bottom-1 -right-1 text-[10px]" aria-hidden>
+                        ⭐
+                      </span>
+                    )}
                   </span>
                   <span className="hidden sm:inline">{sesion.nombreArtista}</span>
                   {sesion.premium && (
@@ -133,7 +141,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
         {sesion && (
           <nav className="flex gap-1 overflow-x-auto border-t border-ink-800 px-2 py-1.5 md:hidden">
-            {enlaces.map((e) => (
+            {enlacesConPlanes.map((e) => (
               <Link key={e.a} to={e.a} className="whitespace-nowrap rounded-lg px-3 py-1.5 text-sm text-paper-muted hover:bg-ink-800">
                 {e.texto}
               </Link>

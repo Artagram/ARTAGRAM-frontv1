@@ -3,9 +3,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { AppShell } from './components/layout/AppShell';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { AdminRoute } from './components/layout/AdminRoute';
+import { FondoEstudio } from './components/layout/FondoEstudio';
 import { LandingPage } from './features/auth/LandingPage';
 import { LoginPage } from './features/auth/LoginPage';
 import { SuscripcionResultadoPage } from './features/suscripcion/SuscripcionResultadoPage';
+import { PlanesPage } from './features/plans/PlanesPage';
 import { FeedPage } from './features/feed/FeedPage';
 import { ObraPage } from './features/feed/ObraPage';
 import { NotificationsPage } from './features/notifications/NotificationsPage';
@@ -39,14 +41,14 @@ function AnimatedRoutes() {
         <Routes location={location}>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/perfil/:nombreArtista" element={<ProfilePage />} />
+          <Route path="/perfil/:nombreArtista" element={<FondoEstudio><ProfilePage /></FondoEstudio>} />
 
           <Route path="/feed" element={<ProtectedRoute><FeedPage /></ProtectedRoute>} />
-          <Route path="/obra/:id" element={<ProtectedRoute><ObraPage /></ProtectedRoute>} />
-          <Route path="/notificaciones" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+          <Route path="/obra/:id" element={<ProtectedRoute><FondoEstudio><ObraPage /></FondoEstudio></ProtectedRoute>} />
+          <Route path="/notificaciones" element={<ProtectedRoute><FondoEstudio><NotificationsPage /></FondoEstudio></ProtectedRoute>} />
 
           <Route path="/comunidades" element={<ProtectedRoute><CommunityListPage /></ProtectedRoute>} />
-          <Route path="/comunidades/:id" element={<ProtectedRoute><CommunityDetailPage /></ProtectedRoute>} />
+          <Route path="/comunidades/:id" element={<ProtectedRoute><FondoEstudio><CommunityDetailPage /></FondoEstudio></ProtectedRoute>} />
           <Route path="/comunidades/:id/lienzo" element={<ProtectedRoute><CanvasStudioPage /></ProtectedRoute>} />
           <Route path="/comunidades/:id/banner" element={<ProtectedRoute><BannerMuralPage /></ProtectedRoute>} />
 
@@ -54,9 +56,10 @@ function AnimatedRoutes() {
           <Route path="/fiesta/:id" element={<ProtectedRoute><PartyRoomPage /></ProtectedRoute>} />
 
           <Route path="/mensajes" element={<ProtectedRoute><PersonalChatPage /></ProtectedRoute>} />
-          <Route path="/suscripcion/resultado" element={<ProtectedRoute><SuscripcionResultadoPage /></ProtectedRoute>} />
+          <Route path="/planes" element={<ProtectedRoute><PlanesPage /></ProtectedRoute>} />
+          <Route path="/suscripcion/resultado" element={<ProtectedRoute><FondoEstudio><SuscripcionResultadoPage /></FondoEstudio></ProtectedRoute>} />
 
-          <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
+          <Route path="/admin" element={<AdminRoute><FondoEstudio><AdminDashboardPage /></FondoEstudio></AdminRoute>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

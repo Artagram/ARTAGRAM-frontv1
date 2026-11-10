@@ -1,23 +1,18 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { extraerMensajeError } from '../../lib/api';
-import { useAuthStore } from '../../lib/authStore';
 import { Button } from '../../components/ui/Button';
 import {
   agruparPorDia,
   cargarNotificaciones,
-  destinoNotificacion,
-  marcarLeida,
   marcarTodasLeidas,
-  type Notificacion,
 } from './notificacionesApi';
 import { useNotificacionesStore } from './notificacionesStore';
+import { useAbrirNotificacion } from './useAbrirNotificacion';
 
 export function NotificationsPage() {
-  const navigate = useNavigate();
-  const nombrePropio = useAuthStore((s) => s.sesion?.nombreArtista ?? '');
+  const abrir = useAbrirNotificacion();
   const lista = useNotificacionesStore((s) => s.lista);
   const noLeidas = useNotificacionesStore((s) => s.noLeidas);
   const [cargando, setCargando] = useState(true);
@@ -29,15 +24,6 @@ export function NotificationsPage() {
       .catch((err) => setError(extraerMensajeError(err, 'No pudimos cargar tus notificaciones')))
       .finally(() => setCargando(false));
   }, []);
-
-  function abrir(n: Notificacion) {
-    if (!n.leida) {
-      useNotificacionesStore.getState().marcarLeida(n.id);
-      marcarLeida(n.id).catch(() => undefined);
-    }
-    const destino = destinoNotificacion(n, nombrePropio);
-    if (destino) navigate(destino);
-  }
 
   async function marcarTodas() {
     setError(null);

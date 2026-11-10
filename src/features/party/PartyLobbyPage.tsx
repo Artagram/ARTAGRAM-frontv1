@@ -212,7 +212,7 @@ export function PartyLobbyPage() {
                 type="button"
                 onClick={limpiarTodas}
                 disabled={limpiando}
-                className="text-xs text-coral-light hover:text-white px-3 py-1.5 rounded-lg bg-coral/10 hover:bg-coral/20 border border-coral/30 transition-colors"
+                className="text-xs text-coral-light hover:text-paper px-3 py-1.5 rounded-lg bg-coral/10 hover:bg-coral/20 border border-coral/30 transition-colors"
                 title="Cierra y finaliza todas las salas activas en las que participas"
               >
                 {limpiando ? 'Cerrando...' : 'Cerrar todas las salas'}
@@ -293,7 +293,7 @@ export function PartyLobbyPage() {
                         <button
                           type="button"
                           onClick={() => cerrarSala(s.id)}
-                          className="px-3 py-1.5 text-xs text-coral-light hover:text-white rounded-full bg-coral/15 hover:bg-coral/30 border border-coral/40 transition-colors"
+                          className="px-3 py-1.5 text-xs text-coral-light hover:text-paper rounded-full bg-coral/15 hover:bg-coral/30 border border-coral/40 transition-colors"
                           title="Cerrar la sala permanentemente para todos los participantes"
                         >
                           Cerrar

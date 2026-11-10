@@ -4,7 +4,6 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import clsx from 'clsx';
 import { useAuthStore } from '../../lib/authStore';
-import { FondoEstudio } from '../../components/layout/FondoEstudio';
 import { BotonPro } from '../suscripcion/BotonPro';
 import { TablaPlanes } from '../suscripcion/TablaPlanes';
 import { cargarSuscripcion, type Suscripcion } from '../suscripcion/suscripcionApi';
@@ -38,7 +37,6 @@ export function PlanesPage() {
   const premium = (suscripcion?.premium ?? false) || premiumEnSesion;
 
   return (
-    <FondoEstudio>
       <div className="mx-auto max-w-3xl px-4 py-8">
         <div className="mb-6">
           <h1 className="font-display text-2xl font-semibold">Tu plan</h1>
@@ -80,6 +78,5 @@ export function PlanesPage() {
           )}
         </div>
       </div>
-    </FondoEstudio>
   );
 }

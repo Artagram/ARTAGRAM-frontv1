@@ -5,6 +5,7 @@ import { useAuthStore } from '../../lib/authStore';
 import { Button } from '../ui/Button';
 import { AvisoPlanLimite } from '../../features/suscripcion/AvisoPlanLimite';
 import { CampanaNotificaciones } from './CampanaNotificaciones';
+import { FondoVivo } from './FondoVivo';
 import { contadorVisible } from '../../features/notifications/notificacionesApi';
 import { useNotificacionesStore } from '../../features/notifications/notificacionesStore';
 import { useNotificacionesEnVivo } from '../../features/notifications/useNotificacionesEnVivo';
@@ -48,6 +49,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <FondoVivo />
       <AvisoPlanLimite />
       <header className="sticky top-0 z-40 border-b border-paper/10 bg-ink-950/35 backdrop-blur-lg">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">

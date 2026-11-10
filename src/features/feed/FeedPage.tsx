@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { api, extraerMensajeError } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
-import { FondoEstudio } from '../../components/layout/FondoEstudio';
 import { PostCard } from './PostCard';
 import { PublishWizard } from './PublishWizard';
 import { BuscarArtistas } from './BuscarArtistas';
@@ -68,7 +67,6 @@ export function FeedPage() {
   }
 
   return (
-    <FondoEstudio>
     <div className="mx-auto flex max-w-6xl justify-center gap-6 px-4 py-8">
     <div className="w-full min-w-0 max-w-2xl">
       <div className="mb-6 flex items-center justify-between">
@@ -174,6 +172,5 @@ export function FeedPage() {
       </aside>
     )}
     </div>
-    </FondoEstudio>
   );
 }

@@ -1,10 +1,8 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FondoEstudio } from '../../components/layout/FondoEstudio';
 
 export function LandingPage() {
   return (
-    <FondoEstudio>
       <div className="relative overflow-hidden">
         <section className="relative mx-auto flex max-w-6xl flex-col items-center px-4 pb-20 pt-20 text-center sm:pt-28">
           <div className="rounded-[2.5rem] bg-ink-900/50 px-6 py-10 backdrop-blur-[3px] sm:px-16 sm:py-14">
@@ -83,7 +81,6 @@ export function LandingPage() {
           ))}
         </section>
       </div>
-    </FondoEstudio>
   );
 }
 

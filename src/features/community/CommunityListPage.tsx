@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { api, extraerMensajeError } from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
 import { Button } from '../../components/ui/Button';
-import { FondoEstudio } from '../../components/layout/FondoEstudio';
 import { TextField } from '../../components/ui/TextField';
 import { ComunidadesRecomendadas } from './ComunidadesRecomendadas';
 import type { ComunidadResponse } from '../../types';
@@ -61,7 +60,6 @@ export function CommunityListPage() {
   }
 
   return (
-    <FondoEstudio>
     <div className="mx-auto max-w-5xl px-4 py-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -167,7 +165,6 @@ export function CommunityListPage() {
 
       <ComunidadesRecomendadas onUnida={() => void cargarMisComunidades()} />
     </div>
-    </FondoEstudio>
   );
 }
 

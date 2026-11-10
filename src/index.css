@@ -3,20 +3,36 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Espacio que ocupa la barra flotante, con sus márgenes de 18px. */
+    --alto-barra: 8.75rem;
+    --vidrio-fondo: rgba(36, 30, 51, 0.55);
+    --vidrio-borde: rgba(245, 241, 234, 0.1);
+  }
+
+  @media (min-width: 768px) {
+    :root {
+      --alto-barra: 5.75rem;
+    }
+  }
+
   html {
     color-scheme: dark;
   }
 
   body {
-    @apply bg-ink-900 text-paper font-sans antialiased;
-    background-image:
-      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(139, 92, 246, 0.18), transparent),
-      radial-gradient(ellipse 60% 40% at 100% 100%, rgba(255, 107, 87, 0.10), transparent);
-    background-attachment: fixed;
+    @apply bg-ink-800 text-paper font-sans antialiased;
+    font-size: 15px;
+    line-height: 1.5;
   }
 
   h1, h2, h3, h4 {
     @apply font-display;
+  }
+
+  :focus-visible {
+    outline: 2px solid theme('colors.teal.DEFAULT');
+    outline-offset: 2px;
   }
 
   ::selection {
@@ -39,37 +55,200 @@
 }
 
 @layer components {
-  .btn {
-    @apply relative inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 font-semibold text-sm
-      transition-all duration-200 ease-out active:scale-[0.96] disabled:opacity-50 disabled:pointer-events-none disabled:hover:translate-y-0
-      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-900;
-  }
-  .btn-primary {
-    @apply btn text-ink-950 bg-gradient-to-r from-coral via-coral to-amber bg-[length:170%_100%] bg-left
-      shadow-glow-coral hover:bg-right hover:-translate-y-0.5 hover:shadow-[0_10px_30px_-6px_rgba(255,107,87,0.65)]
-      focus-visible:ring-coral;
-  }
-  .btn-secondary {
-    @apply btn text-paper bg-ink-800 border border-ink-500/70
-      hover:border-violet/70 hover:text-violet hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-8px_rgba(139,92,246,0.55)]
-      focus-visible:ring-violet;
-  }
-  .btn-ghost {
-    @apply btn bg-transparent text-paper-muted
-      hover:text-paper hover:bg-paper/10 hover:-translate-y-0.5 focus-visible:ring-violet;
+  /* Vidrio */
+  .glass {
+    background: var(--vidrio-fondo);
+    border: 1px solid var(--vidrio-borde);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
   }
   .card {
-    @apply bg-ink-800/80 border border-ink-600/60 rounded-2xl shadow-glow backdrop-blur-sm;
+    @apply glass rounded-2xl;
+    transition: translate 0.2s ease-out, border-color 0.2s ease-out, background-color 0.2s ease-out;
   }
+  /* Se usa `translate` y no `transform` porque framer-motion escribe `transform` en línea. */
+  .card:hover {
+    translate: 0 -2px;
+    border-color: rgba(245, 241, 234, 0.18);
+  }
+  .card-fija:hover {
+    translate: none;
+    border-color: var(--vidrio-borde);
+  }
+  /* Menús dentro de una tarjeta: el vidrio anidado no difumina lo que hay detrás. */
+  .panel-flotante {
+    background: rgba(36, 30, 51, 0.97);
+    border: 1px solid rgba(245, 241, 234, 0.14);
+    @apply rounded-[14px] shadow-glow;
+  }
+  /* El vidrio va en un pseudoelemento para que la barra no sea contenedor de sus hijos `fixed`. */
+  .barra-vidrio {
+    position: relative;
+    isolation: isolate;
+  }
+  .barra-vidrio::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 14px;
+    background: var(--vidrio-fondo);
+    border: 1px solid var(--vidrio-borde);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
+  .scrim {
+    background: rgba(15, 12, 22, 0.6);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+
+  /* El color comunica el tipo */
+  .borde-comunidad { border-top: 2px solid theme('colors.teal.DEFAULT'); }
+  .borde-fiesta { border-top: 2px solid theme('colors.coral.DEFAULT'); }
+  .borde-proceso { border-top: 2px solid theme('colors.violet.DEFAULT'); }
+  .borde-pro { border-top: 2px solid theme('colors.amber.DEFAULT'); }
+
+  /* Botones */
+  .btn {
+    @apply relative inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 font-semibold text-sm
+      transition-all duration-200 ease-out active:scale-[0.96] disabled:opacity-50 disabled:pointer-events-none disabled:hover:translate-y-0;
+  }
+  .btn-primary {
+    @apply btn bg-coral text-ink-800 shadow-glow-coral hover:-translate-y-0.5 hover:bg-coral-light;
+  }
+  .btn-pro {
+    @apply btn bg-amber text-ink-800 shadow-glow-amber hover:-translate-y-0.5;
+  }
+  .btn-secondary {
+    @apply btn bg-transparent text-paper border border-paper/25 hover:border-paper/50 hover:-translate-y-0.5;
+  }
+  .btn-tertiary,
+  .btn-ghost {
+    @apply btn bg-paper/10 text-paper hover:bg-paper/20;
+  }
+
+  /* Pestañas y control segmentado */
+  .tabs {
+    @apply glass inline-flex gap-1 rounded-full p-1;
+  }
+  .tab {
+    @apply flex-1 whitespace-nowrap rounded-full px-4 py-1.5 text-center text-sm font-medium text-paper-muted transition-colors hover:text-paper;
+  }
+  .tab-activa {
+    @apply bg-paper text-ink-800 hover:text-ink-800;
+  }
+
+  /* Formularios */
   .input {
-    @apply w-full rounded-xl bg-ink-900/80 border border-ink-600 px-3.5 py-2.5 text-sm text-paper
-      placeholder:text-paper-dim/70 outline-none transition-colors
-      focus:border-violet focus:ring-1 focus:ring-violet;
+    @apply w-full rounded-xl bg-ink-800/60 border border-paper/10 px-3.5 py-2.5 text-sm text-paper
+      placeholder:text-paper-dim transition-colors focus:border-teal;
   }
   .label {
-    @apply text-xs font-medium uppercase tracking-wide text-paper-muted;
+    @apply text-xs font-medium text-paper-muted;
   }
   .chip {
-    @apply inline-flex items-center gap-1 rounded-full bg-ink-700 px-2.5 py-1 text-xs text-paper-muted border border-ink-600;
+    @apply inline-flex items-center gap-1 rounded-full bg-paper/10 px-2.5 py-1 text-xs text-paper-muted border border-paper/10;
+  }
+  .chip-activo {
+    @apply bg-paper text-ink-800 border-paper;
+  }
+  .insignia-pro {
+    @apply inline-flex items-center rounded-full bg-amber px-2 py-0.5 text-[10px] font-semibold text-ink-800;
+  }
+
+  /* Fraunces itálica = emoción */
+  .acento {
+    @apply font-display font-medium italic text-coral;
+  }
+
+  /* En vivo */
+  .punto-vivo {
+    @apply inline-block h-2 w-2 flex-shrink-0 rounded-full bg-teal animate-pulso-vivo;
+  }
+  .aro-vivo {
+    @apply inline-block rounded-full p-0.5;
+    background: conic-gradient(theme('colors.coral.DEFAULT'), theme('colors.violet.DEFAULT'), theme('colors.teal.DEFAULT'), theme('colors.coral.DEFAULT'));
+  }
+  .carrusel {
+    @apply overflow-hidden;
+  }
+  .carrusel-pista {
+    @apply flex w-max animate-carrusel;
+  }
+  .carrusel:hover .carrusel-pista {
+    animation-play-state: paused;
+  }
+
+  /* Estados */
+  .skeleton {
+    @apply glass relative overflow-hidden rounded-2xl;
+  }
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(245, 241, 234, 0.08), transparent);
+    animation: brillo 1.6s ease-in-out infinite;
+  }
+  .banner-error,
+  .banner-aviso {
+    @apply glass rounded-[14px] px-3 py-2 text-sm text-paper;
+  }
+  .banner-error { border-top: 2px solid theme('colors.coral.DEFAULT'); }
+  .banner-aviso { border-top: 2px solid theme('colors.amber.DEFAULT'); }
+
+  /* Luz viva detrás del vidrio */
+  .manchas {
+    @apply pointer-events-none fixed inset-0 overflow-hidden;
+    z-index: -10;
+  }
+  .mancha {
+    position: absolute;
+    border-radius: 9999px;
+    will-change: transform;
+    transition: background-color 0.8s ease, opacity 0.8s ease;
+  }
+  .mancha-1 {
+    top: -6%;
+    left: -4%;
+    width: 240px;
+    height: 240px;
+    filter: blur(90px);
+    animation: mancha-a var(--mancha-1, 14s) ease-in-out infinite;
+  }
+  .mancha-2 {
+    top: 34%;
+    right: -6%;
+    width: 260px;
+    height: 260px;
+    filter: blur(100px);
+    animation: mancha-b var(--mancha-2, 18s) ease-in-out infinite;
+  }
+  .mancha-3 {
+    display: none;
+    bottom: -8%;
+    left: 32%;
+    width: 320px;
+    height: 320px;
+    filter: blur(110px);
+    animation: mancha-c var(--mancha-3, 16s) ease-in-out infinite;
+  }
+  @media (min-width: 640px) {
+    .mancha-1 { width: 380px; height: 380px; }
+    .mancha-2 { width: 340px; height: 340px; }
+    .mancha-3 { display: block; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mancha,
+  .carrusel-pista,
+  .punto-vivo,
+  .skeleton::after,
+  .animate-latido,
+  .animate-pulso-vivo,
+  .animate-pulse-soft {
+    animation: none !important;
   }
 }

@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { GoogleLogin } from '@react-oauth/google';
 import { api, extraerMensajeError } from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
-import { FondoEstudio } from '../../components/layout/FondoEstudio';
 import { Button } from '../../components/ui/Button';
 import { TextField } from '../../components/ui/TextField';
 import {
@@ -46,7 +45,6 @@ export function LoginPage() {
   }
 
   return (
-    <FondoEstudio>
       <div className="flex min-h-[calc(100vh-64px)] items-center justify-center px-4 py-12">
         {idTokenPendiente ? (
           <ElegirNombre
@@ -91,7 +89,6 @@ export function LoginPage() {
           </motion.div>
         )}
       </div>
-    </FondoEstudio>
   );
 }
 

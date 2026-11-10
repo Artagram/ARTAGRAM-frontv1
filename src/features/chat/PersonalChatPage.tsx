@@ -3,7 +3,6 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { api, extraerMensajeError } from '../../lib/api';
 import { stompService } from '../../lib/stompClient';
 import { useAuthStore } from '../../lib/authStore';
-import { FondoEstudio } from '../../components/layout/FondoEstudio';
 import type { ConversacionResumenDto, MensajePersonalDto, PerfilResponse } from '../../types';
 
 interface ContactoSeleccionado {
@@ -261,7 +260,6 @@ export function PersonalChatPage() {
   }
 
   return (
-    <FondoEstudio>
       <div className="mx-auto max-w-6xl px-4 py-6">
         <div className="mb-4 flex items-center justify-between">
           <div>
@@ -492,6 +490,5 @@ export function PersonalChatPage() {
           </div>
         </div>
       </div>
-    </FondoEstudio>
   );
 }

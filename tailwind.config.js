@@ -14,8 +14,8 @@ export default {
         },
         paper: {
           DEFAULT: '#F5F1EA',
-          muted: '#B8AFCB',
-          dim: '#8A80A3',
+          muted: 'rgba(245,241,234,0.7)',
+          dim: 'rgba(245,241,234,0.5)',
         },
         coral: {
           DEFAULT: '#FF6B57',
@@ -38,10 +38,12 @@ export default {
       fontFamily: {
         display: ['"Fraunces"', 'ui-serif', 'Georgia', 'serif'],
         sans: ['"Inter"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       boxShadow: {
         glow: '0 0 0 1px rgba(255,255,255,0.06), 0 8px 30px -8px rgba(0,0,0,0.6)',
-        'glow-coral': '0 0 24px -4px rgba(255,107,87,0.55)',
+        'glow-coral': '0 8px 30px rgba(255,107,87,0.45)',
+        'glow-amber': '0 8px 30px rgba(255,194,75,0.4)',
       },
       backgroundImage: {
         'grain': "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E\")",
@@ -49,6 +51,9 @@ export default {
       animation: {
         'pulse-soft': 'pulse-soft 2.2s ease-in-out infinite',
         'float': 'float 6s ease-in-out infinite',
+        'pulso-vivo': 'pulso-vivo 1.6s ease-in-out infinite',
+        'carrusel': 'carrusel 18s linear infinite',
+        'latido': 'latido 1s ease-in-out infinite',
       },
       keyframes: {
         'pulse-soft': {
@@ -58,6 +63,34 @@ export default {
         'float': {
           '0%, 100%': { transform: 'translateY(0px)' },
           '50%': { transform: 'translateY(-8px)' },
+        },
+        'pulso-vivo': {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.45', transform: 'scale(0.75)' },
+        },
+        'carrusel': {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-50%)' },
+        },
+        'latido': {
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.04)' },
+        },
+        'mancha-a': {
+          '0%, 100%': { transform: 'translate3d(0, 0, 0) scale(1)' },
+          '50%': { transform: 'translate3d(12vw, 8vh, 0) scale(1.15)' },
+        },
+        'mancha-b': {
+          '0%, 100%': { transform: 'translate3d(0, 0, 0) scale(1.1)' },
+          '50%': { transform: 'translate3d(-10vw, 12vh, 0) scale(0.9)' },
+        },
+        'mancha-c': {
+          '0%, 100%': { transform: 'translate3d(0, 0, 0) scale(0.95)' },
+          '50%': { transform: 'translate3d(8vw, -10vh, 0) scale(1.2)' },
+        },
+        'brillo': {
+          from: { transform: 'translateX(-100%)' },
+          to: { transform: 'translateX(100%)' },
         },
       },
     },

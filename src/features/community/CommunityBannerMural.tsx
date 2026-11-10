@@ -440,7 +440,7 @@ export function CommunityBannerMural({
 
       {/* Barra de herramientas flotante estilo fiesta si está activo el modo pintor */}
       {interactivo && mostrarBarraHerramientas && (
-        <div className="absolute bottom-3 left-3 right-3 z-30 flex flex-col gap-2 rounded-2xl border border-ink-700 bg-ink-950/95 p-3 shadow-2xl backdrop-blur-md">
+        <div className="absolute bottom-3 left-3 right-3 z-30 flex flex-col gap-2 rounded-2xl border border-paper/10 bg-ink-950/95 p-3 shadow-2xl backdrop-blur-md">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <BrushToolbar
               herramienta={herramienta}
@@ -456,8 +456,8 @@ export function CommunityBannerMural({
                 onClick={() => setEsBorrador((v) => !v)}
                 className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
                   esBorrador
-                    ? 'bg-coral text-ink-950 shadow-glow-coral font-bold'
-                    : 'border border-ink-700 bg-ink-800 text-paper hover:bg-ink-700'
+                    ? 'bg-coral text-ink-800 shadow-glow-coral font-bold'
+                    : 'border border-paper/10 bg-ink-800 text-paper hover:bg-paper/10'
                 }`}
               >
                 {esBorrador ? '🧹 Borrador activo' : '🧹 Borrador'}

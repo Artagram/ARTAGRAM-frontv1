@@ -7,6 +7,7 @@ import { useAuthStore } from '../../lib/authStore';
 import { anchoDeLineaPx, dibujarPunto, dibujarSegmento, dibujarTrazoCompleto, type EstiloPincel } from '../../lib/canvasEngine';
 import { BrushToolbar, type Herramienta } from './BrushToolbar';
 import { PublishWizard } from '../feed/PublishWizard';
+import { Modal } from '../../components/ui/Modal';
 import { generarUUID } from '../../lib/uuid';
 import {
   anclaOpuesta,
@@ -775,7 +776,7 @@ export function CanvasStudioPage() {
         <div className="flex items-center gap-3">
           <Link
             to={`/comunidades/${comunidadId}`}
-            className="btn-ghost text-xs px-2.5 py-1.5 flex items-center gap-1 border border-ink-800"
+            className="btn-ghost text-xs px-2.5 py-1.5 flex items-center gap-1 border border-paper/10"
             title="Volver a la página de la comunidad"
           >
             ← Volver
@@ -785,7 +786,7 @@ export function CanvasStudioPage() {
               <h1 className="font-display text-lg font-bold tracking-tight text-paper">
                 {comunidad?.nombre ?? 'Lienzo Colaborativo'}
               </h1>
-              <span className="rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-semibold text-emerald-400">
+              <span className="rounded-full bg-teal/15 border border-teal/30 px-2 py-0.5 text-[10px] font-semibold text-teal">
                 ● En vivo
               </span>
             </div>
@@ -803,7 +804,7 @@ export function CanvasStudioPage() {
             className={
               modoEditar
                 ? 'btn-primary text-xs px-3 py-1.5 font-semibold bg-violet hover:brightness-110'
-                : 'btn-ghost text-xs px-2.5 py-1.5 border border-ink-800 text-paper-muted hover:text-paper'
+                : 'btn-ghost text-xs px-2.5 py-1.5 border border-paper/10 text-paper-muted hover:text-paper'
             }
             title="Seleccionar un trazo para agrandarlo, achicarlo o moverlo"
           >
@@ -812,7 +813,7 @@ export function CanvasStudioPage() {
           <button
             type="button"
             onClick={descargarSnapshot}
-            className="btn-ghost text-xs px-2.5 py-1.5 border border-ink-800 text-paper-muted hover:text-paper"
+            className="btn-ghost text-xs px-2.5 py-1.5 border border-paper/10 text-paper-muted hover:text-paper"
             title="Descargar snapshot PNG del lienzo actual"
           >
             💾 Descargar
@@ -871,7 +872,7 @@ export function CanvasStudioPage() {
       {/* Contenedor del lienzo que ocupa toda la forma de la pantalla restante */}
       <div
         ref={containerRef}
-        className="relative flex-1 w-full min-h-0 rounded-2xl border border-ink-800 bg-[#F5F1EA] shadow-inner overflow-hidden cursor-crosshair"
+        className="relative flex-1 w-full min-h-0 rounded-2xl border border-paper/10 bg-[#F5F1EA] shadow-inner overflow-hidden cursor-crosshair"
       >
         {cargando && (
           <div className="absolute inset-0 z-10 grid place-items-center bg-ink-900/60 backdrop-blur-sm">
@@ -968,8 +969,7 @@ export function CanvasStudioPage() {
 
       {/* Modal para publicar obra directamente desde el lienzo */}
       {modalPublicar && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/80 p-4 backdrop-blur-sm overflow-y-auto">
-          <div className="relative w-full max-w-2xl my-8">
+        <Modal className="sm:max-w-2xl" onCerrar={() => setModalPublicar(false)}>
             <PublishWizard
               archivoInicial={archivoPublicar}
               onPublicado={(pub) => {
@@ -979,8 +979,7 @@ export function CanvasStudioPage() {
               }}
               onCerrar={() => setModalPublicar(false)}
             />
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

@@ -114,7 +114,7 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
 
   return (
     <div className="card border-violet/30 bg-ink-900/90 p-6 shadow-xl backdrop-blur-md">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-ink-800 pb-4">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-paper/10 pb-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xl">🛡️</span>
@@ -131,7 +131,7 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
             type="button"
             onClick={() => setPestana('miembros')}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-              pestana === 'miembros' ? 'bg-violet text-ink-950 font-semibold' : 'bg-ink-800 text-paper-muted hover:text-paper'
+              pestana === 'miembros' ? 'bg-violet text-ink-800 font-semibold' : 'bg-ink-800 text-paper-muted hover:text-paper'
             }`}
           >
             👥 Miembros ({miembros.length})
@@ -140,7 +140,7 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
             type="button"
             onClick={() => setPestana('invitar')}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-              pestana === 'invitar' ? 'bg-violet text-ink-950 font-semibold' : 'bg-ink-800 text-paper-muted hover:text-paper'
+              pestana === 'invitar' ? 'bg-violet text-ink-800 font-semibold' : 'bg-ink-800 text-paper-muted hover:text-paper'
             }`}
           >
             ✉️ Invitar usuario
@@ -149,7 +149,7 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
             type="button"
             onClick={() => setPestana('publicaciones')}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-              pestana === 'publicaciones' ? 'bg-violet text-ink-950 font-semibold' : 'bg-ink-800 text-paper-muted hover:text-paper'
+              pestana === 'publicaciones' ? 'bg-violet text-ink-800 font-semibold' : 'bg-ink-800 text-paper-muted hover:text-paper'
             }`}
           >
             🗑️ Moderar publicaciones
@@ -173,11 +173,11 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
           ) : miembros.length === 0 ? (
             <div className="py-6 text-center text-sm text-paper-muted">No hay miembros registrados todavía.</div>
           ) : (
-            <div className="divide-y divide-ink-800 rounded-xl border border-ink-800 bg-ink-950/60 overflow-hidden">
+            <div className="divide-y divide-paper/10 rounded-xl border border-paper/10 bg-ink-950/60 overflow-hidden">
               {miembros.map((m) => {
                 const esElCreador = m.nombreArtista === comunidad.creador;
                 return (
-                  <div key={m.usuarioId} className="flex flex-wrap items-center justify-between gap-3 p-3.5 hover:bg-ink-800/40 transition-colors">
+                  <div key={m.usuarioId} className="flex flex-wrap items-center justify-between gap-3 p-3.5 hover:bg-paper/10 transition-colors">
                     <div className="flex items-center gap-3">
                       <div className="grid h-8 w-8 place-items-center rounded-full bg-ink-700 text-xs font-bold uppercase text-paper">
                         {m.nombreArtista.slice(0, 2)}
@@ -192,7 +192,7 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
                       <span
                         className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
                           m.rol === 'ADMIN'
-                            ? 'bg-amber-400/10 text-amber-300 border border-amber-400/30'
+                            ? 'bg-amber/10 text-amber border border-amber/30'
                             : m.rol === 'MODERADOR'
                             ? 'bg-teal/10 text-teal border border-teal/30'
                             : 'bg-ink-800 text-paper-muted'
@@ -207,7 +207,7 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
                           <select
                             value={m.rol}
                             onChange={(e) => cambiarRol(m.usuarioId, m.nombreArtista, e.target.value)}
-                            className="rounded-lg border border-ink-700 bg-ink-900 px-2 py-1 text-xs text-paper"
+                            className="rounded-lg border border-paper/10 bg-ink-900 px-2 py-1 text-xs text-paper"
                           >
                             <option value="MIEMBRO">Miembro</option>
                             <option value="MODERADOR">Moderador</option>
@@ -277,7 +277,7 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
               className="flex-1 font-mono text-xs"
               required
             />
-            <Button type="submit" className="bg-coral hover:bg-coral-light text-ink-950" cargando={borrandoPub}>
+            <Button type="submit" className="bg-coral hover:bg-coral-light text-ink-800" cargando={borrandoPub}>
               Eliminar
             </Button>
           </form>
@@ -285,7 +285,7 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
       )}
 
       {esCreador && (
-        <div className="mt-6 border-t border-ink-800 pt-3 flex justify-between items-center text-xs text-paper-dim">
+        <div className="mt-6 border-t border-paper/10 pt-3 flex justify-between items-center text-xs text-paper-dim">
           <span>Creador oficial de la comunidad</span>
           <span>Permisos completos de administración y moderación</span>
         </div>

@@ -4,14 +4,14 @@ import { Button } from '../../components/ui/Button';
 import type { PublicacionDto } from '../../types';
 import { actualizarDestacadas, alternarDestacada, cargarDestacadas, cargarObras, reemplazarObra } from './obrasApi';
 
-function ObraTile({ obra, editable, onAlternar }: { obra: PublicacionDto; editable: boolean; onAlternar: (o: PublicacionDto) => void }) {
+function ObraTile({ obra, editable, onAlternar, grande }: { obra: PublicacionDto; editable: boolean; onAlternar: (o: PublicacionDto) => void; grande?: boolean }) {
   const accion = obra.destacada ? 'Quitar de destacadas' : 'Destacar obra';
   return (
-    <div className="relative overflow-hidden rounded-xl">
-      <img src={obra.obraFinalUrl} alt={obra.titulo} className="aspect-square w-full object-cover" />
-      <p className="mt-1 truncate text-xs text-paper-muted">{obra.titulo}</p>
+    <div className="relative">
+      <img src={obra.obraFinalUrl} alt={obra.titulo} className={`aspect-square w-full object-cover ${grande ? 'rounded-2xl' : 'rounded-lg'}`} />
+      <p className={grande ? 'mt-1.5 truncate font-display text-base font-semibold' : 'mt-1 truncate text-xs text-paper-muted'}>{obra.titulo}</p>
       {obra.oculta && (
-        <span className="absolute left-1.5 top-1.5 rounded-full bg-ink-950/80 px-2 py-0.5 text-[10px] text-coral-light">
+        <span className="absolute left-1.5 top-1.5 rounded-full bg-ink-800/85 px-2 py-0.5 text-[10px] text-coral-light">
           En revisión
         </span>
       )}
@@ -22,8 +22,8 @@ function ObraTile({ obra, editable, onAlternar }: { obra: PublicacionDto; editab
           title={accion}
           aria-label={accion}
           aria-pressed={obra.destacada}
-          className={`absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-ink-950/70 text-sm ${
-            obra.destacada ? 'text-amber-300' : 'text-paper-muted hover:text-amber-300'
+          className={`absolute right-1.5 top-1.5 grid h-11 w-11 place-items-center rounded-full bg-ink-800/80 text-sm sm:h-7 sm:w-7 ${
+            obra.destacada ? 'text-amber' : 'text-paper-muted hover:text-amber'
           }`}
         >
           {obra.destacada ? '★' : '☆'}
@@ -83,21 +83,23 @@ export function ObrasPerfil({ autorId, esPropio }: { autorId: string; esPropio: 
 
   return (
     <>
-      {error && <p className="mt-4 rounded-lg bg-coral/10 px-3 py-2 text-sm text-coral-light">{error}</p>}
+      {error && <p className="banner-error mt-4">{error}</p>}
       {destacadas.length > 0 && (
         <div className="mt-6">
-          <p className="label mb-2">Obras destacadas</p>
-          <div className="grid grid-cols-3 gap-3">
+          <h2 className="mb-3 font-display text-xl font-semibold">
+            Obras <span className="acento">destacadas</span>
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-3">
             {destacadas.map((o) => (
-              <ObraTile key={o.id} obra={o} editable={esPropio} onAlternar={alternar} />
+              <ObraTile key={o.id} obra={o} editable={esPropio} onAlternar={alternar} grande />
             ))}
           </div>
         </div>
       )}
       {obras.length > 0 && (
         <div className="mt-6">
-          <p className="label mb-2">Obras</p>
-          <div className="grid grid-cols-3 gap-3">
+          <h2 className="mb-3 font-display text-xl font-semibold">Obras</h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {obras.map((o) => (
               <ObraTile key={o.id} obra={o} editable={esPropio} onAlternar={alternar} />
             ))}

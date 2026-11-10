@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { api, extraerMensajeError } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
 import { TextField } from '../../components/ui/TextField';
@@ -33,6 +32,7 @@ export function PublishWizard({
   const [obraFinal, setObraFinal] = useState<File | null>(archivoInicial ?? null);
   const [previewObra, setPreviewObra] = useState<string | null>(archivoInicial ? URL.createObjectURL(archivoInicial) : null);
   const [imagenesProceso, setImagenesProceso] = useState<File[]>([]);
+  const [previewsProceso, setPreviewsProceso] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [sugiriendoIa, setSugiriendoIa] = useState(false);
@@ -46,6 +46,8 @@ export function PublishWizard({
   function elegirProceso(e: React.ChangeEvent<HTMLInputElement>) {
     const archivos = Array.from(e.target.files ?? []).slice(0, 10);
     setImagenesProceso(archivos);
+    previewsProceso.forEach((url) => URL.revokeObjectURL(url));
+    setPreviewsProceso(archivos.map((f) => URL.createObjectURL(f)));
   }
 
   async function sugerirConIa() {
@@ -107,20 +109,15 @@ export function PublishWizard({
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: 'auto' }}
-      exit={{ opacity: 0, height: 0 }}
-      className="card mb-8 overflow-hidden p-6"
-    >
+    <div>
       <div className="mb-5 flex items-center gap-2">
         <StepDot activo={paso === 1} numero={1} etiqueta="La obra" />
-        <div className="h-px flex-1 bg-ink-700" />
+        <div className="h-px flex-1 bg-paper/10" />
         <StepDot activo={paso === 2} numero={2} etiqueta="El proceso" />
       </div>
 
       {paso === 1 && (
-        <div className="grid gap-4 sm:grid-cols-[1fr_200px]">
+        <div className="grid gap-4">
           <div className="flex flex-col gap-4">
             <TextField label="Título" value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Jardines al amanecer" required />
             <TextField
@@ -138,9 +135,9 @@ export function PublishWizard({
           </div>
           <div>
             <p className="label mb-2">Imagen final</p>
-            <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-ink-600 text-center text-xs text-paper-dim hover:border-coral/50">
+            <label className="flex aspect-video cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-paper/25 text-center text-xs text-paper-muted hover:border-coral/60">
               {previewObra ? (
-                <img src={previewObra} alt="Vista previa" className="h-full w-full rounded-xl object-cover" />
+                <img src={previewObra} alt="Vista previa" className="h-full w-full rounded-xl object-contain" />
               ) : (
                 <>
                   <span className="text-2xl">🖼️</span>
@@ -154,9 +151,9 @@ export function PublishWizard({
                 type="button"
                 onClick={sugerirConIa}
                 disabled={sugiriendoIa}
-                className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-lg border border-violet/40 bg-violet/10 py-1.5 text-xs font-medium text-violet transition-colors hover:bg-violet/20 disabled:opacity-50"
+                className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-full border border-teal/40 bg-teal/10 py-2 text-xs font-medium text-teal transition-colors hover:bg-teal/20 disabled:opacity-50"
               >
-                <span>✨</span>
+                <span aria-hidden>✦</span>
                 <span>{sugiriendoIa ? 'Analizando con IA…' : 'Sugerir con IA'}</span>
               </button>
             )}
@@ -166,25 +163,26 @@ export function PublishWizard({
 
       {paso === 2 && (
         <div>
-          <p className="label mb-2">Fotos del proceso (opcional, hasta 10)</p>
-          <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-ink-600 px-4 py-8 text-center text-sm text-paper-dim hover:border-violet/50">
+          <p className="label mb-2 flex justify-between">
+            <span>Fotos del proceso (opcional)</span>
+            <span className="font-mono">{imagenesProceso.length}/10</span>
+          </p>
+          <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-paper/25 px-4 py-8 text-center text-sm text-paper-muted hover:border-violet/60">
             <span className="text-2xl">📸</span>
             Arrastra o elige varias imágenes que muestren cómo la fuiste haciendo
             <input type="file" accept="image/*" multiple className="hidden" onChange={elegirProceso} />
           </label>
           {imagenesProceso.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
-              {imagenesProceso.map((f, i) => (
-                <span key={i} className="chip text-xs">
-                  {f.name}
-                </span>
+              {previewsProceso.map((url, i) => (
+                <img key={url} src={url} alt={`Paso ${i + 1}`} className="h-16 w-16 rounded-lg object-cover" />
               ))}
             </div>
           )}
         </div>
       )}
 
-      {error && <p className="mt-4 rounded-lg bg-coral/10 px-3 py-2 text-sm text-coral-light">{error}</p>}
+      {error && <p className="banner-error mt-4">{error}</p>}
 
       <div className="mt-6 flex justify-between">
         <Button variant="ghost" onClick={onCerrar}>
@@ -207,16 +205,16 @@ export function PublishWizard({
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 function StepDot({ activo, numero, etiqueta }: { activo: boolean; numero: number; etiqueta: string }) {
   return (
-    <div className={`flex items-center gap-2 text-sm ${activo ? 'text-coral' : 'text-paper-dim'}`}>
+    <div className={`flex items-center gap-2 text-sm ${activo ? 'text-coral' : 'text-paper-muted'}`}>
       <span
         className={`grid h-6 w-6 place-items-center rounded-full border text-xs font-semibold ${
-          activo ? 'border-coral bg-coral/15' : 'border-ink-600'
+          activo ? 'border-coral bg-coral/15' : 'border-paper/25'
         }`}
       >
         {numero}

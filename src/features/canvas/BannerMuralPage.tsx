@@ -21,7 +21,7 @@ export function BannerMuralPage() {
         </Link>
       </div>
 
-      <div className="card overflow-hidden p-4 border-ink-800 bg-ink-950 shadow-2xl">
+      <div className="card overflow-hidden p-4 border-paper/10 bg-ink-950 shadow-2xl">
         <CommunityBannerMural comunidadId={comunidadId} interactivo={true} alturaPx={620} />
       </div>
     </div>

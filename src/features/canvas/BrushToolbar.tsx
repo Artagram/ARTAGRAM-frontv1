@@ -97,7 +97,7 @@ export function BrushToolbar({
                   'rounded-xl border px-2 py-2 text-center text-xs font-medium transition-colors',
                   herramienta.tipoPincel === p.valor
                     ? 'border-violet bg-violet/15 text-paper'
-                    : 'border-ink-600 bg-ink-900/50 text-paper-muted hover:border-ink-500',
+                    : 'border-paper/10 bg-ink-900/50 text-paper-muted hover:border-paper/25',
                 )}
                 title={p.descripcion}
               >
@@ -143,7 +143,7 @@ export function BrushToolbar({
                 aria-label={`Color ${c}`}
               />
             ))}
-            <label className="relative h-6 w-6 cursor-pointer rounded-full border-2 border-ink-600 bg-transparent flex items-center justify-center hover:border-paper" title="Elegir otro color">
+            <label className="relative h-6 w-6 cursor-pointer rounded-full border-2 border-paper/10 bg-transparent flex items-center justify-center hover:border-paper" title="Elegir otro color">
               <span className="text-[10px] leading-none">🎨</span>
               <input
                 type="color"
@@ -192,12 +192,12 @@ export function BrushToolbar({
   return (
     <div
       className={clsx(
-        'card flex flex-wrap items-center justify-between gap-3 p-2.5 bg-ink-900/95 border-ink-800 shadow-md backdrop-blur-md rounded-2xl select-none',
+        'card flex flex-wrap items-center justify-between gap-3 p-2.5 bg-ink-900/95 border-paper/10 shadow-md backdrop-blur-md rounded-2xl select-none',
         deshabilitado && 'opacity-50 pointer-events-none',
       )}
     >
       {/* Sección 1: Herramientas de trazo (con exclusividad por usuario en Modo Fiesta) */}
-      <div className="flex items-center gap-1.5 border-r border-ink-800 pr-3 flex-wrap">
+      <div className="flex items-center gap-1.5 border-r border-paper/10 pr-3 flex-wrap">
         <span className="text-[11px] font-semibold text-paper-dim uppercase tracking-wider hidden sm:inline mr-1">
           {modoFiesta ? 'Herramientas (1 por persona)' : 'Pincel'}
         </span>
@@ -217,10 +217,10 @@ export function BrushToolbar({
                   className={clsx(
                     'relative flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-all',
                     tomadoPorMi
-                      ? 'border-emerald-500 bg-emerald-500/20 text-emerald-200 ring-2 ring-emerald-500/30 shadow-sm'
+                      ? 'border-teal bg-teal/20 text-teal ring-2 ring-teal/30 shadow-sm'
                       : tomadoPorOtro
-                        ? 'border-ink-800 bg-ink-950/70 text-ink-500 cursor-not-allowed opacity-60'
-                        : 'border-ink-700/60 bg-ink-800/40 text-paper-muted hover:border-paper/40 hover:text-paper',
+                        ? 'border-paper/10 bg-ink-950/70 text-ink-500 cursor-not-allowed opacity-60'
+                        : 'border-paper/10 bg-ink-800/40 text-paper-muted hover:border-paper/40 hover:text-paper',
                   )}
                   title={
                     tomadoPorOtro
@@ -236,7 +236,7 @@ export function BrushToolbar({
                     <span
                       className={clsx(
                         'text-[10px] px-1 py-0.2 rounded font-semibold',
-                        tomadoPorMi ? 'bg-emerald-500/30 text-emerald-300' : 'bg-ink-800 text-ink-400',
+                        tomadoPorMi ? 'bg-teal/30 text-teal' : 'bg-ink-800 text-ink-400',
                       )}
                     >
                       {tomadoPorMi ? 'Tú' : dueno}
@@ -256,7 +256,7 @@ export function BrushToolbar({
                   'flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-all',
                   herramienta.tipoPincel === p.valor
                     ? 'border-violet bg-violet/20 text-paper shadow-sm'
-                    : 'border-ink-700/60 bg-ink-800/40 text-paper-muted hover:border-ink-600 hover:text-paper',
+                    : 'border-paper/10 bg-ink-800/40 text-paper-muted hover:border-paper/10 hover:text-paper',
                 )}
                 title={`${p.etiqueta}: ${p.descripcion}`}
               >
@@ -269,7 +269,7 @@ export function BrushToolbar({
       </div>
 
       {/* Sección 2: Trazo (Grosor y Opacidad) */}
-      <div className="flex items-center gap-3 border-r border-ink-800 pr-3">
+      <div className="flex items-center gap-3 border-r border-paper/10 pr-3">
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center justify-between gap-2 text-[10px] text-paper-dim">
             <span>Grosor</span>
@@ -295,7 +295,7 @@ export function BrushToolbar({
                     'h-5 w-5 rounded border text-[10px] grid place-items-center transition-colors',
                     herramienta.grosor === tam
                       ? 'border-coral bg-coral/20 text-coral-light'
-                      : 'border-ink-700 bg-ink-800/60 text-paper-dim hover:text-paper',
+                      : 'border-paper/10 bg-ink-800/60 text-paper-dim hover:text-paper',
                   )}
                   title={`Preset ${tam}px`}
                 >
@@ -360,7 +360,7 @@ export function BrushToolbar({
                 'h-5 w-5 md:h-6 md:w-6 rounded-full border-2 transition-all hover:scale-115',
                 herramienta.colorHex.toLowerCase() === c.toLowerCase()
                   ? 'border-paper scale-115 shadow-sm ring-2 ring-violet/50'
-                  : 'border-ink-700/80 hover:border-paper/60',
+                  : 'border-paper/10 hover:border-paper/60',
               )}
               style={{ backgroundColor: c }}
               title={`Color ${c}`}
@@ -386,7 +386,7 @@ export function BrushToolbar({
 
       {/* Sección 4: Publicar (en estudio normal) */}
       {onPublicar && (
-        <div className="flex items-center gap-2 border-l border-ink-800 pl-3">
+        <div className="flex items-center gap-2 border-l border-paper/10 pl-3">
           <button
             type="button"
             onClick={onPublicar}

@@ -56,7 +56,7 @@ export function PanelReportes() {
 
   return (
     <div>
-      {error && <p className="mb-4 rounded-lg bg-coral/10 px-3 py-2 text-sm text-coral-light">{error}</p>}
+      {error && <p className="mb-4 banner-error">{error}</p>}
 
       {reportes.length === 0 ? (
         <p className="py-10 text-center text-paper-muted">No hay reportes pendientes.</p>
@@ -102,7 +102,7 @@ export function PanelReportes() {
         </div>
       )}
 
-      <div className="mt-8 border-t border-ink-800 pt-6">
+      <div className="mt-8 border-t border-paper/10 pt-6">
         <p className="label">Marca de agua</p>
         <p className="mt-1 text-sm text-paper-muted">Envía a marcar las obras publicadas antes de esta función.</p>
         <div className="mt-3 flex flex-wrap items-center gap-3">

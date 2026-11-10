@@ -191,7 +191,7 @@ export function PartyLobbyPage() {
         )}
 
         {aviso && (
-          <p className="mt-6 rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-3 py-2 text-center text-sm text-emerald-400">
+          <p className="mt-6 rounded-lg bg-teal/10 border border-teal/30 px-3 py-2 text-center text-sm text-teal">
             {aviso}
           </p>
         )}
@@ -201,7 +201,7 @@ export function PartyLobbyPage() {
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div className="flex items-center gap-2">
               <h2 className="font-display text-xl font-bold text-paper">Tus salas activas</h2>
-              <span className="rounded-full bg-ink-800 border border-ink-600 px-2 py-0.5 text-xs font-semibold text-paper-dim">
+              <span className="rounded-full bg-ink-800 border border-paper/10 px-2 py-0.5 text-xs font-semibold text-paper-dim">
                 {salasActivas.length}
               </span>
             </div>
@@ -240,7 +240,7 @@ export function PartyLobbyPage() {
                     key={s.id}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="card p-5 flex flex-col justify-between border-ink-700/80 hover:border-violet/40 transition-colors gap-4"
+                    className="card p-5 flex flex-col justify-between border-paper/10 hover:border-violet/40 transition-colors gap-4"
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-2">
@@ -248,13 +248,13 @@ export function PartyLobbyPage() {
                         <span
                           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${
                             enRonda
-                              ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400'
-                              : 'bg-amber-500/15 border-amber-500/40 text-amber-400'
+                              ? 'bg-teal/15 border-teal/40 text-teal'
+                              : 'bg-amber/15 border-amber/40 text-amber'
                           }`}
                         >
                           <span
                             className={`w-1.5 h-1.5 rounded-full ${
-                              enRonda ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+                              enRonda ? 'bg-teal animate-pulse' : 'bg-amber'
                             }`}
                           />
                           {enRonda ? `En ronda (#${s.numeroRonda})` : 'Esperando'}
@@ -279,7 +279,7 @@ export function PartyLobbyPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 pt-2 border-t border-ink-700/60">
+                    <div className="flex items-center gap-2 pt-2 border-t border-paper/10">
                       <Button
                         type="button"
                         onClick={() => navigate(`/fiesta/${s.id}`)}

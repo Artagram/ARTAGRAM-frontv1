@@ -11,21 +11,21 @@ export function TablaPlanes() {
   return (
     <table className="w-full text-left text-sm">
       <thead>
-        <tr className="border-b border-ink-700 text-paper-muted">
+        <tr className="border-b border-paper/10 text-paper-muted">
           <th scope="col" className="py-2 font-medium">
             Beneficio
           </th>
           <th scope="col" className="py-2 font-medium">
             Gratis
           </th>
-          <th scope="col" className="py-2 font-medium text-amber-300">
+          <th scope="col" className="py-2 font-medium text-amber">
             PRO
           </th>
         </tr>
       </thead>
       <tbody>
         {BENEFICIOS.map((b) => (
-          <tr key={b.nombre} className="border-b border-ink-800">
+          <tr key={b.nombre} className="border-b border-paper/10">
             <th scope="row" className="py-2 pr-2 font-normal text-paper-muted">
               {b.nombre}
             </th>

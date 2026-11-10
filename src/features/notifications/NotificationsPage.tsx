@@ -46,7 +46,7 @@ export function NotificationsPage() {
         )}
       </div>
 
-      {error && <p className="mb-4 rounded-lg bg-coral/10 px-3 py-2 text-sm text-coral-light">{error}</p>}
+      {error && <p className="mb-4 banner-error">{error}</p>}
 
       {cargando ? (
         <p className="py-10 text-center text-paper-muted">Cargando…</p>
@@ -61,7 +61,7 @@ export function NotificationsPage() {
                 <button
                   key={n.id}
                   onClick={() => abrir(n)}
-                  className={`card flex w-full items-start gap-3 p-3 text-left transition-colors hover:bg-ink-800 ${
+                  className={`card flex w-full items-start gap-3 p-3 text-left transition-colors hover:bg-paper/10 ${
                     n.leida ? 'opacity-70' : ''
                   }`}
                 >

@@ -22,8 +22,10 @@ export function ArtistasRecomendados({ artistas, onSeguimientoCambiado }: Props)
   }
 
   return (
-    <section aria-label="Artistas que te pueden gustar" className="card mb-6 p-4 lg:mb-0">
-      <p className="label mb-3">Artistas que te pueden gustar</p>
+    <section aria-label="Artistas que te pueden gustar" className="card card-fija borde-proceso p-3.5">
+      <h2 className="mb-3 font-display text-base font-semibold">
+        Artistas <span className="acento text-violet">para ti</span>
+      </h2>
       <ul className="flex gap-3 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
         {artistas.map((a) => (
           <li key={a.usuarioId} className="flex w-44 flex-shrink-0 flex-col gap-2 lg:w-auto">
@@ -31,7 +33,7 @@ export function ArtistasRecomendados({ artistas, onSeguimientoCambiado }: Props)
               {a.fotoUrl ? (
                 <img src={a.fotoUrl} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
               ) : (
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ink-700 text-xs font-semibold uppercase">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ink-600 text-xs font-semibold uppercase">
                   {a.nombreArtista.slice(0, 2)}
                 </span>
               )}

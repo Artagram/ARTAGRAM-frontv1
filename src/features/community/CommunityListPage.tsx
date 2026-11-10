@@ -69,7 +69,7 @@ export function CommunityListPage() {
         <Button onClick={() => setMostrarCrear((v) => !v)}>{mostrarCrear ? 'Cancelar' : 'Crear comunidad'}</Button>
       </div>
 
-      {error && <p className="mb-4 rounded-lg bg-coral/10 px-3 py-2 text-sm text-coral-light">{error}</p>}
+      {error && <p className="mb-4 banner-error">{error}</p>}
 
       {mostrarCrear && (
         <motion.form
@@ -143,7 +143,7 @@ export function CommunityListPage() {
                 </div>
                 <h3 className="font-display text-lg font-semibold group-hover:text-coral">{c.nombre}</h3>
                 <p className="mt-1 line-clamp-2 text-sm text-paper-muted">{c.descripcion || 'Sin descripción'}</p>
-                <div className="mt-3 flex items-center justify-between border-t border-ink-800 pt-2 text-[11px] text-paper-dim">
+                <div className="mt-3 flex items-center justify-between border-t border-paper/10 pt-2 text-[11px] text-paper-dim">
                   <span className="font-mono truncate max-w-[180px]">ID: {c.id}</span>
                   <button
                     type="button"

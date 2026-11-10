@@ -55,7 +55,7 @@ export function CommunityDetailPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       {/* HEADER DE LA COMUNIDAD CON EL MURAL BANNER PERMANENTE EN EL FONDO */}
-      <div className="relative mb-6 overflow-hidden rounded-2xl border border-ink-800 bg-ink-950 shadow-2xl">
+      <div className="relative mb-6 overflow-hidden rounded-2xl border border-paper/10 bg-ink-950 shadow-2xl">
         {/* Mural en el fondo de la cabecera */}
         <div className="absolute inset-0 z-0 overflow-hidden">
           <CommunityBannerMural comunidadId={id} interactivo={false} alturaPx={280} />
@@ -76,7 +76,7 @@ export function CommunityDetailPage() {
               <Button
                 variant="secondary"
                 onClick={() => setPintandoBanner((v) => !v)}
-                className="backdrop-blur-md bg-ink-900/80 border-ink-700 text-xs py-1.5 px-3"
+                className="backdrop-blur-md bg-ink-900/80 border-paper/10 text-xs py-1.5 px-3"
               >
                 {pintandoBanner ? 'Ocultar pintor' : '🎨 Pintar en el mural'}
               </Button>
@@ -108,7 +108,7 @@ export function CommunityDetailPage() {
               <span>·</span>
 
               {/* ID DE LA COMUNIDAD CLARAMENTE VISIBLE Y COPIABLE */}
-              <div className="flex items-center gap-1.5 rounded-lg border border-ink-700/80 bg-ink-900/80 px-2.5 py-1 font-mono backdrop-blur-sm">
+              <div className="flex items-center gap-1.5 rounded-lg border border-paper/10 bg-ink-900/80 px-2.5 py-1 font-mono backdrop-blur-sm">
                 <span className="text-paper-dim">ID:</span>
                 <span className="text-paper font-semibold select-all">{comunidad.id}</span>
                 <button

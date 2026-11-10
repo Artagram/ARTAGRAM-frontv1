@@ -9,6 +9,7 @@ import { Button } from '../../components/ui/Button';
 import { dibujarBorrado, dibujarPunto, dibujarSegmento, dibujarTrazoCompleto, type EstiloPincel } from '../../lib/canvasEngine';
 import { BrushToolbar, type Herramienta, type HerramientaFiesta } from '../canvas/BrushToolbar';
 import { PublishWizard } from '../feed/PublishWizard';
+import { Modal } from '../../components/ui/Modal';
 import { CodigoSalaBadge } from './CodigoSalaBadge';
 import { generarUUID } from '../../lib/uuid';
 import type { EstadoRondaResponse, PartyEvento, PartyTrazoDto, Punto, SalaFiestaResponse, TipoPincel } from '../../types';
@@ -638,7 +639,7 @@ export function PartyRoomPage() {
         <div className="flex items-center gap-3">
           <Link
             to="/fiesta"
-            className="btn-ghost text-xs px-2.5 py-1.5 flex items-center gap-1 border border-ink-800"
+            className="btn-ghost text-xs px-2.5 py-1.5 flex items-center gap-1 border border-paper/10"
             title="Salir de la sala"
           >
             ← Salir
@@ -649,7 +650,7 @@ export function PartyRoomPage() {
                 Sala de {sala?.anfitrionNombre ?? '…'}
               </h1>
               {sala && <CodigoSalaBadge codigo={sala.codigo} />}
-              <span className="rounded-full bg-violet/20 border border-violet/40 px-2 py-0.5 text-[10px] font-semibold text-violet-300">
+              <span className="rounded-full bg-violet/20 border border-violet/40 px-2 py-0.5 text-[10px] font-semibold text-violet">
                 🎉 Modo Fiesta · {sala?.totalParticipantes ?? 1} artista(s)
               </span>
             </div>
@@ -674,7 +675,7 @@ export function PartyRoomPage() {
               type="button"
               onClick={iniciarRonda}
               cargando={iniciandoRonda}
-              className="text-xs px-2.5 py-1.5 border border-ink-700 bg-gradient-to-r from-coral to-violet text-paper hover:brightness-110 shadow-sm"
+              className="text-xs px-2.5 py-1.5 border border-paper/10 bg-gradient-to-r from-coral to-violet text-paper hover:brightness-110 shadow-sm"
               title="Iniciar o avanzar a la siguiente ronda"
             >
               {enEsperaInicial
@@ -688,7 +689,7 @@ export function PartyRoomPage() {
           <button
             type="button"
             onClick={descargarSnapshot}
-            className="btn-ghost text-xs px-2.5 py-1.5 border border-ink-800 text-paper-muted hover:text-paper"
+            className="btn-ghost text-xs px-2.5 py-1.5 border border-paper/10 text-paper-muted hover:text-paper"
             title="Descargar snapshot PNG"
           >
             💾 Descargar
@@ -740,7 +741,7 @@ export function PartyRoomPage() {
       {/* Contenedor responsivo con la forma de la pantalla para el lienzo colaborativo de fiesta */}
       <div
         ref={containerRef}
-        className="relative flex-1 w-full min-h-0 rounded-2xl border border-ink-800 bg-[#F5F1EA] shadow-inner overflow-hidden"
+        className="relative flex-1 w-full min-h-0 rounded-2xl border border-paper/10 bg-[#F5F1EA] shadow-inner overflow-hidden"
         style={{ cursor: miHerramienta ? 'crosshair' : 'default' }}
       >
         {cargando && (
@@ -823,10 +824,10 @@ export function PartyRoomPage() {
                 </p>
               </div>
 
-              <div className="w-full rounded-xl bg-ink-950/80 p-3 text-xs text-paper-muted space-y-2 border border-ink-800">
+              <div className="w-full rounded-xl bg-ink-950/80 p-3 text-xs text-paper-muted space-y-2 border border-paper/10">
                 <div className="flex justify-between items-center">
                   <span>Total de rondas:</span>
-                  <span className="font-bold text-paper px-2 py-0.5 rounded bg-ink-800 border border-ink-700">
+                  <span className="font-bold text-paper px-2 py-0.5 rounded bg-ink-800 border border-paper/10">
                     {totalRondas} rondas
                   </span>
                 </div>
@@ -919,7 +920,7 @@ export function PartyRoomPage() {
               </div>
 
               {/* Vista previa de la obra completada */}
-              <div className="w-full max-h-56 overflow-hidden rounded-xl border border-ink-700 bg-[#F5F1EA] shadow-inner flex items-center justify-center p-1">
+              <div className="w-full max-h-56 overflow-hidden rounded-xl border border-paper/10 bg-[#F5F1EA] shadow-inner flex items-center justify-center p-1">
                 {previewFinalUrl ? (
                   <img
                     src={previewFinalUrl}
@@ -935,15 +936,15 @@ export function PartyRoomPage() {
 
               {/* Estadísticas de la partida */}
               <div className="grid grid-cols-3 gap-2 w-full text-xs">
-                <div className="rounded-lg bg-ink-950 p-2.5 border border-ink-800">
+                <div className="rounded-lg bg-ink-950 p-2.5 border border-paper/10">
                   <p className="text-paper-dim text-[10px]">Rondas</p>
                   <p className="font-bold text-paper text-sm">{totalRondas} / {totalRondas}</p>
                 </div>
-                <div className="rounded-lg bg-ink-950 p-2.5 border border-ink-800">
+                <div className="rounded-lg bg-ink-950 p-2.5 border border-paper/10">
                   <p className="text-paper-dim text-[10px]">Trazos hechos</p>
                   <p className="font-bold text-paper text-sm">{totalTrazos}</p>
                 </div>
-                <div className="rounded-lg bg-ink-950 p-2.5 border border-ink-800">
+                <div className="rounded-lg bg-ink-950 p-2.5 border border-paper/10">
                   <p className="text-paper-dim text-[10px]">Artistas</p>
                   <p className="font-bold text-paper text-sm">{sala?.totalParticipantes ?? 1}</p>
                 </div>
@@ -962,7 +963,7 @@ export function PartyRoomPage() {
                   type="button"
                   variant="secondary"
                   onClick={descargarSnapshot}
-                  className="flex-1 py-2 text-xs border-ink-700 hover:border-paper"
+                  className="flex-1 py-2 text-xs border-paper/10 hover:border-paper"
                 >
                   📥 Descargar PNG
                 </Button>
@@ -980,7 +981,7 @@ export function PartyRoomPage() {
 
         {/* Indicador de ayuda si no tiene herramienta seleccionada */}
         {!miHerramienta && !cargando && !enEsperaInicial && !terminado && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 pointer-events-none rounded-full bg-ink-900/80 px-4 py-1.5 text-xs text-paper-dim border border-ink-700/80 shadow-md backdrop-blur-sm">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 pointer-events-none rounded-full bg-ink-900/80 px-4 py-1.5 text-xs text-paper-dim border border-paper/10 shadow-md backdrop-blur-sm">
             👆 Elige una de las herramientas disponibles arriba para comenzar a pintar
           </div>
         )}
@@ -988,8 +989,7 @@ export function PartyRoomPage() {
 
       {/* Modal para publicar obra directamente desde el modo fiesta */}
       {modalPublicar && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/80 p-4 backdrop-blur-sm overflow-y-auto">
-          <div className="relative w-full max-w-2xl my-8">
+        <Modal className="sm:max-w-2xl" onCerrar={() => setModalPublicar(false)}>
             <PublishWizard
               archivoInicial={archivoPublicar}
               onPublicado={(pub) => {
@@ -999,8 +999,7 @@ export function PartyRoomPage() {
               }}
               onCerrar={() => setModalPublicar(false)}
             />
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );
@@ -1035,7 +1034,7 @@ function CronometroRonda({
 
   if (terminado) {
     return (
-      <div className="rounded-xl border border-violet/50 bg-violet/15 px-3 py-1 font-display text-xs font-semibold text-violet-300">
+      <div className="rounded-xl border border-violet/50 bg-violet/15 px-3 py-1 font-display text-xs font-semibold text-violet">
         🏆 Partida finalizada ({totalRondas}/{totalRondas})
       </div>
     );
@@ -1044,7 +1043,7 @@ function CronometroRonda({
   if (!enRonda) {
     if (numeroRonda === 0) {
       return (
-        <div className="rounded-xl border border-ink-700 bg-ink-900/60 px-3 py-1 font-display text-xs font-semibold text-paper-dim">
+        <div className="rounded-xl border border-paper/10 bg-ink-900/60 px-3 py-1 font-display text-xs font-semibold text-paper-dim">
           ⏳ Esperando inicio · 0/{totalRondas} rondas
         </div>
       );

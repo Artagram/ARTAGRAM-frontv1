@@ -60,7 +60,7 @@ export function ModalReportar({ publicacionId, onCerrar, onReportada }: ModalRep
             onChange={(e) => setDetalle(e.target.value)}
             rows={3}
             maxLength={500}
-            className="mt-1 w-full rounded-lg border border-ink-700 bg-ink-800 px-3 py-1.5 text-sm text-paper focus:border-violet focus:outline-none"
+            className="mt-1 w-full rounded-lg border border-paper/10 bg-ink-800 px-3 py-1.5 text-sm text-paper focus:border-violet focus:outline-none"
           />
         </label>
 

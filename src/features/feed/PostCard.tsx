@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
@@ -10,6 +10,9 @@ import { ESTADO_PENDIENTE, esperarAnalisis } from './analisisApi';
 import { descargarObra } from './descargaApi';
 import { alternarDestacada } from '../profile/obrasApi';
 import { ModalReportar } from '../moderacion/ModalReportar';
+import { Button } from '../../components/ui/Button';
+import { Skeleton } from '../../components/ui/Skeleton';
+import { useCerrarAlExterior } from '../../components/ui/useCerrarAlExterior';
 import type {
   AnalisisObraDto,
   AnalisisTecnicoResultado,
@@ -24,15 +27,18 @@ interface PostCardProps {
   publicacion: PublicacionDto;
   onEliminada?: (id: string) => void;
   onActualizada?: (p: PublicacionDto) => void;
+  variante?: 'tarjeta' | 'detalle';
 }
 
-export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardProps) {
+export function PostCard({ publicacion, onEliminada, onActualizada, variante = 'tarjeta' }: PostCardProps) {
+  const detalle = variante === 'detalle';
   const sesion = useAuthStore((s) => s.sesion);
   const [pub, setPub] = useState(publicacion);
   const [meGusta, setMeGusta] = useState(pub.meGusta);
   const [contadorLikes, setContadorLikes] = useState(pub.contadorLikes);
   const [animandoLike, setAnimandoLike] = useState(false);
   const [procesoAbierto, setProcesoAbierto] = useState(false);
+  const [pasoVisor, setPasoVisor] = useState<number | null>(null);
 
   // Estados de eliminación
   const [confirmandoBorrado, setConfirmandoBorrado] = useState(false);
@@ -268,84 +274,66 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
     }
   }
 
-  return (
-    <motion.article initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card overflow-hidden p-0">
-      {/* Cabecera del autor */}
-      <div className="flex items-center justify-between px-5 pt-4">
-        <Link to={`/perfil/${pub.autorNombre}`} className="flex items-center gap-2 group">
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-ink-700 text-xs font-semibold uppercase">
-            {pub.autorNombre.slice(0, 2)}
-          </span>
-          <span className="text-sm font-medium text-paper group-hover:text-coral">{pub.autorNombre}</span>
-        </Link>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-paper-dim">
-            {formatDistanceToNow(new Date(pub.creadoEn), { addSuffix: true, locale: es })}
-          </span>
-          {esAutor && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={alternarEstrella}
-                title={pub.destacada ? 'Quitar de destacadas' : 'Destacar obra'}
-                aria-label={pub.destacada ? 'Quitar de destacadas' : 'Destacar obra'}
-                aria-pressed={pub.destacada}
-                className={`text-sm transition-colors ${pub.destacada ? 'text-amber-300' : 'text-paper-dim hover:text-amber-300'}`}
-              >
-                {pub.destacada ? '★' : '☆'}
-              </button>
-              <button
-                onClick={() => setEditando(true)}
-                title="Editar publicación"
-                className="text-paper-dim transition-colors hover:text-amber-400 text-sm"
-              >
-                ✏️
-              </button>
-              <button
-                onClick={() => setConfirmandoBorrado(true)}
-                title="Eliminar publicación"
-                className="text-paper-dim transition-colors hover:text-coral text-sm"
-              >
-                🗑
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
+  const opcionesMenu: OpcionMenu[] = [
+    ...(sesion && !esAutor
+      ? [{ texto: reportada ? 'Reportada' : 'Reportar', accion: () => setReportando(true), desactivada: reportada }]
+      : []),
+    ...(esAutor
+      ? [
+          { texto: 'Editar', accion: () => setEditando(true) },
+          { texto: pub.destacada ? 'Quitar de destacadas' : 'Destacar', accion: alternarEstrella },
+          { texto: 'Eliminar', accion: () => setConfirmandoBorrado(true), peligro: true },
+        ]
+      : []),
+  ];
 
-      {errorAccion && <p className="px-5 pt-2 text-xs text-coral-light">{errorAccion}</p>}
+  const cabecera = (
+    <div className="flex items-center justify-between gap-2 px-3.5 pt-3">
+      <Link to={`/perfil/${pub.autorNombre}`} className="group flex min-w-0 items-center gap-2">
+        <span className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-full bg-ink-600 text-xs font-semibold uppercase">
+          {pub.autorNombre.slice(0, 2)}
+        </span>
+        <span className="truncate text-sm font-medium text-paper group-hover:text-coral">{pub.autorNombre}</span>
+      </Link>
+      <div className="flex flex-shrink-0 items-center gap-1">
+        {pub.destacada && (
+          <span className="text-sm text-amber" title="Obra destacada">
+            ★
+          </span>
+        )}
+        <span className="text-[11px] text-paper-dim">
+          {formatDistanceToNow(new Date(pub.creadoEn), { addSuffix: true, locale: es })}
+        </span>
+        {opcionesMenu.length > 0 && <MenuObra opciones={opcionesMenu} />}
+      </div>
+    </div>
+  );
+
+  const avisos = (
+    <>
+      {errorAccion && <p className="px-3.5 pt-2 text-xs text-coral-light">{errorAccion}</p>}
 
       {pub.oculta && (
-        <p className="mx-5 mt-2 rounded-lg bg-coral/10 px-3 py-1.5 text-xs text-coral-light">
-          Oculta mientras se revisa. Solo tú y los administradores pueden verla.
-        </p>
+        <p className="banner-aviso mx-3.5 mt-2 text-xs">Oculta mientras se revisa. Solo tú y los administradores pueden verla.</p>
       )}
 
-      {/* Alerta de confirmación de borrado */}
       <AnimatePresence>
         {confirmandoBorrado && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden border-b border-coral/30 bg-coral/10 px-5"
+            className="mt-3 overflow-hidden border-y border-coral/30 bg-coral/10 px-3.5"
           >
             <div className="flex flex-wrap items-center justify-between gap-2 py-2.5">
-              <p className="text-sm text-coral-light">¿Eliminar esta publicación? No se puede deshacer.</p>
+              <p className="text-sm text-paper">¿Eliminar esta publicación? No se puede deshacer.</p>
               <div className="flex gap-2">
-                <button
-                  onClick={() => setConfirmandoBorrado(false)}
-                  className="rounded-lg px-3 py-1 text-xs font-medium text-paper-muted hover:bg-ink-800"
-                  disabled={borrando}
-                >
+                <Button variant="ghost" className="px-3 py-1 text-xs" onClick={() => setConfirmandoBorrado(false)} disabled={borrando}>
                   Cancelar
-                </button>
-                <button
-                  onClick={eliminar}
-                  className="rounded-lg bg-coral px-3 py-1 text-xs font-medium text-ink-950 hover:bg-coral-dark disabled:opacity-60"
-                  disabled={borrando}
-                >
+                </Button>
+                <Button className="px-3 py-1 text-xs" onClick={eliminar} disabled={borrando}>
                   {borrando ? 'Eliminando…' : 'Sí, eliminar'}
-                </button>
+                </Button>
               </div>
             </div>
             {errorBorrado && <p className="pb-2 text-xs text-coral-light">{errorBorrado}</p>}
@@ -353,353 +341,400 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
         )}
       </AnimatePresence>
 
-      {/* Modal/Formulario de Edición */}
       <AnimatePresence>
         {editando && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="border-b border-violet/30 bg-ink-900/90 p-5"
+            className="mt-3 border-y border-paper/10 p-3.5"
           >
             <form onSubmit={guardarEdicion} className="flex flex-col gap-3">
-              <h4 className="text-sm font-semibold text-paper">Editar publicación</h4>
+              <h4 className="text-base font-semibold text-paper">Editar publicación</h4>
               <div>
-                <label className="text-xs text-paper-dim">Título</label>
-                <input
-                  type="text"
-                  value={editTitulo}
-                  onChange={(e) => setEditTitulo(e.target.value)}
-                  className="w-full rounded-lg bg-ink-800 border border-ink-700 px-3 py-1.5 text-sm text-paper focus:outline-none focus:border-violet"
-                  required
-                />
+                <label className="label">Título</label>
+                <input type="text" value={editTitulo} onChange={(e) => setEditTitulo(e.target.value)} className="input mt-1 py-1.5" required />
               </div>
               <div>
-                <label className="text-xs text-paper-dim">Descripción</label>
-                <textarea
-                  value={editDescripcion}
-                  onChange={(e) => setEditDescripcion(e.target.value)}
-                  rows={2}
-                  className="w-full rounded-lg bg-ink-800 border border-ink-700 px-3 py-1.5 text-sm text-paper focus:outline-none focus:border-violet"
-                />
+                <label className="label">Descripción</label>
+                <textarea value={editDescripcion} onChange={(e) => setEditDescripcion(e.target.value)} rows={2} className="input mt-1 py-1.5" />
               </div>
               <div>
-                <label className="text-xs text-paper-dim">Etiquetas (separadas por coma)</label>
+                <label className="label">Etiquetas (separadas por coma)</label>
                 <input
                   type="text"
                   value={editEtiquetas}
                   onChange={(e) => setEditEtiquetas(e.target.value)}
-                  className="w-full rounded-lg bg-ink-800 border border-ink-700 px-3 py-1.5 text-sm text-paper focus:outline-none focus:border-violet"
+                  className="input mt-1 py-1.5"
                   placeholder="acuarela, paisaje, estudio"
                 />
               </div>
               {errorEdicion && <p className="text-xs text-coral">{errorEdicion}</p>}
               <div className="flex justify-end gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setEditando(false)}
-                  className="rounded-lg px-3 py-1 text-xs text-paper-muted hover:bg-ink-800"
-                  disabled={guardandoEdicion}
-                >
+                <Button type="button" variant="ghost" className="px-3 py-1 text-xs" onClick={() => setEditando(false)} disabled={guardandoEdicion}>
                   Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-lg bg-violet px-3 py-1 text-xs font-medium text-paper hover:bg-violet-600 disabled:opacity-60"
-                  disabled={guardandoEdicion}
-                >
+                </Button>
+                <Button type="submit" className="px-3 py-1 text-xs" disabled={guardandoEdicion}>
                   {guardandoEdicion ? 'Guardando…' : 'Guardar cambios'}
-                </button>
+                </Button>
               </div>
             </form>
           </motion.div>
         )}
       </AnimatePresence>
+    </>
+  );
 
-      {/* Imagen de la obra */}
-      <div className="mt-3">
-        <img src={pub.obraFinalUrl} alt={pub.titulo} className="max-h-[560px] w-full object-cover" loading="lazy" />
+  const fotosProceso = pub.imagenesProcesoUrls.length;
+
+  const imagenTarjeta = (
+    <div className="relative mt-3">
+      <img src={pub.obraFinalUrl} alt={pub.titulo} className="max-h-[560px] w-full object-cover" loading="lazy" />
+      {fotosProceso > 0 && (
+        <button
+          type="button"
+          onClick={() => setProcesoAbierto((v) => !v)}
+          aria-expanded={procesoAbierto}
+          className="glass absolute bottom-3 left-3 rounded-full px-3 py-1.5 text-xs font-medium text-paper"
+        >
+          ▶ proceso · {fotosProceso} {fotosProceso === 1 ? 'foto' : 'fotos'}
+        </button>
+      )}
+    </div>
+  );
+
+  const miniaturasProceso = procesoAbierto && fotosProceso > 0 && (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      className="flex gap-2 overflow-x-auto border-t border-paper/10 px-3.5 py-3"
+    >
+      {pub.imagenesProcesoUrls.map((url, i) => (
+        <img key={i} src={url} alt={`Paso ${i + 1}`} className="h-28 w-28 flex-shrink-0 rounded-lg object-cover" />
+      ))}
+    </motion.div>
+  );
+
+  // Vista de detalle: la obra final es el último paso de la línea de tiempo.
+  const pasosVisor = [...pub.imagenesProcesoUrls, pub.obraFinalUrl];
+  const pasoVisible = pasoVisor ?? pasosVisor.length - 1;
+  const visorDetalle = (
+    <div className="flex flex-col justify-center bg-ink-950/50 p-3 lg:min-h-[70vh]">
+      <img
+        src={pasosVisor[pasoVisible]}
+        alt={pasoVisible === pasosVisor.length - 1 ? pub.titulo : `Paso ${pasoVisible + 1}`}
+        className="max-h-[75vh] w-full rounded-lg object-contain"
+      />
+      {fotosProceso > 0 && (
+        <div className="mt-3 flex gap-1" role="group" aria-label="Línea de tiempo del proceso">
+          {pasosVisor.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setPasoVisor(i)}
+              aria-label={i === pasosVisor.length - 1 ? 'Obra final' : `Paso ${i + 1}`}
+              aria-current={i === pasoVisible ? 'step' : undefined}
+              className="flex h-11 flex-1 items-center sm:h-5"
+            >
+              <span className={`h-1.5 w-full rounded-full transition-colors ${i === pasoVisible ? 'bg-coral' : 'bg-paper/20 hover:bg-paper/40'}`} />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const cuerpo = (
+    <div className="px-3.5 py-3">
+      <div className="flex items-start justify-between">
+        <div>
+          <h3 className={`font-display font-semibold ${detalle ? 'text-[32px] leading-tight' : 'text-base'}`}>{pub.titulo}</h3>
+          {pub.descripcion && <p className="mt-1 text-sm text-paper-muted">{pub.descripcion}</p>}
+        </div>
+        {pub.editadoEn && <span className="text-[10px] italic text-paper-dim">editado</span>}
       </div>
 
-      {/* Despliegue de imágenes del proceso */}
-      {pub.imagenesProcesoUrls.length > 0 && (
-        <div className="border-t border-ink-800 px-5 py-3">
-          <button
-            onClick={() => setProcesoAbierto((v) => !v)}
-            className="text-xs font-medium text-violet hover:underline"
-          >
-            {procesoAbierto ? 'Ocultar el proceso ▲' : `Ver el proceso (${pub.imagenesProcesoUrls.length}) ▼`}
-          </button>
-          {procesoAbierto && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="mt-3 flex gap-2 overflow-x-auto pb-1"
-            >
-              {pub.imagenesProcesoUrls.map((url, i) => (
-                <img key={i} src={url} alt={`Paso ${i + 1}`} className="h-28 w-28 flex-shrink-0 rounded-lg object-cover" />
-              ))}
-            </motion.div>
-          )}
+      {pub.etiquetas.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {pub.etiquetas.map((t) => (
+            <span key={t} className="chip text-xs">
+              #{t}
+            </span>
+          ))}
         </div>
       )}
 
-      {/* Metadatos y acciones */}
-      <div className="px-5 py-4">
-        <div className="flex items-start justify-between">
-          <div>
-            <h3 className="font-display text-lg font-semibold">{pub.titulo}</h3>
-            {pub.descripcion && <p className="mt-1 text-sm text-paper-muted">{pub.descripcion}</p>}
-          </div>
-          {pub.editadoEn && (
-            <span className="text-[10px] text-paper-dim italic">editado</span>
-          )}
-        </div>
-
-        {pub.etiquetas.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {pub.etiquetas.map((t) => (
-              <span key={t} className="chip text-xs">
-                #{t}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Barra de Interacción: Likes, Comentarios, Análisis IA */}
-        <div className="mt-4 flex items-center justify-between border-t border-ink-800 pt-3">
-          <div className="flex items-center gap-5">
-            {/* Botón Me Gusta */}
-            <button onClick={alternarLike} className="flex items-center gap-1.5 text-sm transition-transform active:scale-95">
-              <motion.span
-                animate={animandoLike ? { scale: [1, 1.4, 1] } : {}}
-                transition={{ duration: 0.35 }}
-                className={meGusta ? 'text-coral' : 'text-paper-muted'}
-              >
-                {meGusta ? '♥' : '♡'}
-              </motion.span>
-              <span className={meGusta ? 'font-medium text-coral' : 'text-paper-muted'}>{contadorLikes}</span>
-            </button>
-
-            {/* Botón Comentarios */}
-            <button
-              onClick={toggleComentarios}
-              className={`flex items-center gap-1.5 text-sm transition-colors ${
-                comentariosAbiertos ? 'text-teal-400 font-medium' : 'text-paper-muted hover:text-paper'
-              }`}
+      <div className="mt-3 flex items-center justify-between border-t border-paper/10 pt-1.5">
+        <div className="flex items-center">
+          <button onClick={alternarLike} aria-pressed={meGusta} aria-label="Me gusta" className="flex h-11 items-center gap-1.5 pr-3 text-sm transition-transform active:scale-95 sm:h-8">
+            <motion.span
+              animate={animandoLike ? { scale: [1, 1.4, 1] } : {}}
+              transition={{ duration: 0.35 }}
+              className={meGusta ? 'text-coral' : 'text-paper-muted'}
             >
-              <span>💬</span>
-              <span>{contadorComentarios}</span>
-            </button>
-          </div>
+              {meGusta ? '♥' : '♡'}
+            </motion.span>
+            <span className={meGusta ? 'font-medium text-coral' : 'text-paper-muted'}>{contadorLikes}</span>
+          </button>
 
-          <div className="flex items-center gap-2">
-          {sesion && !esAutor && (
-            <button
-              onClick={() => setReportando(true)}
-              disabled={reportada}
-              className="text-xs text-paper-dim transition-colors hover:text-coral disabled:hover:text-paper-dim"
-            >
-              {reportada ? 'Reportada' : 'Reportar'}
-            </button>
-          )}
+          <button
+            onClick={toggleComentarios}
+            aria-expanded={comentariosAbiertos}
+            aria-label="Comentarios"
+            className={`flex h-11 items-center gap-1.5 pr-3 text-sm transition-colors sm:h-8 ${
+              comentariosAbiertos ? 'font-medium text-teal' : 'text-paper-muted hover:text-paper'
+            }`}
+          >
+            <span aria-hidden>💬</span>
+            <span>{contadorComentarios}</span>
+          </button>
+
           <button
             onClick={descargar}
             disabled={descargando}
             title="Descargar con marca de agua"
-            className="flex items-center gap-1 rounded-full border border-ink-700 px-2.5 py-1 text-xs text-paper-dim transition-all hover:border-paper-dim hover:text-paper disabled:opacity-60"
+            aria-label="Descargar con marca de agua"
+            className="flex h-11 items-center gap-1 text-sm text-paper-muted transition-colors hover:text-paper disabled:opacity-60 sm:h-8"
           >
-            <span aria-hidden>⬇</span>
-            <span>{descargando ? 'Preparando…' : 'Descargar'}</span>
+            <span aria-hidden>{descargando ? '…' : '⬇'}</span>
           </button>
-
-          {/* Botón Análisis IA */}
-          <button
-            onClick={toggleIa}
-            className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-all ${
-              iaAbierta
-                ? 'border-violet text-violet bg-violet/10 font-medium'
-                : 'border-ink-700 text-paper-dim hover:text-paper hover:border-paper-dim'
-            }`}
-          >
-            <span>✨</span>
-            <span>Feedback IA</span>
-          </button>
-          </div>
         </div>
 
-        {/* Panel de Comentarios en Vivo (Linear / Flat) */}
-        <AnimatePresence>
-          {comentariosAbiertos && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mt-3 overflow-hidden border-t border-ink-800 pt-3"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-paper-dim uppercase tracking-wider">
-                  Comentarios en tiempo real ({contadorComentarios})
-                </span>
-              </div>
-
-              {cargandoComentarios ? (
-                <p className="py-2 text-xs text-paper-dim">Cargando comentarios…</p>
-              ) : comentarios.length === 0 ? (
-                <p className="py-2 text-xs text-paper-dim italic">Aún no hay comentarios. ¡Sé el primero en opinar!</p>
-              ) : (
-                <div className="max-h-60 space-y-2.5 overflow-y-auto pr-1">
-                  {comentarios.map((c) => {
-                    const esAutorComentario = sesion?.usuarioId === c.autorId;
-                    const puedeEliminar = esAutorComentario || esAutor;
-                    return (
-                      <div key={c.id} className="flex items-start justify-between gap-2 rounded-lg bg-ink-900/60 p-2.5 text-xs">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-paper">{c.autorNombre}</span>
-                            <span className="text-[10px] text-paper-dim">
-                              {formatDistanceToNow(new Date(c.creadoEn), { addSuffix: true, locale: es })}
-                            </span>
-                          </div>
-                          <p className="mt-1 text-paper-muted break-words">{c.contenido}</p>
-                        </div>
-                        {puedeEliminar && (
-                          <button
-                            onClick={() => borrarComentario(c.id)}
-                            title="Eliminar comentario"
-                            className="text-paper-dim hover:text-coral transition-colors"
-                          >
-                            ×
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Formulario para comentar */}
-              <form onSubmit={enviarComentario} className="mt-3 flex gap-2">
-                <input
-                  type="text"
-                  value={nuevoComentario}
-                  onChange={(e) => setNuevoComentario(e.target.value)}
-                  placeholder="Escribe un comentario respetuoso…"
-                  maxLength={500}
-                  className="flex-1 rounded-lg bg-ink-900 border border-ink-700 px-3 py-1.5 text-xs text-paper placeholder-paper-dim focus:outline-none focus:border-teal-400"
-                />
-                <button
-                  type="submit"
-                  disabled={enviandoComentario || !nuevoComentario.trim()}
-                  className="rounded-lg bg-teal-500 px-3 py-1.5 text-xs font-semibold text-ink-950 hover:bg-teal-400 disabled:opacity-50"
-                >
-                  {enviandoComentario ? '…' : 'Enviar'}
-                </button>
-              </form>
-              {errorComentario && <p className="mt-1 text-xs text-coral">{errorComentario}</p>}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Panel de Análisis Técnico con IA */}
-        <AnimatePresence>
-          {iaAbierta && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mt-3 overflow-hidden rounded-xl border border-violet/30 bg-ink-900/90 p-4 text-xs"
-            >
-              <div className="flex items-center justify-between pb-2 border-b border-ink-800">
-                <div className="flex items-center gap-1.5 text-violet font-semibold">
-                  <span>🎨</span>
-                  <span>Análisis Técnico de la Obra</span>
-                </div>
-              </div>
-
-              {cargandoIa ? (
-                <div className="py-6 text-center text-paper-dim">
-                  <span className="inline-block animate-spin text-lg mr-2">⚙️</span>
-                  Analizando composición, luces y técnica con visión artificial…
-                </div>
-              ) : analisisIa ? (
-                <div className="mt-3 space-y-3">
-                  <div className="flex items-center justify-between bg-ink-800/60 p-2.5 rounded-lg">
-                    <span className="font-medium text-paper">Puntaje Pedagógico Estimado:</span>
-                    <span className="text-base font-bold text-violet">{analisisIa.scoreEstimado}/100</span>
-                  </div>
-
-                  {analisisIa.puntosFuertes?.length > 0 && (
-                    <div>
-                      <p className="font-semibold text-emerald-400 mb-1">✓ Puntos Fuertes:</p>
-                      <ul className="list-disc list-inside space-y-0.5 text-paper-muted">
-                        {analisisIa.puntosFuertes.map((pf, idx) => (
-                          <li key={idx}>{pf}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {analisisIa.areasMejora?.length > 0 && (
-                    <div>
-                      <p className="font-semibold text-amber-400 mb-1">⚠ Áreas a Pulir:</p>
-                      <ul className="list-disc list-inside space-y-0.5 text-paper-muted">
-                        {analisisIa.areasMejora.map((am, idx) => (
-                          <li key={idx}>{am}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {analisisIa.consejos?.length > 0 && (
-                    <div>
-                      <p className="font-semibold text-teal-400 mb-1">💡 Consejos Técnicos:</p>
-                      <ul className="list-disc list-inside space-y-0.5 text-paper-muted">
-                        {analisisIa.consejos.map((c, idx) => (
-                          <li key={idx}>{c}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  <div className="pt-2 flex justify-end">
-                    <button
-                      onClick={pedirAnalisisIa}
-                      disabled={cargandoIa}
-                      className="text-[11px] text-violet hover:underline"
-                    >
-                      🔄 Re-analizar obra con IA
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="py-4 text-center space-y-2">
-                  <p className="text-paper-muted">Esta obra aún no ha sido analizada por la IA.</p>
-                  <button
-                    onClick={pedirAnalisisIa}
-                    className="rounded-lg bg-violet px-3 py-1.5 font-medium text-paper hover:bg-violet-600 shadow-sm"
-                  >
-                    ⚡ Generar análisis técnico ahora
-                  </button>
-                </div>
-              )}
-
-              {errorIa && <p className="mt-2 text-xs text-coral">{errorIa}</p>}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <button
+          onClick={toggleIa}
+          aria-expanded={iaAbierta}
+          aria-label="Análisis con IA"
+          className={`flex h-11 items-center gap-1 text-xs font-semibold text-teal transition-opacity sm:h-8 ${iaAbierta ? '' : 'opacity-80 hover:opacity-100'}`}
+        >
+          ✦ IA
+        </button>
       </div>
 
-      {reportando && (
-        <ModalReportar
-          publicacionId={pub.id}
-          onCerrar={() => setReportando(false)}
-          onReportada={() => {
-            setReportando(false);
-            setReportada(true);
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {comentariosAbiertos && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-2 overflow-hidden border-t border-paper/10 pt-3"
+          >
+            <p className="label mb-2">Comentarios en tiempo real ({contadorComentarios})</p>
+
+            {cargandoComentarios ? (
+              <Skeleton filas={2} claseFila="h-12" />
+            ) : comentarios.length === 0 ? (
+              <p className="py-2 text-xs italic text-paper-dim">Aún no hay comentarios. ¡Sé el primero en opinar!</p>
+            ) : (
+              <div className="max-h-60 space-y-2.5 overflow-y-auto pr-1">
+                {comentarios.map((c) => {
+                  const esAutorComentario = sesion?.usuarioId === c.autorId;
+                  const puedeEliminar = esAutorComentario || esAutor;
+                  return (
+                    <div key={c.id} className="flex items-start justify-between gap-2 rounded-xl bg-paper/5 p-2.5 text-xs">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-paper">{c.autorNombre}</span>
+                          <span className="text-[10px] text-paper-dim">
+                            {formatDistanceToNow(new Date(c.creadoEn), { addSuffix: true, locale: es })}
+                          </span>
+                        </div>
+                        <p className="mt-1 break-words text-paper-muted">{c.contenido}</p>
+                      </div>
+                      {puedeEliminar && (
+                        <button
+                          onClick={() => borrarComentario(c.id)}
+                          title="Eliminar comentario"
+                          className="text-paper-dim transition-colors hover:text-coral"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <form onSubmit={enviarComentario} className="mt-3 flex gap-2">
+              <input
+                type="text"
+                value={nuevoComentario}
+                onChange={(e) => setNuevoComentario(e.target.value)}
+                placeholder="Escribe un comentario respetuoso…"
+                maxLength={500}
+                className="input flex-1 py-1.5 text-xs"
+              />
+              <Button type="submit" className="px-3 py-1.5 text-xs" disabled={enviandoComentario || !nuevoComentario.trim()}>
+                {enviandoComentario ? '…' : 'Enviar'}
+              </Button>
+            </form>
+            {errorComentario && <p className="mt-1 text-xs text-coral">{errorComentario}</p>}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {iaAbierta && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-3 overflow-hidden rounded-xl border border-paper/10 bg-paper/5 p-3 text-xs"
+          >
+            <p className="border-b border-paper/10 pb-2 font-display text-sm font-semibold text-teal">✦ Análisis técnico de la obra</p>
+
+            {cargandoIa ? (
+              <div className="flex items-center justify-center gap-2 py-6 text-center text-paper-muted">
+                <span className="punto-vivo" aria-hidden />
+                Analizando composición, luces y técnica con visión artificial…
+              </div>
+            ) : analisisIa ? (
+              <div className="mt-3 space-y-3">
+                <div className="flex items-center justify-between rounded-lg bg-paper/5 p-2.5">
+                  <span className="font-medium text-paper">Puntaje Pedagógico Estimado:</span>
+                  <span className="font-display text-base font-semibold text-teal">{analisisIa.scoreEstimado}/100</span>
+                </div>
+
+                {analisisIa.puntosFuertes?.length > 0 && (
+                  <div>
+                    <p className="mb-1 font-semibold text-teal">✓ Puntos Fuertes:</p>
+                    <ul className="list-inside list-disc space-y-0.5 text-paper-muted">
+                      {analisisIa.puntosFuertes.map((pf, idx) => (
+                        <li key={idx}>{pf}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {analisisIa.areasMejora?.length > 0 && (
+                  <div>
+                    <p className="mb-1 font-semibold text-coral-light">⚠ Áreas a Pulir:</p>
+                    <ul className="list-inside list-disc space-y-0.5 text-paper-muted">
+                      {analisisIa.areasMejora.map((am, idx) => (
+                        <li key={idx}>{am}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {analisisIa.consejos?.length > 0 && (
+                  <div>
+                    <p className="mb-1 font-semibold text-violet">💡 Consejos Técnicos:</p>
+                    <ul className="list-inside list-disc space-y-0.5 text-paper-muted">
+                      {analisisIa.consejos.map((c, idx) => (
+                        <li key={idx}>{c}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="flex justify-end pt-2">
+                  <button onClick={pedirAnalisisIa} disabled={cargandoIa} className="text-[11px] text-teal hover:underline">
+                    Re-analizar obra con IA
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2 py-4 text-center">
+                <p className="text-paper-muted">Esta obra aún no ha sido analizada por la IA.</p>
+                <Button variant="secondary" className="px-3 py-1.5 text-xs" onClick={pedirAnalisisIa}>
+                  ✦ Generar análisis técnico ahora
+                </Button>
+              </div>
+            )}
+
+            {errorIa && <p className="mt-2 text-xs text-coral">{errorIa}</p>}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+
+  const modalReporte = reportando && (
+    <ModalReportar
+      publicacionId={pub.id}
+      onCerrar={() => setReportando(false)}
+      onReportada={() => {
+        setReportando(false);
+        setReportada(true);
+      }}
+    />
+  );
+
+  if (detalle) {
+    return (
+      <motion.article
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="card card-fija overflow-hidden lg:grid lg:grid-cols-[minmax(0,1fr)_380px]"
+      >
+        {visorDetalle}
+        <div className="lg:max-h-[85vh] lg:overflow-y-auto">
+          {cabecera}
+          {avisos}
+          {cuerpo}
+        </div>
+        {modalReporte}
+      </motion.article>
+    );
+  }
+
+  return (
+    <motion.article initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card overflow-hidden p-0">
+      {cabecera}
+      {avisos}
+      {imagenTarjeta}
+      {miniaturasProceso}
+      {cuerpo}
+      {modalReporte}
     </motion.article>
+  );
+}
+
+interface OpcionMenu {
+  texto: string;
+  accion: () => void;
+  peligro?: boolean;
+  desactivada?: boolean;
+}
+
+function MenuObra({ opciones }: { opciones: OpcionMenu[] }) {
+  const [abierto, setAbierto] = useState(false);
+  const contenedorRef = useRef<HTMLDivElement>(null);
+  const cerrar = useCallback(() => setAbierto(false), []);
+  useCerrarAlExterior(contenedorRef, abierto, cerrar);
+
+  return (
+    <div ref={contenedorRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setAbierto((a) => !a)}
+        aria-haspopup="menu"
+        aria-expanded={abierto}
+        aria-label="Más opciones"
+        className="grid h-11 w-11 place-items-center rounded-full text-paper-muted hover:bg-paper/10 hover:text-paper sm:h-7 sm:w-7"
+      >
+        ⋯
+      </button>
+      {abierto && (
+        <div role="menu" className="panel-flotante absolute right-0 top-full z-20 mt-1 w-44 overflow-hidden py-1">
+          {opciones.map((o) => (
+            <button
+              key={o.texto}
+              role="menuitem"
+              type="button"
+              disabled={o.desactivada}
+              onClick={() => {
+                cerrar();
+                o.accion();
+              }}
+              className={`block w-full px-4 py-2.5 text-left text-sm hover:bg-paper/10 disabled:opacity-50 ${o.peligro ? 'text-coral-light' : 'text-paper'}`}
+            >
+              {o.texto}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

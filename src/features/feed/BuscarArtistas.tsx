@@ -45,14 +45,14 @@ export function BuscarArtistas({ mostrarSugerencias, onSeguimientoCambiado }: Pr
   }
 
   return (
-    <div className="mb-6 rounded-xl border border-ink-700 bg-ink-900/40 p-4">
-      <label className="flex items-center gap-2 rounded-lg border border-ink-700 bg-ink-950/60 px-3 py-2 focus-within:border-coral/50">
+    <div className="card card-fija p-3.5">
+      <label className="input flex items-center gap-2 py-2 focus-within:border-teal">
         <span aria-hidden>🔍</span>
         <input
           type="search"
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
-          placeholder="Buscar artistas por nombre…"
+          placeholder="Buscar artistas…"
           className="w-full bg-transparent text-sm text-paper placeholder:text-paper-dim focus:outline-none"
           aria-label="Buscar artistas por nombre"
         />
@@ -65,11 +65,11 @@ export function BuscarArtistas({ mostrarSugerencias, onSeguimientoCambiado }: Pr
           {resultados.length === 0 && !buscando ? (
             <p className="text-sm text-paper-muted">{consulta ? `No hay artistas que coincidan con "${consulta}".` : 'Aún no hay otros artistas.'}</p>
           ) : (
-            <ul className="flex flex-col divide-y divide-ink-800">
+            <ul className="flex flex-col divide-y divide-paper/10">
               {resultados.map((a) => (
                 <li key={a.usuarioId} className="flex items-center justify-between gap-3 py-2">
                   <Link to={`/perfil/${a.nombreArtista}`} className="flex min-w-0 items-center gap-3 hover:text-coral">
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ink-700 text-xs font-semibold uppercase">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ink-600 text-xs font-semibold uppercase">
                       {a.nombreArtista.slice(0, 2)}
                     </span>
                     <span className="min-w-0">

@@ -321,7 +321,7 @@ export function PersonalChatPage() {
               </div>
             )}
 
-            <div className="flex items-center justify-between py-1 px-1 border-b border-ink-700/60 mb-2">
+            <div className="flex items-center justify-between py-1 px-1 border-b border-paper/10 mb-2">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-paper-dim">
                 Conversaciones ({conversaciones.length})
               </span>
@@ -347,11 +347,11 @@ export function PersonalChatPage() {
                       className={`w-full text-left p-2.5 rounded-xl transition-all flex items-center gap-3 border ${
                         esSeleccionado
                           ? 'bg-ink-700/90 border-coral/50 shadow-md'
-                          : 'bg-ink-800/40 border-transparent hover:bg-ink-700/50 hover:border-ink-600/40'
+                          : 'bg-ink-800/40 border-transparent hover:bg-paper/10 hover:border-paper/10'
                       }`}
                     >
                       {/* Avatar con inicial */}
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-coral to-amber flex items-center justify-center font-bold text-ink-950 text-sm shrink-0 shadow-inner">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-coral to-amber flex items-center justify-center font-bold text-ink-800 text-sm shrink-0 shadow-inner">
                         {conv.contactoNombre.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -379,7 +379,7 @@ export function PersonalChatPage() {
             {contactoActivo ? (
               <>
                 {/* Cabecera del chat actual */}
-                <div className="p-3.5 border-b border-ink-700/70 bg-ink-800/90 flex items-center justify-between">
+                <div className="p-3.5 border-b border-paper/10 bg-ink-800/90 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setContactoActivo(null)}
@@ -394,15 +394,15 @@ export function PersonalChatPage() {
                       <h2 className="text-sm font-bold text-paper flex items-center gap-2">
                         {contactoActivo.nombre}
                       </h2>
-                      <span className="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" /> En línea
+                      <span className="text-[10px] text-teal font-medium flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-teal inline-block animate-pulse" /> En línea
                       </span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Link
                       to={`/perfil/${contactoActivo.nombre}`}
-                      className="text-xs text-violet hover:text-violet-light font-medium px-2.5 py-1 rounded-lg bg-ink-700/50 hover:bg-ink-700 border border-ink-600/40 transition-colors"
+                      className="text-xs text-violet hover:text-violet-light font-medium px-2.5 py-1 rounded-lg bg-ink-700/50 hover:bg-paper/10 border border-paper/10 transition-colors"
                     >
                       Ver perfil
                     </Link>
@@ -432,7 +432,7 @@ export function PersonalChatPage() {
                             className={`max-w-[78%] px-3.5 py-2 text-sm leading-relaxed ${
                               esPropio
                                 ? 'bg-gradient-to-r from-coral to-coral-light text-paper rounded-2xl rounded-tr-xs shadow-md'
-                                : 'bg-ink-700/90 text-paper border border-ink-600/50 rounded-2xl rounded-tl-xs shadow-sm'
+                                : 'bg-ink-700/90 text-paper border border-paper/10 rounded-2xl rounded-tl-xs shadow-sm'
                             }`}
                           >
                             <p className="whitespace-pre-wrap break-words">{m.contenido}</p>
@@ -455,7 +455,7 @@ export function PersonalChatPage() {
                 </div>
 
                 {/* Barra de envío */}
-                <form onSubmit={enviar} className="p-3 border-t border-ink-700/70 bg-ink-800/90 flex gap-2 items-center">
+                <form onSubmit={enviar} className="p-3 border-t border-paper/10 bg-ink-800/90 flex gap-2 items-center">
                   <input
                     ref={inputMensajeRef}
                     type="text"
@@ -477,7 +477,7 @@ export function PersonalChatPage() {
             ) : (
               /* Estado cuando no hay contacto seleccionado */
               <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-ink-700/50 border border-ink-600/40 flex items-center justify-center text-3xl mb-4 text-paper-dim shadow-inner">
+                <div className="w-16 h-16 rounded-2xl bg-ink-700/50 border border-paper/10 flex items-center justify-center text-3xl mb-4 text-paper-dim shadow-inner">
                   ✉️
                 </div>
                 <h3 className="text-lg font-bold text-paper">Tus conversaciones directas</h3>

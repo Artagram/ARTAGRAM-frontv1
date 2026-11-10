@@ -52,7 +52,7 @@ export function AdminDashboardPage() {
         </p>
       </div>
 
-      <div role="tablist" className="mb-6 flex gap-4 border-b border-ink-800">
+      <div role="tablist" className="mb-6 flex gap-4 border-b border-paper/10">
         {PESTANAS.map((p) => (
           <button
             key={p.id}

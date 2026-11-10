@@ -6,6 +6,7 @@ import { useAuthStore } from '../../lib/authStore';
 import { BotonSeguir } from '../feed/BotonSeguir';
 import { ObrasPerfil } from './ObrasPerfil';
 import { Button } from '../../components/ui/Button';
+import { Skeleton } from '../../components/ui/Skeleton';
 import { TextField } from '../../components/ui/TextField';
 import type { PerfilResponse, Seguimiento } from '../../types';
 
@@ -88,10 +89,10 @@ export function ProfilePage() {
   }
 
   if (cargando) {
-    return <div className="p-16 text-center text-paper-muted">Cargando…</div>;
+    return <Skeleton filas={2} className="mx-auto max-w-3xl px-4 py-10" claseFila="h-56" />;
   }
   if (error && !perfil) {
-    return <p className="mx-auto max-w-xl px-4 py-16 text-center text-coral-light">{error}</p>;
+    return <p className="banner-error mx-auto my-16 max-w-xl text-center">{error}</p>;
   }
   if (!perfil) return null;
 
@@ -99,16 +100,22 @@ export function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card overflow-hidden">
-        <div className="h-28 bg-gradient-to-br from-coral/30 via-violet/20 to-teal/20" />
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card card-fija overflow-hidden">
+        <div className="relative h-28 bg-gradient-to-br from-coral/40 via-violet/30 to-teal/30">
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-ink-700/70 to-transparent" />
+        </div>
         <div className="px-6 pb-6">
-          <div className="-mt-12 flex items-end justify-between">
+          <div className="relative -mt-9 flex items-end justify-between">
             <div className="relative">
-              <div className="grid h-24 w-24 place-items-center overflow-hidden rounded-2xl border-4 border-ink-900 bg-ink-700 text-2xl font-semibold uppercase shadow-lg">
+              <div
+                className={`grid h-[72px] w-[72px] place-items-center overflow-hidden rounded-full bg-ink-600 text-xl font-semibold uppercase ${
+                  perfil.premium || (esPropio && sesion?.premium) ? 'shadow-[0_0_0_2px_#1B1626,0_0_0_4px_#FFC24B]' : 'shadow-[0_0_0_2px_#1B1626]'
+                }`}
+              >
                 {perfil.fotoUrl ? <img src={perfil.fotoUrl} alt={perfil.nombreArtista} className="h-full w-full object-cover" /> : perfil.nombreArtista.slice(0, 2)}
               </div>
               {esPropio && (
-                <label className="absolute -bottom-1 -right-1 grid h-7 w-7 cursor-pointer place-items-center rounded-full bg-coral text-xs text-ink-950 shadow-glow-coral">
+                <label className="absolute -bottom-1 -right-1 grid h-7 w-7 cursor-pointer place-items-center rounded-full bg-coral text-xs text-ink-800 shadow-glow-coral">
                   {subiendoFoto ? '…' : '✎'}
                   <input type="file" accept="image/*" className="hidden" onChange={subirFoto} />
                 </label>
@@ -133,16 +140,14 @@ export function ProfilePage() {
           </div>
 
           <div className="mt-4 flex items-center gap-3">
-            <h1 className="font-display text-2xl font-semibold">{perfil.nombreArtista}</h1>
+            <h1 className="font-display text-[32px] font-semibold leading-tight">{perfil.nombreArtista}</h1>
             {seguimiento && (
               <span className="text-sm text-paper-muted">
                 {seguimiento.seguidores} {seguimiento.seguidores === 1 ? 'seguidor' : 'seguidores'}
               </span>
             )}
             {(perfil.premium || (esPropio && sesion?.premium)) && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/40 bg-amber-400/10 px-2.5 py-0.5 text-xs font-semibold text-amber-300 shadow-sm">
-                ⭐ PRO
-              </span>
+              <span className="insignia-pro">PRO</span>
             )}
           </div>
 
@@ -178,7 +183,7 @@ export function ProfilePage() {
                   {enlaces.length < 5 && (
                     <button
                       type="button"
-                      className="text-xs text-violet hover:underline"
+                      className="text-xs text-teal hover:underline"
                       onClick={() => setEnlaces((prev) => [...prev, { etiqueta: '', url: '' }])}
                     >
                       + agregar
@@ -208,7 +213,7 @@ export function ProfilePage() {
                 </div>
               </div>
 
-              {error && <p className="rounded-lg bg-coral/10 px-3 py-2 text-sm text-coral-light">{error}</p>}
+              {error && <p className="banner-error">{error}</p>}
 
               <div className="flex justify-end gap-2">
                 <Button variant="ghost" onClick={() => setEditando(false)}>

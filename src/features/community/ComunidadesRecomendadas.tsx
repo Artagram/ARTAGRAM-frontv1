@@ -37,7 +37,7 @@ export function ComunidadesRecomendadas({ onUnida }: { onUnida: () => void }) {
   return (
     <section className="mt-10">
       <h2 className="mb-3 font-display text-lg font-semibold">Comunidades recomendadas</h2>
-      {error && <p className="mb-3 rounded-lg bg-coral/10 px-3 py-2 text-sm text-coral-light">{error}</p>}
+      {error && <p className="mb-3 banner-error">{error}</p>}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {comunidades.map((c) => (
           <div key={c.id} className="card flex h-full flex-col p-5">

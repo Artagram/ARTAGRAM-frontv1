@@ -36,11 +36,13 @@ export function ComunidadesRecomendadas({ onUnida }: { onUnida: () => void }) {
 
   return (
     <section className="mt-10">
-      <h2 className="mb-3 font-display text-lg font-semibold">Comunidades recomendadas</h2>
-      {error && <p className="mb-3 banner-error">{error}</p>}
+      <h2 className="mb-3 font-display text-xl font-semibold">
+        Comunidades <span className="acento text-violet">para ti</span>
+      </h2>
+      {error && <p className="banner-error mb-3">{error}</p>}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {comunidades.map((c) => (
-          <div key={c.id} className="card flex h-full flex-col p-5">
+          <div key={c.id} className="card borde-proceso flex h-full flex-col p-3.5">
             <Link to={`/comunidades/${c.id}`} className="group flex-1">
               <p className="text-xs text-paper-dim">
                 {c.totalMiembros} {c.totalMiembros === 1 ? 'miembro' : 'miembros'}

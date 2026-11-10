@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api, extraerMensajeError } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
+import { Modal } from '../../components/ui/Modal';
+import { Skeleton } from '../../components/ui/Skeleton';
 import { TextField } from '../../components/ui/TextField';
 import type { ComunidadResponse, MiembroComunidadDto } from '../../types';
 
@@ -15,6 +17,7 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
   const [pestana, setPestana] = useState<'miembros' | 'invitar' | 'publicaciones'>('miembros');
   const [miembros, setMiembros] = useState<MiembroComunidadDto[]>([]);
   const [cargandoMiembros, setCargandoMiembros] = useState(false);
+  const [confirmacion, setConfirmacion] = useState<{ mensaje: string; accion: () => void } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
 
@@ -48,8 +51,14 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
     }
   }
 
-  async function expulsarMiembro(usuarioId: string, nombre: string) {
-    if (!window.confirm(`¿Estás seguro de que deseas expulsar a @${nombre} de la comunidad?`)) return;
+  function expulsarMiembro(usuarioId: string, nombre: string) {
+    setConfirmacion({
+      mensaje: `¿Estás seguro de que deseas expulsar a @${nombre} de la comunidad?`,
+      accion: () => void ejecutarExpulsion(usuarioId, nombre),
+    });
+  }
+
+  async function ejecutarExpulsion(usuarioId: string, nombre: string) {
     setError(null);
     try {
       await api.delete(`/api/comunidades/${comunidad.id}/miembros/${usuarioId}`);
@@ -93,12 +102,17 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
     }
   }
 
-  async function borrarPublicacion(e: React.FormEvent) {
+  function borrarPublicacion(e: React.FormEvent) {
     e.preventDefault();
     const idPub = publicacionIdBorrar.trim();
     if (!idPub) return;
-    if (!window.confirm(`¿Confirmas eliminar la publicación ${idPub}? Esta acción no se puede deshacer.`)) return;
+    setConfirmacion({
+      mensaje: `¿Confirmas eliminar la publicación ${idPub}? Esta acción no se puede deshacer.`,
+      accion: () => void ejecutarBorrado(idPub),
+    });
+  }
 
+  async function ejecutarBorrado(idPub: string) {
     setError(null);
     setBorrandoPub(true);
     try {
@@ -126,39 +140,33 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
         </div>
 
         {/* Pestañas del panel */}
-        <div className="flex flex-wrap gap-2">
+        <div className="tabs flex-wrap">
           <button
             type="button"
             onClick={() => setPestana('miembros')}
-            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-              pestana === 'miembros' ? 'bg-violet text-ink-800 font-semibold' : 'bg-ink-800 text-paper-muted hover:text-paper'
-            }`}
+            className={`tab px-3 text-xs ${pestana === 'miembros' ? 'tab-activa' : ''}`}
           >
             👥 Miembros ({miembros.length})
           </button>
           <button
             type="button"
             onClick={() => setPestana('invitar')}
-            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-              pestana === 'invitar' ? 'bg-violet text-ink-800 font-semibold' : 'bg-ink-800 text-paper-muted hover:text-paper'
-            }`}
+            className={`tab px-3 text-xs ${pestana === 'invitar' ? 'tab-activa' : ''}`}
           >
             ✉️ Invitar usuario
           </button>
           <button
             type="button"
             onClick={() => setPestana('publicaciones')}
-            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-              pestana === 'publicaciones' ? 'bg-violet text-ink-800 font-semibold' : 'bg-ink-800 text-paper-muted hover:text-paper'
-            }`}
+            className={`tab px-3 text-xs ${pestana === 'publicaciones' ? 'tab-activa' : ''}`}
           >
             🗑️ Moderar publicaciones
           </button>
         </div>
       </div>
 
-      {error && <div className="mb-4 rounded-lg bg-coral/10 border border-coral/30 p-3 text-sm text-coral-light">{error}</div>}
-      {mensajeExito && <div className="mb-4 rounded-lg bg-teal/10 border border-teal/30 p-3 text-sm text-teal">{mensajeExito}</div>}
+      {error && <div className="banner-error mb-4">{error}</div>}
+      {mensajeExito && <div className="glass mb-4 rounded-[14px] border-t-2 border-t-teal px-3 py-2 text-sm text-paper">{mensajeExito}</div>}
 
       {/* PESTAÑA 1: LISTA Y EXPULSIÓN DE MIEMBROS */}
       {pestana === 'miembros' && (
@@ -169,17 +177,17 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
           </div>
 
           {cargandoMiembros ? (
-            <div className="py-8 text-center text-sm text-paper-muted">Cargando lista de miembros…</div>
+            <Skeleton filas={3} claseFila="h-14" />
           ) : miembros.length === 0 ? (
             <div className="py-6 text-center text-sm text-paper-muted">No hay miembros registrados todavía.</div>
           ) : (
-            <div className="divide-y divide-paper/10 rounded-xl border border-paper/10 bg-ink-950/60 overflow-hidden">
+            <div className="divide-y divide-paper/10 rounded-xl border border-paper/10 overflow-hidden">
               {miembros.map((m) => {
                 const esElCreador = m.nombreArtista === comunidad.creador;
                 return (
                   <div key={m.usuarioId} className="flex flex-wrap items-center justify-between gap-3 p-3.5 hover:bg-paper/10 transition-colors">
                     <div className="flex items-center gap-3">
-                      <div className="grid h-8 w-8 place-items-center rounded-full bg-ink-700 text-xs font-bold uppercase text-paper">
+                      <div className="grid h-8 w-8 place-items-center rounded-full bg-ink-600 text-xs font-semibold uppercase text-paper">
                         {m.nombreArtista.slice(0, 2)}
                       </div>
                       <div>
@@ -195,7 +203,7 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
                             ? 'bg-amber/10 text-amber border border-amber/30'
                             : m.rol === 'MODERADOR'
                             ? 'bg-teal/10 text-teal border border-teal/30'
-                            : 'bg-ink-800 text-paper-muted'
+                            : 'bg-paper/10 text-paper-muted'
                         }`}
                       >
                         {m.rol}
@@ -207,7 +215,7 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
                           <select
                             value={m.rol}
                             onChange={(e) => cambiarRol(m.usuarioId, m.nombreArtista, e.target.value)}
-                            className="rounded-lg border border-paper/10 bg-ink-900 px-2 py-1 text-xs text-paper"
+                            className="input w-auto rounded-full py-1 text-xs"
                           >
                             <option value="MIEMBRO">Miembro</option>
                             <option value="MODERADOR">Moderador</option>
@@ -217,7 +225,7 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
                           <button
                             type="button"
                             onClick={() => expulsarMiembro(m.usuarioId, m.nombreArtista)}
-                            className="rounded-lg border border-coral/30 bg-coral/10 px-2.5 py-1 text-xs font-medium text-coral-light hover:bg-coral/20 transition-colors"
+                            className="btn-secondary border-coral/40 px-3 py-1 text-xs text-coral-light"
                             title="Sacar usuario de la comunidad"
                           >
                             Sacar
@@ -277,7 +285,7 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
               className="flex-1 font-mono text-xs"
               required
             />
-            <Button type="submit" className="bg-coral hover:bg-coral-light text-ink-800" cargando={borrandoPub}>
+            <Button type="submit" cargando={borrandoPub}>
               Eliminar
             </Button>
           </form>
@@ -289,6 +297,27 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
           <span>Creador oficial de la comunidad</span>
           <span>Permisos completos de administración y moderación</span>
         </div>
+      )}
+      {confirmacion && (
+        <Modal etiquetadoPor="confirmar-accion" onCerrar={() => setConfirmacion(null)}>
+          <h2 id="confirmar-accion" className="font-display text-xl font-semibold">
+            ¿Estás <span className="acento">seguro</span>?
+          </h2>
+          <p className="mt-2 break-words text-sm text-paper-muted">{confirmacion.mensaje}</p>
+          <div className="mt-5 flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setConfirmacion(null)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                confirmacion.accion();
+                setConfirmacion(null);
+              }}
+            >
+              Confirmar
+            </Button>
+          </div>
+        </Modal>
       )}
     </div>
   );

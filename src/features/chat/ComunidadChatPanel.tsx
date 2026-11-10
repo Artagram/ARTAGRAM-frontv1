@@ -32,11 +32,11 @@ export function ComunidadChatPanel({ comunidadId }: { comunidadId: string }) {
   }
 
   return (
-    <div className="card flex h-96 flex-col p-4">
+    <div className="card card-fija flex h-96 flex-col p-3.5">
       <div className="mb-2 flex items-baseline justify-between gap-2">
         <h3 className="font-display text-lg font-semibold">Chat de la comunidad</h3>
         {sesion && !sesion.premium && (
-          <Link to="/planes" className="text-[11px] text-paper-dim hover:text-violet" title="Con PRO ves hasta 1 año">
+          <Link to="/planes" className="text-[11px] text-paper-dim hover:text-amber" title="Con PRO ves hasta 1 año">
             Últimos 30 días · más con PRO
           </Link>
         )}
@@ -45,8 +45,8 @@ export function ComunidadChatPanel({ comunidadId }: { comunidadId: string }) {
         {mensajes.length === 0 && <p className="mt-8 text-center text-sm text-paper-dim">Todavía no hay mensajes</p>}
         {mensajes.map((m) => (
           <div key={m.id} className={m.remitenteId === sesion?.usuarioId ? 'text-right' : ''}>
-            <span className="inline-block max-w-[80%] rounded-2xl bg-ink-700 px-3 py-1.5 text-left text-sm">
-              <span className="mr-1.5 font-medium text-violet">{m.remitenteNombre}</span>
+            <span className="inline-block max-w-[80%] rounded-2xl bg-paper/10 px-3 py-1.5 text-left text-sm">
+              <span className="mr-1.5 font-medium text-teal">{m.remitenteNombre}</span>
               {m.contenido}
             </span>
           </div>

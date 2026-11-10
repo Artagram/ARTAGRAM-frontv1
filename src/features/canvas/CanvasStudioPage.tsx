@@ -6,6 +6,7 @@ import { stompService } from '../../lib/stompClient';
 import { useAuthStore } from '../../lib/authStore';
 import { anchoDeLineaPx, dibujarPunto, dibujarSegmento, dibujarTrazoCompleto, type EstiloPincel } from '../../lib/canvasEngine';
 import { BrushToolbar, type Herramienta } from './BrushToolbar';
+import { CursorRemoto } from './CursorRemoto';
 import { PublishWizard } from '../feed/PublishWizard';
 import { Modal } from '../../components/ui/Modal';
 import { generarUUID } from '../../lib/uuid';
@@ -770,24 +771,25 @@ export function CanvasStudioPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-var(--alto-barra))] flex-col bg-ink-950 p-2 sm:p-3 gap-2 overflow-hidden select-none">
+    <div className="flex h-[calc(100vh-var(--alto-barra))] flex-col p-2 sm:p-3 gap-2 overflow-hidden select-none">
       {/* Cabecera compacta del estudio */}
       <header className="flex flex-wrap items-center justify-between gap-2 px-1">
         <div className="flex items-center gap-3">
           <Link
             to={`/comunidades/${comunidadId}`}
-            className="btn-ghost text-xs px-2.5 py-1.5 flex items-center gap-1 border border-paper/10"
+            className="btn-ghost text-xs px-3 py-1.5"
             title="Volver a la página de la comunidad"
           >
             ← Volver
           </Link>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="font-display text-lg font-bold tracking-tight text-paper">
+              <h1 className="font-display text-lg font-semibold tracking-tight text-paper">
                 {comunidad?.nombre ?? 'Lienzo Colaborativo'}
               </h1>
-              <span className="rounded-full bg-teal/15 border border-teal/30 px-2 py-0.5 text-[10px] font-semibold text-teal">
-                ● En vivo
+              <span className="flex items-center gap-1.5 text-[11px] font-medium text-teal">
+                <span className="punto-vivo" aria-hidden />
+                En vivo
               </span>
             </div>
             <p className="text-[11px] text-paper-dim hidden sm:block">
@@ -803,8 +805,8 @@ export function CanvasStudioPage() {
             onClick={() => (modoEditar ? void salirDelModoEditar() : setModoEditar(true))}
             className={
               modoEditar
-                ? 'btn-primary text-xs px-3 py-1.5 font-semibold bg-violet hover:brightness-110'
-                : 'btn-ghost text-xs px-2.5 py-1.5 border border-paper/10 text-paper-muted hover:text-paper'
+                ? 'btn-tertiary text-xs px-3 py-1.5 ring-2 ring-violet'
+                : 'btn-ghost text-xs px-3 py-1.5'
             }
             title="Seleccionar un trazo para agrandarlo, achicarlo o moverlo"
           >
@@ -813,28 +815,27 @@ export function CanvasStudioPage() {
           <button
             type="button"
             onClick={descargarSnapshot}
-            className="btn-ghost text-xs px-2.5 py-1.5 border border-paper/10 text-paper-muted hover:text-paper"
+            className="btn-secondary text-xs px-3 py-1.5"
             title="Descargar snapshot PNG del lienzo actual"
           >
-            💾 Descargar
+            Descargar PNG
           </button>
           <button
             type="button"
             onClick={abrirPublicar}
-            className="btn-primary text-xs px-3.5 py-1.5 flex items-center gap-1.5 font-semibold shadow-md shadow-coral/25 bg-gradient-to-r from-coral to-violet hover:brightness-110"
+            className="btn-primary text-xs px-3.5 py-1.5"
             title="Publicar esta obra colaborativa directamente en el Feed"
           >
-            <span>🎨</span>
-            <span>Publicar obra</span>
+            Publicar obra
           </button>
         </div>
       </header>
 
       {/* Banner de aviso o notificación */}
       {aviso && (
-        <div className="rounded-lg border border-amber/40 bg-amber/10 px-3 py-1.5 text-xs text-amber flex items-center justify-between">
+        <div className="banner-aviso flex items-center justify-between py-1.5 text-xs">
           <span>{aviso}</span>
-          <button type="button" onClick={() => setAviso(null)} className="text-amber/70 hover:text-amber">
+          <button type="button" onClick={() => setAviso(null)} className="text-paper-muted hover:text-paper">
             ✕
           </button>
         </div>
@@ -842,7 +843,7 @@ export function CanvasStudioPage() {
 
       {/* En modo edición los pinceles no aplican: su lugar lo toma la barra de edición, fuera del lienzo */}
       {modoEditar ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-violet/50 bg-ink-900 px-4 py-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-3 glass rounded-[14px] px-4 py-2.5">
           <p className="text-xs text-paper font-medium">
             ✏️{' '}
             {seleccionRef.current
@@ -861,25 +862,26 @@ export function CanvasStudioPage() {
           </div>
         </div>
       ) : (
-        <BrushToolbar
-          herramienta={herramienta}
-          onCambiar={setHerramienta}
-          orientacion="horizontal"
-          onPublicar={abrirPublicar}
-        />
+        <div className="lg:hidden">
+          <BrushToolbar herramienta={herramienta} onCambiar={setHerramienta} orientacion="horizontal" />
+        </div>
+      )}
+
+      <div className="flex min-h-0 flex-1 gap-2">
+      {!modoEditar && (
+        <div className="hidden w-52 flex-shrink-0 self-start lg:block">
+          <BrushToolbar herramienta={herramienta} onCambiar={setHerramienta} orientacion="vertical" />
+        </div>
       )}
 
       {/* Contenedor del lienzo que ocupa toda la forma de la pantalla restante */}
       <div
         ref={containerRef}
-        className="relative flex-1 w-full min-h-0 rounded-2xl border border-paper/10 bg-[#F5F1EA] shadow-inner overflow-hidden cursor-crosshair"
+        className="relative h-full min-h-0 w-full flex-1 overflow-hidden rounded-2xl border border-paper/10 bg-[#F5F1EA] cursor-crosshair"
       >
         {cargando && (
-          <div className="absolute inset-0 z-10 grid place-items-center bg-ink-900/60 backdrop-blur-sm">
-            <div className="flex flex-col items-center gap-2 text-paper">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-coral border-t-transparent" />
-              <p className="text-xs text-paper-muted">Sincronizando lienzo con la comunidad…</p>
-            </div>
+          <div role="status" className="skeleton absolute inset-0 z-10 grid place-items-center rounded-none">
+            <p className="text-xs text-paper-muted">Sincronizando lienzo con la comunidad…</p>
           </div>
         )}
 
@@ -898,43 +900,7 @@ export function CanvasStudioPage() {
         {/* Capa de cursores e indicadores flotantes en tiempo real con nombre */}
         <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
           {Object.values(cursoresRemotos).map((cursor) => (
-            <div
-              key={cursor.autorId}
-              className="absolute transition-all duration-75 ease-out flex flex-col items-start select-none"
-              style={{
-                left: `${cursor.x * 100}%`,
-                top: `${cursor.y * 100}%`,
-                transform: 'translate(-4px, -34px)',
-              }}
-            >
-              {/* Badge flotante con nombre y herramienta del artista */}
-              <div
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-xl border backdrop-blur-md whitespace-nowrap animate-in fade-in zoom-in-95 duration-100"
-                style={{
-                  backgroundColor: `${cursor.colorHex}E6`,
-                  borderColor: cursor.colorHex,
-                  boxShadow: `0 4px 14px ${cursor.colorHex}66`,
-                }}
-              >
-                <span className="text-xs">✏️</span>
-                <span className="font-semibold tracking-wide">{cursor.autorNombre}</span>
-                <span className="text-[10px] font-normal opacity-85">
-                  · {cursor.tipoPincel}
-                </span>
-              </div>
-
-              {/* Puntero que señala exactamente las coordenadas del trazo */}
-              <div className="relative mt-1 ml-1">
-                <div
-                  className="w-3.5 h-3.5 rounded-full border-2 border-white shadow-lg animate-ping absolute -inset-0.5 opacity-75"
-                  style={{ backgroundColor: cursor.colorHex }}
-                />
-                <div
-                  className="w-3 h-3 rounded-full border-2 border-white shadow-md"
-                  style={{ backgroundColor: cursor.colorHex }}
-                />
-              </div>
-            </div>
+            <CursorRemoto key={cursor.autorId} x={cursor.x} y={cursor.y} colorHex={cursor.colorHex} nombre={cursor.autorNombre} detalle={cursor.tipoPincel} />
           ))}
         </div>
 
@@ -965,6 +931,7 @@ export function CanvasStudioPage() {
           />
         )}
 
+      </div>
       </div>
 
       {/* Modal para publicar obra directamente desde el lienzo */}

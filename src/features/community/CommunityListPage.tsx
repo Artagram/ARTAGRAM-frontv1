@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { api, extraerMensajeError } from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
 import { Button } from '../../components/ui/Button';
+import { Skeleton } from '../../components/ui/Skeleton';
+import clsx from 'clsx';
 import { TextField } from '../../components/ui/TextField';
 import { ComunidadesRecomendadas } from './ComunidadesRecomendadas';
 import type { ComunidadResponse } from '../../types';
@@ -63,20 +65,20 @@ export function CommunityListPage() {
     <div className="mx-auto max-w-5xl px-4 py-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-semibold">Comunidades</h1>
+          <h1 className="font-display text-[32px] font-semibold leading-tight">Comunidades</h1>
           <p className="text-sm text-paper-muted">Crea o entra a una para pintar sobre un lienzo compartido.</p>
         </div>
         <Button onClick={() => setMostrarCrear((v) => !v)}>{mostrarCrear ? 'Cancelar' : 'Crear comunidad'}</Button>
       </div>
 
-      {error && <p className="mb-4 banner-error">{error}</p>}
+      {error && <p className="banner-error mb-4">{error}</p>}
 
       {mostrarCrear && (
         <motion.form
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           onSubmit={crear}
-          className="card mb-8 flex flex-col gap-4 p-6"
+          className="card card-fija borde-comunidad mb-8 flex flex-col gap-4 p-6"
         >
           <TextField label="Nombre" required value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Acuarela Urbana" />
           <TextField
@@ -85,10 +87,17 @@ export function CommunityListPage() {
             onChange={(e) => setDescripcion(e.target.value)}
             placeholder="¿Qué dibujan aquí?"
           />
-          <label className="flex items-center gap-2 text-sm text-paper-muted">
-            <input type="checkbox" checked={publica} onChange={(e) => setPublica(e.target.checked)} className="accent-coral" />
-            Pública (cualquiera se puede unir)
-          </label>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="tabs" role="radiogroup" aria-label="Visibilidad">
+              <button type="button" role="radio" aria-checked={publica} onClick={() => setPublica(true)} className={clsx('tab', publica && 'tab-activa')}>
+                Pública
+              </button>
+              <button type="button" role="radio" aria-checked={!publica} onClick={() => setPublica(false)} className={clsx('tab', !publica && 'tab-activa')}>
+                Privada
+              </button>
+            </div>
+            {publica && <span className="text-xs text-paper-muted">Cualquiera se puede unir</span>}
+          </div>
           <div className="flex flex-wrap items-center gap-3">
             <Button type="submit" cargando={enviando}>
               Crear
@@ -96,7 +105,7 @@ export function CommunityListPage() {
             {!premium && (
               <span className="text-xs text-paper-dim">
                 Plan gratis: hasta 3 comunidades creadas.{' '}
-                <Link to="/planes" className="text-violet hover:underline">
+                <Link to="/planes" className="text-amber hover:underline">
                   Ilimitadas con PRO
                 </Link>
               </span>
@@ -105,13 +114,13 @@ export function CommunityListPage() {
         </motion.form>
       )}
 
-      <div className="mb-8 card flex flex-wrap items-end gap-3 p-4">
+      <div className="card card-fija mb-8 flex flex-wrap items-end gap-3 p-3.5">
         <TextField
           label="Unirme por ID de comunidad"
           value={codigoUnirse}
           onChange={(e) => setCodigoUnirse(e.target.value)}
           placeholder="pega el id que te compartieron"
-          className="min-w-[280px] flex-1"
+          className="min-w-[240px] flex-1 font-mono"
         />
         <Button variant="secondary" onClick={() => codigoUnirse && unirsePorId(codigoUnirse)}>
           Unirme
@@ -119,9 +128,7 @@ export function CommunityListPage() {
       </div>
 
       {cargando ? (
-        <div className="flex justify-center py-16">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-coral border-t-transparent" />
-        </div>
+        <Skeleton filas={3} className="sm:grid sm:grid-cols-2 lg:grid-cols-3" claseFila="h-40" />
       ) : comunidades.length === 0 ? (
         <EstadoVacio />
       ) : (
@@ -135,7 +142,7 @@ export function CommunityListPage() {
             >
               <Link
                 to={`/comunidades/${c.id}`}
-                className="card group block h-full p-5 transition-transform hover:-translate-y-1 hover:shadow-lg"
+                className="card borde-comunidad group block h-full p-3.5"
               >
                 <div className="mb-3 flex items-center justify-between">
                   <span className="chip">{c.miRol ?? 'miembro'}</span>
@@ -152,9 +159,9 @@ export function CommunityListPage() {
                       e.stopPropagation();
                       navigator.clipboard.writeText(c.id);
                     }}
-                    className="text-violet hover:text-coral transition-colors"
+                    className="flex-shrink-0 text-teal transition-colors hover:text-paper"
                   >
-                    Copiar ID 📋
+                    Copiar ID
                   </button>
                 </div>
               </Link>
@@ -170,9 +177,11 @@ export function CommunityListPage() {
 
 function EstadoVacio() {
   return (
-    <div className="card flex flex-col items-center gap-3 p-12 text-center">
+    <div className="card card-fija flex flex-col items-center gap-3 p-12 text-center">
       <div className="text-4xl">🎨</div>
-      <h3 className="font-display text-lg font-semibold">Todavía no tienes comunidades</h3>
+      <h3 className="font-display text-xl font-semibold">
+        Todavía no tienes <span className="acento text-teal">comunidades</span>
+      </h3>
       <p className="max-w-sm text-sm text-paper-muted">
         Crea una para juntar gente que dibuja lo que a ti te gusta, o pega el ID de una que te hayan compartido.
       </p>

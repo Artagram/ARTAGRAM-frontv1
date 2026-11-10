@@ -84,7 +84,7 @@ export function BrushToolbar({
 
   if (orientacion === 'vertical') {
     return (
-      <div className={clsx('card flex flex-col gap-4 p-4', deshabilitado && 'opacity-50 pointer-events-none')}>
+      <div className={clsx('card card-fija flex flex-col gap-4 p-4', deshabilitado && 'opacity-50 pointer-events-none')}>
         <div>
           <p className="label mb-2">Pincel</p>
           <div className="grid grid-cols-2 gap-1.5">
@@ -97,7 +97,7 @@ export function BrushToolbar({
                   'rounded-xl border px-2 py-2 text-center text-xs font-medium transition-colors',
                   herramienta.tipoPincel === p.valor
                     ? 'border-violet bg-violet/15 text-paper'
-                    : 'border-paper/10 bg-ink-900/50 text-paper-muted hover:border-paper/25',
+                    : 'border-paper/10 bg-paper/5 text-paper-muted hover:border-paper/25',
                 )}
                 title={p.descripcion}
               >
@@ -115,14 +115,14 @@ export function BrushToolbar({
               <button
                 type="button"
                 onClick={() => setCategoriaColor('clasicos')}
-                className={clsx('px-1.5 py-0.5 rounded', categoriaColor === 'clasicos' ? 'bg-ink-700 text-paper' : 'text-paper-dim')}
+                className={clsx('px-1.5 py-0.5 rounded', categoriaColor === 'clasicos' ? 'bg-paper/10 text-paper' : 'text-paper-dim')}
               >
                 Normal
               </button>
               <button
                 type="button"
                 onClick={() => setCategoriaColor('mates')}
-                className={clsx('px-1.5 py-0.5 rounded', categoriaColor === 'mates' ? 'bg-ink-700 text-paper' : 'text-paper-dim')}
+                className={clsx('px-1.5 py-0.5 rounded', categoriaColor === 'mates' ? 'bg-paper/10 text-paper' : 'text-paper-dim')}
               >
                 Mate
               </button>
@@ -192,13 +192,13 @@ export function BrushToolbar({
   return (
     <div
       className={clsx(
-        'card flex flex-wrap items-center justify-between gap-3 p-2.5 bg-ink-900/95 border-paper/10 shadow-md backdrop-blur-md rounded-2xl select-none',
+        'card card-fija flex flex-wrap items-center justify-between gap-3 rounded-[14px] p-2.5 select-none',
         deshabilitado && 'opacity-50 pointer-events-none',
       )}
     >
       {/* Sección 1: Herramientas de trazo (con exclusividad por usuario en Modo Fiesta) */}
       <div className="flex items-center gap-1.5 border-r border-paper/10 pr-3 flex-wrap">
-        <span className="text-[11px] font-semibold text-paper-dim uppercase tracking-wider hidden sm:inline mr-1">
+        <span className="text-[11px] font-medium text-paper-muted hidden sm:inline mr-1">
           {modoFiesta ? 'Herramientas (1 por persona)' : 'Pincel'}
         </span>
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -215,12 +215,12 @@ export function BrushToolbar({
                   disabled={tomadoPorOtro}
                   onClick={() => onTomarHerramienta?.(p.valor)}
                   className={clsx(
-                    'relative flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-all',
+                    'relative flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-xs font-medium transition-all',
                     tomadoPorMi
                       ? 'border-teal bg-teal/20 text-teal ring-2 ring-teal/30 shadow-sm'
                       : tomadoPorOtro
-                        ? 'border-paper/10 bg-ink-950/70 text-ink-500 cursor-not-allowed opacity-60'
-                        : 'border-paper/10 bg-ink-800/40 text-paper-muted hover:border-paper/40 hover:text-paper',
+                        ? 'border-paper/10 bg-paper/5 text-paper-dim cursor-not-allowed opacity-60'
+                        : 'border-paper/10 bg-paper/5 text-paper-muted hover:border-paper/40 hover:text-paper',
                   )}
                   title={
                     tomadoPorOtro
@@ -236,7 +236,7 @@ export function BrushToolbar({
                     <span
                       className={clsx(
                         'text-[10px] px-1 py-0.2 rounded font-semibold',
-                        tomadoPorMi ? 'bg-teal/30 text-teal' : 'bg-ink-800 text-ink-400',
+                        tomadoPorMi ? 'bg-teal/30 text-teal' : 'bg-paper/10 text-paper-dim',
                       )}
                     >
                       {tomadoPorMi ? 'Tú' : dueno}
@@ -253,10 +253,10 @@ export function BrushToolbar({
                 type="button"
                 onClick={() => onCambiar({ ...herramienta, tipoPincel: p.valor as TipoPincel })}
                 className={clsx(
-                  'flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-all',
+                  'flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-xs font-medium transition-all',
                   herramienta.tipoPincel === p.valor
                     ? 'border-violet bg-violet/20 text-paper shadow-sm'
-                    : 'border-paper/10 bg-ink-800/40 text-paper-muted hover:border-paper/10 hover:text-paper',
+                    : 'border-paper/10 bg-paper/5 text-paper-muted hover:border-paper/10 hover:text-paper',
                 )}
                 title={`${p.etiqueta}: ${p.descripcion}`}
               >
@@ -282,7 +282,7 @@ export function BrushToolbar({
               max={64}
               value={herramienta.grosor}
               onChange={(e) => onCambiar({ ...herramienta, grosor: Number(e.target.value) })}
-              className="w-20 md:w-24 accent-coral h-1.5 bg-ink-800 rounded-lg cursor-pointer"
+              className="w-20 md:w-24 accent-coral h-1.5 rounded-lg cursor-pointer"
               title={`Grosor: ${herramienta.grosor}px`}
             />
             <div className="hidden lg:flex items-center gap-1">
@@ -295,7 +295,7 @@ export function BrushToolbar({
                     'h-5 w-5 rounded border text-[10px] grid place-items-center transition-colors',
                     herramienta.grosor === tam
                       ? 'border-coral bg-coral/20 text-coral-light'
-                      : 'border-paper/10 bg-ink-800/60 text-paper-dim hover:text-paper',
+                      : 'border-paper/10 bg-paper/5 text-paper-dim hover:text-paper',
                   )}
                   title={`Preset ${tam}px`}
                 >
@@ -317,7 +317,7 @@ export function BrushToolbar({
             max={100}
             value={Math.round(herramienta.opacidad * 100)}
             onChange={(e) => onCambiar({ ...herramienta, opacidad: Number(e.target.value) / 100 })}
-            className="w-16 md:w-20 accent-coral h-1.5 bg-ink-800 rounded-lg cursor-pointer"
+            className="w-16 md:w-20 accent-coral h-1.5 rounded-lg cursor-pointer"
             title={`Opacidad: ${Math.round(herramienta.opacidad * 100)}%`}
           />
         </div>
@@ -369,7 +369,7 @@ export function BrushToolbar({
 
           {/* Color actual y selector personalizado nativo */}
           <label
-            className="relative h-6 w-6 md:h-7 md:w-7 cursor-pointer rounded-full border-2 border-dashed border-ink-500 hover:border-paper flex items-center justify-center transition-transform hover:scale-110 ml-1"
+            className="relative h-6 w-6 md:h-7 md:w-7 cursor-pointer rounded-full border-2 border-dashed border-paper/25 hover:border-paper flex items-center justify-center transition-transform hover:scale-110 ml-1"
             title="Elegir cualquier color personalizado"
             style={{ backgroundColor: herramienta.colorHex }}
           >
@@ -390,11 +390,10 @@ export function BrushToolbar({
           <button
             type="button"
             onClick={onPublicar}
-            className="btn-primary text-xs px-3.5 py-1.5 flex items-center gap-1.5 font-semibold shadow-md shadow-coral/25 bg-gradient-to-r from-coral to-violet hover:brightness-110 transition-all"
+            className="btn-primary text-xs px-3.5 py-1.5"
             title="Publicar esta obra colaborativa en el feed"
           >
-            <span>🎨</span>
-            <span>Publicar</span>
+            Publicar
           </button>
         </div>
       )}

@@ -7,6 +7,7 @@ import { ComunidadChatPanel } from '../chat/ComunidadChatPanel';
 import { CommunityBannerMural } from './CommunityBannerMural';
 import { CommunityAdminPanel } from './CommunityAdminPanel';
 import { Button } from '../../components/ui/Button';
+import { Skeleton } from '../../components/ui/Skeleton';
 
 export function CommunityDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -39,10 +40,10 @@ export function CommunityDetailPage() {
   }
 
   if (error) {
-    return <p className="mx-auto max-w-xl px-4 py-16 text-center text-coral-light">{error}</p>;
+    return <p className="banner-error mx-auto my-16 max-w-xl text-center">{error}</p>;
   }
   if (!comunidad || !id) {
-    return <div className="p-8 text-center text-paper-muted">Cargando…</div>;
+    return <Skeleton filas={2} className="mx-auto max-w-6xl px-4 py-6" claseFila="h-56" />;
   }
 
   const esAdmin =
@@ -55,12 +56,12 @@ export function CommunityDetailPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       {/* HEADER DE LA COMUNIDAD CON EL MURAL BANNER PERMANENTE EN EL FONDO */}
-      <div className="relative mb-6 overflow-hidden rounded-2xl border border-paper/10 bg-ink-950 shadow-2xl">
+      <div className="relative mb-6 overflow-hidden rounded-2xl border border-paper/10 bg-ink-800">
         {/* Mural en el fondo de la cabecera */}
         <div className="absolute inset-0 z-0 overflow-hidden">
           <CommunityBannerMural comunidadId={id} interactivo={false} alturaPx={280} />
           {/* Degradado artístico suave para legibilidad de textos */}
-          <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/75 to-ink-950/25 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink-800 via-ink-800/75 to-ink-800/25 pointer-events-none" />
         </div>
 
         {/* Contenido sobre el banner */}
@@ -68,7 +69,7 @@ export function CommunityDetailPage() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2">
               <span className="chip">{comunidad.publica ? 'Pública' : 'Privada'}</span>
-              <span className="chip border-violet/40 text-violet">Tu rol: {comunidad.miRol ?? 'Visitante'}</span>
+              <span className="chip">Tu rol: {comunidad.miRol ?? 'Visitante'}</span>
             </div>
 
             {/* Acciones principales */}
@@ -76,7 +77,7 @@ export function CommunityDetailPage() {
               <Button
                 variant="secondary"
                 onClick={() => setPintandoBanner((v) => !v)}
-                className="backdrop-blur-md bg-ink-900/80 border-paper/10 text-xs py-1.5 px-3"
+                className="px-3 py-1.5 text-xs"
               >
                 {pintandoBanner ? 'Ocultar pintor' : '🎨 Pintar en el mural'}
               </Button>
@@ -85,7 +86,7 @@ export function CommunityDetailPage() {
                 <Button
                   variant={mostrarPanelAdmin ? 'primary' : 'secondary'}
                   onClick={() => setMostrarPanelAdmin((v) => !v)}
-                  className="backdrop-blur-md bg-violet/20 border-violet/40 text-violet-light hover:bg-violet/30 text-xs py-1.5 px-3"
+                  className="px-3 py-1.5 text-xs"
                 >
                   🛡️ {mostrarPanelAdmin ? 'Cerrar panel' : 'Panel de Control'}
                 </Button>
@@ -94,7 +95,7 @@ export function CommunityDetailPage() {
           </div>
 
           <div>
-            <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight text-paper drop-shadow-md">
+            <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight text-paper">
               {comunidad.nombre}
             </h1>
             <p className="mt-2 max-w-2xl text-sm md:text-base text-paper-muted drop-shadow-sm">
@@ -108,16 +109,16 @@ export function CommunityDetailPage() {
               <span>·</span>
 
               {/* ID DE LA COMUNIDAD CLARAMENTE VISIBLE Y COPIABLE */}
-              <div className="flex items-center gap-1.5 rounded-lg border border-paper/10 bg-ink-900/80 px-2.5 py-1 font-mono backdrop-blur-sm">
+              <div className="flex items-center gap-1.5 glass rounded-full px-3 py-1 font-mono">
                 <span className="text-paper-dim">ID:</span>
                 <span className="text-paper font-semibold select-all">{comunidad.id}</span>
                 <button
                   type="button"
                   onClick={copiarId}
-                  className="ml-1 text-violet hover:text-coral transition-colors font-sans text-[11px]"
+                  className="ml-1 font-sans text-[11px] text-teal transition-colors hover:text-paper"
                   title="Copiar ID de la comunidad"
                 >
-                  {copiado ? '✓ Copiado' : '📋 Copiar'}
+                  {copiado ? '✓ Copiado' : 'Copiar'}
                 </button>
               </div>
             </div>
@@ -127,12 +128,12 @@ export function CommunityDetailPage() {
 
       {/* MURAL INTERACTIVO EXPANDIBLE ESTILO MODO FIESTA */}
       {pintandoBanner && (
-        <div className="mb-6 card p-6 border-coral/30 bg-ink-900/95 shadow-2xl backdrop-blur-md">
+        <div className="card card-fija borde-fiesta mb-6 p-6">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="font-display text-lg font-semibold text-coral">Lienzo Mural de la Comunidad</h2>
-                <span className="rounded bg-coral/20 px-2 py-0.5 text-[11px] font-semibold text-coral">Permanente</span>
+                <span className="chip">Permanente</span>
               </div>
               <p className="text-xs text-paper-muted">
                 Dibuja con la barra completa de herramientas o el borrador. Tus trazos quedan grabados en tiempo real y decoran el fondo de la comunidad.
@@ -141,7 +142,7 @@ export function CommunityDetailPage() {
             <div className="flex items-center gap-2">
               <Link
                 to={`/comunidades/${id}/banner`}
-                className="rounded-lg border border-violet/40 bg-violet/10 px-2.5 py-1 text-xs text-violet-light hover:bg-violet/20 transition-colors"
+                className="btn-secondary px-3 py-1.5 text-xs"
               >
                 Abrir en pantalla completa ↗
               </Link>
@@ -176,27 +177,27 @@ export function CommunityDetailPage() {
         </div>
       )}
 
-      {/* ACCESOS DIRECTOS AL LIENZO COMPARTIDO Y AL BANNER */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Link to={`/comunidades/${id}/lienzo`} className="card group relative overflow-hidden p-6 lg:col-span-2">
-          <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-coral/20 blur-2xl transition-transform group-hover:scale-125" />
-          <h2 className="font-display text-xl font-semibold text-coral group-hover:underline">Lienzo compartido en vivo →</h2>
-          <p className="mt-2 max-w-md text-sm text-paper-muted">
-            Dibuja en tiempo real con quien esté conectado. Cursores con nombres y actualización continua de trazos.
-          </p>
-        </Link>
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="flex flex-col gap-5">
+          <Link to={`/comunidades/${id}/lienzo`} className="card borde-comunidad group flex-1 p-5">
+            <p className="mb-2 flex items-center gap-2 text-xs font-medium text-teal">
+              <span className="punto-vivo" aria-hidden />
+              En vivo
+            </p>
+            <h2 className="font-display text-xl font-semibold group-hover:underline">Entrar al lienzo en vivo →</h2>
+            <p className="mt-2 max-w-md text-sm text-paper-muted">
+              Dibuja en tiempo real con quien esté conectado. Cursores con nombres y actualización continua de trazos.
+            </p>
+          </Link>
 
-        <Link to={`/comunidades/${id}/banner`} className="card group relative overflow-hidden p-6">
-          <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-violet/20 blur-2xl transition-transform group-hover:scale-125" />
-          <h2 className="font-display text-xl font-semibold text-violet group-hover:underline">Pintor de mural permanente →</h2>
-          <p className="mt-2 text-sm text-paper-muted">
-            Accede al lienzo permanente de 1000×1000 píxeles que da vida al fondo de tu comunidad.
-          </p>
-        </Link>
-      </div>
+          <Link to={`/comunidades/${id}/banner`} className="card borde-proceso group flex-1 p-5">
+            <h2 className="font-display text-xl font-semibold group-hover:underline">Pintor de mural permanente →</h2>
+            <p className="mt-2 text-sm text-paper-muted">
+              Accede al lienzo permanente de <span className="font-mono">1000×1000</span> píxeles que da vida al fondo de tu comunidad.
+            </p>
+          </Link>
+        </div>
 
-      {/* CHAT DE LA COMUNIDAD */}
-      <div className="mt-6">
         <ComunidadChatPanel comunidadId={id} />
       </div>
     </div>

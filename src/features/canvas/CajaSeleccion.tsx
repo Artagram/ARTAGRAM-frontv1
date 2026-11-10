@@ -43,8 +43,8 @@ export function CajaSeleccion({ caja, editable, etiqueta, anchoLineaPx = 0, onIn
     >
       {etiqueta && (
         <span
-          className={`absolute -top-6 left-0 whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-semibold text-white shadow ${
-            editable ? 'bg-violet' : 'bg-coral'
+          className={`absolute -top-6 left-0 whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-semibold shadow ${
+            editable ? 'bg-violet text-paper' : 'bg-coral text-ink-800'
           }`}
         >
           {etiqueta}
@@ -55,7 +55,7 @@ export function CajaSeleccion({ caja, editable, etiqueta, anchoLineaPx = 0, onIn
           <span
             key={esquina}
             role="presentation"
-            className={`absolute h-3 w-3 rounded-[3px] border-2 border-violet bg-white shadow ${clase}`}
+            className={`absolute h-3 w-3 rounded-[3px] border-2 border-violet bg-paper shadow ${clase}`}
             style={{ cursor }}
             onPointerDown={(e) => {
               e.stopPropagation();

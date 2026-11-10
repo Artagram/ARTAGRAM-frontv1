@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { api, extraerMensajeError } from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
 import { Button } from '../../components/ui/Button';
+import { Skeleton } from '../../components/ui/Skeleton';
+import { Stepper } from '../../components/ui/Stepper';
 import { TextField } from '../../components/ui/TextField';
 import { CodigoSalaBadge } from './CodigoSalaBadge';
 import type { SalaFiestaResponse } from '../../types';
@@ -118,8 +120,10 @@ export function PartyLobbyPage() {
   return (
       <div className="mx-auto max-w-4xl px-4 py-10">
         <div className="mb-8 text-center">
-          <span className="chip mb-3 inline-block border-amber/40 text-amber">Rondas cronometradas</span>
-          <h1 className="font-display text-3xl font-semibold">Modo fiesta</h1>
+          <span className="chip mb-3 inline-flex">Rondas cronometradas</span>
+          <h1 className="font-display text-[40px] font-semibold leading-tight">
+            Modo <span className="acento">fiesta</span>
+          </h1>
           <p className="mt-2 text-paper-muted">
             Todos pintan con el mismo pincel y color durante la ronda. Nadie borra… salvo quien logre tomar el borrador.
           </p>
@@ -131,33 +135,12 @@ export function PartyLobbyPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             onSubmit={crear}
-            className="card flex flex-col gap-4 p-6"
+            className="card card-fija borde-fiesta flex flex-col gap-4 p-6"
           >
-            <h2 className="font-display text-lg font-semibold text-coral">Crear una sala</h2>
-            <TextField
-              label="Duración de la ronda (segundos)"
-              type="number"
-              min={5}
-              max={600}
-              value={duracion}
-              onChange={(e) => setDuracion(Number(e.target.value))}
-            />
-            <TextField
-              label="Número de rondas"
-              type="number"
-              min={1}
-              max={10}
-              value={rondas}
-              onChange={(e) => setRondas(Math.max(1, Math.min(10, Number(e.target.value))))}
-            />
-            <TextField
-              label="Cupo máximo"
-              type="number"
-              min={2}
-              max={50}
-              value={cupo}
-              onChange={(e) => setCupo(Number(e.target.value))}
-            />
+            <h2 className="font-display text-lg font-semibold">Crear una sala</h2>
+            <Stepper etiqueta="Duración de la ronda (segundos)" valor={duracion} min={5} max={600} paso={5} onCambio={setDuracion} />
+            <Stepper etiqueta="Número de rondas" valor={rondas} min={1} max={10} onCambio={setRondas} />
+            <Stepper etiqueta="Cupo máximo" valor={cupo} min={2} max={50} onCambio={setCupo} />
             <Button type="submit" cargando={creando}>
               Crear sala
             </Button>
@@ -168,15 +151,16 @@ export function PartyLobbyPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
             onSubmit={unirse}
-            className="card flex flex-col gap-4 p-6"
+            className="card card-fija borde-fiesta flex flex-col gap-4 p-6"
           >
-            <h2 className="font-display text-lg font-semibold text-violet">Unirme con un código</h2>
+            <h2 className="font-display text-lg font-semibold">Unirme con un código</h2>
             <TextField
               label="Código de la sala"
               value={codigo}
               onChange={(e) => setCodigo(e.target.value.toUpperCase())}
               placeholder="AB12CD"
               maxLength={6}
+              className="py-4 text-center font-mono text-2xl uppercase tracking-[0.3em]"
             />
             <Button type="submit" variant="secondary" cargando={uniendo} className="mt-auto">
               Entrar a la sala
@@ -185,13 +169,13 @@ export function PartyLobbyPage() {
         </div>
 
         {error && (
-          <p className="mt-6 rounded-lg bg-coral/10 border border-coral/30 px-3 py-2 text-center text-sm text-coral-light">
+          <p className="banner-error mt-6 text-center">
             {error}
           </p>
         )}
 
         {aviso && (
-          <p className="mt-6 rounded-lg bg-teal/10 border border-teal/30 px-3 py-2 text-center text-sm text-teal">
+          <p className="glass mt-6 rounded-[14px] border-t-2 border-t-teal px-3 py-2 text-center text-sm text-paper">
             {aviso}
           </p>
         )}
@@ -200,8 +184,8 @@ export function PartyLobbyPage() {
         <div className="mt-10">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div className="flex items-center gap-2">
-              <h2 className="font-display text-xl font-bold text-paper">Tus salas activas</h2>
-              <span className="rounded-full bg-ink-800 border border-paper/10 px-2 py-0.5 text-xs font-semibold text-paper-dim">
+              <h2 className="font-display text-xl font-semibold text-paper">Tus salas activas</h2>
+              <span className="chip">
                 {salasActivas.length}
               </span>
             </div>
@@ -210,7 +194,7 @@ export function PartyLobbyPage() {
                 type="button"
                 onClick={limpiarTodas}
                 disabled={limpiando}
-                className="text-xs text-coral-light hover:text-paper px-3 py-1.5 rounded-lg bg-coral/10 hover:bg-coral/20 border border-coral/30 transition-colors"
+                className="btn-secondary border-coral/40 px-3 py-1.5 text-xs text-coral-light"
                 title="Cierra y finaliza todas las salas activas en las que participas"
               >
                 {limpiando ? 'Cerrando...' : 'Cerrar todas las salas'}
@@ -219,13 +203,13 @@ export function PartyLobbyPage() {
           </div>
 
           {cargandoSalas ? (
-            <div className="card p-8 text-center text-sm text-paper-dim">Cargando salas activas...</div>
+            <Skeleton filas={2} className="sm:grid sm:grid-cols-2" claseFila="h-40" />
           ) : salasActivas.length === 0 ? (
-            <div className="card p-8 text-center">
-              <div className="w-12 h-12 rounded-full bg-ink-700/50 mx-auto flex items-center justify-center text-xl mb-3 text-paper-dim">
-                🎉
-              </div>
-              <p className="text-sm font-medium text-paper">No tienes salas activas en este momento</p>
+            <div className="card card-fija p-8 text-center">
+              <div className="mb-3 text-3xl">🎉</div>
+              <p className="font-display text-xl font-semibold text-paper">
+                No tienes salas <span className="acento">activas</span>
+              </p>
               <p className="text-xs text-paper-dim mt-1">
                 Crea una sala arriba o ingresa con un código para empezar a pintar en grupo.
               </p>
@@ -240,23 +224,16 @@ export function PartyLobbyPage() {
                     key={s.id}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="card p-5 flex flex-col justify-between border-paper/10 hover:border-violet/40 transition-colors gap-4"
+                    className="card borde-fiesta flex flex-col justify-between gap-4 p-3.5"
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-2">
                         <CodigoSalaBadge codigo={s.codigo} />
-                        <span
-                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${
-                            enRonda
-                              ? 'bg-teal/15 border-teal/40 text-teal'
-                              : 'bg-amber/15 border-amber/40 text-amber'
-                          }`}
-                        >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              enRonda ? 'bg-teal animate-pulse' : 'bg-amber'
-                            }`}
-                          />
+                        <span className="chip">
+                          <span className="font-semibold tabular-nums text-paper">
+                            {s.totalParticipantes}/{s.cupoMaximo}
+                          </span>
+                          {enRonda ? <span className="punto-vivo" aria-hidden /> : <span aria-hidden className="h-2 w-2 rounded-full bg-amber" />}
                           {enRonda ? `En ronda (#${s.numeroRonda})` : 'Esperando'}
                         </span>
                       </div>
@@ -268,9 +245,6 @@ export function PartyLobbyPage() {
                             {s.anfitrionNombre}
                             {esAnfitrion && ' (Tú)'}
                           </span>
-                        </p>
-                        <p className="text-paper-dim">
-                          Participantes: <span className="text-paper">{s.totalParticipantes}</span> / {s.cupoMaximo}
                         </p>
                         <p className="text-paper-dim">
                           Rondas: <span className="text-paper">{s.numeroRonda}</span> de{' '}
@@ -291,7 +265,7 @@ export function PartyLobbyPage() {
                         <button
                           type="button"
                           onClick={() => cerrarSala(s.id)}
-                          className="px-3 py-1.5 text-xs text-coral-light hover:text-paper rounded-full bg-coral/15 hover:bg-coral/30 border border-coral/40 transition-colors"
+                          className="px-3 py-1.5 text-xs text-coral-light hover:text-paper rounded-full border border-coral/40 transition-colors hover:bg-coral/20"
                           title="Cerrar la sala permanentemente para todos los participantes"
                         >
                           Cerrar

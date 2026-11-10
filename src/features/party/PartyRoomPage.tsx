@@ -11,6 +11,7 @@ import { BrushToolbar, type Herramienta, type HerramientaFiesta } from '../canva
 import { PublishWizard } from '../feed/PublishWizard';
 import { Modal } from '../../components/ui/Modal';
 import { CodigoSalaBadge } from './CodigoSalaBadge';
+import { CursorRemoto } from '../canvas/CursorRemoto';
 import { generarUUID } from '../../lib/uuid';
 import type { EstadoRondaResponse, PartyEvento, PartyTrazoDto, Punto, SalaFiestaResponse, TipoPincel } from '../../types';
 
@@ -633,26 +634,24 @@ export function PartyRoomPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-var(--alto-barra))] flex-col bg-ink-950 p-2 sm:p-3 gap-2 overflow-hidden select-none">
+    <div className="flex h-[calc(100vh-var(--alto-barra))] flex-col p-2 sm:p-3 gap-2 overflow-hidden select-none">
       {/* Cabecera del modo fiesta */}
       <header className="flex flex-wrap items-center justify-between gap-2 px-1">
         <div className="flex items-center gap-3">
           <Link
             to="/fiesta"
-            className="btn-ghost text-xs px-2.5 py-1.5 flex items-center gap-1 border border-paper/10"
+            className="btn-ghost text-xs px-3 py-1.5"
             title="Salir de la sala"
           >
             ← Salir
           </Link>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="font-display text-lg font-bold tracking-tight text-paper">
+              <h1 className="font-display text-lg font-semibold tracking-tight text-paper">
                 Sala de {sala?.anfitrionNombre ?? '…'}
               </h1>
-              {sala && <CodigoSalaBadge codigo={sala.codigo} />}
-              <span className="rounded-full bg-violet/20 border border-violet/40 px-2 py-0.5 text-[10px] font-semibold text-violet">
-                🎉 Modo Fiesta · {sala?.totalParticipantes ?? 1} artista(s)
-              </span>
+              {sala && <CodigoSalaBadge codigo={sala.codigo} compacto />}
+              <span className="chip">{sala?.totalParticipantes ?? 1} artista(s)</span>
             </div>
             <p className="text-[11px] text-paper-dim hidden sm:block">
               Panel estilo Paint exclusivo · 1 persona por herramienta en tiempo real
@@ -661,27 +660,20 @@ export function PartyRoomPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Cronómetro aislado que no re-renderiza el lienzo ni la página */}
-          <CronometroRonda
-            relojRef={relojRef}
-            enRonda={enRonda}
-            numeroRonda={numeroRonda}
-            totalRondas={totalRondas}
-            terminado={terminado}
-          />
+          {numeroRonda > 0 && <SegmentosRonda actual={numeroRonda} total={totalRondas} enRonda={enRonda} />}
 
           {esAnfitrion && !terminado && (
             <Button
               type="button"
               onClick={iniciarRonda}
               cargando={iniciandoRonda}
-              className="text-xs px-2.5 py-1.5 border border-paper/10 bg-gradient-to-r from-coral to-violet text-paper hover:brightness-110 shadow-sm"
+              className="text-xs px-3 py-1.5"
               title="Iniciar o avanzar a la siguiente ronda"
             >
               {enEsperaInicial
-                ? `🚀 Iniciar Ronda 1/${totalRondas}`
+                ? 'Empezar'
                 : enIntermision
-                ? `▶ Ronda ${numeroRonda + 1}/${totalRondas}`
+                ? 'Siguiente ronda →'
                 : 'Reiniciar ronda'}
             </Button>
           )}
@@ -689,20 +681,19 @@ export function PartyRoomPage() {
           <button
             type="button"
             onClick={descargarSnapshot}
-            className="btn-ghost text-xs px-2.5 py-1.5 border border-paper/10 text-paper-muted hover:text-paper"
+            className="btn-secondary text-xs px-3 py-1.5"
             title="Descargar snapshot PNG"
           >
-            💾 Descargar
+            Descargar PNG
           </button>
 
           <button
             type="button"
             onClick={abrirPublicar}
-            className="btn-primary text-xs px-3.5 py-1.5 flex items-center gap-1.5 font-semibold shadow-md shadow-coral/25 bg-gradient-to-r from-coral to-violet hover:brightness-110"
+            className="btn-primary text-xs px-3.5 py-1.5"
             title="Publicar esta obra colaborativa directamente en el Feed"
           >
-            <span>🎨</span>
-            <span>Publicar obra</span>
+            Publicar obra
           </button>
         </div>
       </header>
@@ -714,15 +705,34 @@ export function PartyRoomPage() {
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="rounded-lg border border-amber/40 bg-amber/10 px-3 py-1.5 text-xs text-amber flex items-center justify-between"
+            className="banner-aviso flex items-center justify-between py-1.5 text-xs"
           >
             <span>{aviso}</span>
-            <button type="button" onClick={() => setAviso(null)} className="text-amber/70 hover:text-amber ml-2">
+            <button type="button" onClick={() => setAviso(null)} className="ml-2 text-paper-muted hover:text-paper">
               ✕
             </button>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {!enEsperaInicial && !terminado && (
+        <div className="flex items-end justify-between gap-4 px-1">
+          <div className="min-w-0">
+            <p className="label">Tu herramienta</p>
+            <p className="acento truncate text-2xl leading-tight sm:text-4xl">
+              {miHerramienta ? miHerramienta.toLowerCase().replace(/_/g, ' ') : 'elige una'}
+            </p>
+          </div>
+          {/* Cronómetro aislado que no re-renderiza el lienzo ni la página */}
+          <CronometroRonda
+            relojRef={relojRef}
+            enRonda={enRonda}
+            numeroRonda={numeroRonda}
+            totalRondas={totalRondas}
+            terminado={terminado}
+          />
+        </div>
+      )}
 
       {/* Panel horizontal Paint permanente (con exclusividad de 1 persona por herramienta) */}
       <BrushToolbar
@@ -741,15 +751,12 @@ export function PartyRoomPage() {
       {/* Contenedor responsivo con la forma de la pantalla para el lienzo colaborativo de fiesta */}
       <div
         ref={containerRef}
-        className="relative flex-1 w-full min-h-0 rounded-2xl border border-paper/10 bg-[#F5F1EA] shadow-inner overflow-hidden"
+        className="relative flex-1 w-full min-h-0 rounded-2xl border border-paper/10 bg-[#F5F1EA] overflow-hidden"
         style={{ cursor: miHerramienta ? 'crosshair' : 'default' }}
       >
         {cargando && (
-          <div className="absolute inset-0 z-10 grid place-items-center bg-ink-900/60 backdrop-blur-sm">
-            <div className="flex flex-col items-center gap-2 text-paper">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-amber border-t-transparent" />
-              <p className="text-xs text-paper-muted">Sincronizando sala fiesta…</p>
-            </div>
+          <div role="status" className="skeleton absolute inset-0 z-10 grid place-items-center rounded-none">
+            <p className="text-xs text-paper-muted">Sincronizando sala fiesta…</p>
           </div>
         )}
 
@@ -766,70 +773,35 @@ export function PartyRoomPage() {
         {/* Capa de cursores e indicadores flotantes en tiempo real con nombre */}
         <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
           {Object.values(cursoresRemotos).map((cursor) => (
-            <div
+            <CursorRemoto
               key={cursor.autorId}
-              className="absolute transition-all duration-75 ease-out flex flex-col items-start select-none"
-              style={{
-                left: `${cursor.x * 100}%`,
-                top: `${cursor.y * 100}%`,
-                transform: 'translate(-4px, -34px)',
-              }}
-            >
-              {/* Badge flotante con nombre y herramienta del artista */}
-              <div
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-xl border backdrop-blur-md whitespace-nowrap animate-in fade-in zoom-in-95 duration-100"
-                style={{
-                  backgroundColor: cursor.esBorrador ? '#1E1B2E' : `${cursor.colorHex}E6`,
-                  borderColor: cursor.esBorrador ? '#A78BFA' : cursor.colorHex,
-                  boxShadow: `0 4px 14px ${cursor.colorHex}66`,
-                }}
-              >
-                <span className="text-xs">{cursor.esBorrador ? '🧹' : '✏️'}</span>
-                <span className="font-semibold tracking-wide">{cursor.autorNombre}</span>
-                <span className="text-[10px] font-normal opacity-85">
-                  · {cursor.tipoPincel}
-                </span>
-              </div>
-
-              {/* Puntero que señala exactamente las coordenadas del trazo */}
-              <div className="relative mt-1 ml-1">
-                <div
-                  className="w-3.5 h-3.5 rounded-full border-2 border-white shadow-lg animate-ping absolute -inset-0.5 opacity-75"
-                  style={{ backgroundColor: cursor.colorHex }}
-                />
-                <div
-                  className="w-3 h-3 rounded-full border-2 border-white shadow-md"
-                  style={{ backgroundColor: cursor.colorHex }}
-                />
-              </div>
-            </div>
+              x={cursor.x}
+              y={cursor.y}
+              colorHex={cursor.colorHex}
+              nombre={cursor.autorNombre}
+              detalle={cursor.tipoPincel}
+              esBorrador={cursor.esBorrador}
+            />
           ))}
         </div>
 
         {/* Pantalla de inicio / sala de espera previa a la primera ronda */}
         {enEsperaInicial && !cargando && (
-          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-ink-950/70 p-4 backdrop-blur-sm text-center">
+          <div className="scrim absolute inset-0 z-20 flex flex-col items-center justify-center p-4 text-center">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="card max-w-sm w-full p-6 flex flex-col items-center gap-4 border-violet/30 shadow-2xl bg-ink-900/95"
+              className="card card-fija borde-fiesta flex w-full max-w-sm flex-col items-center gap-4 p-6"
             >
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-coral to-violet flex items-center justify-center text-3xl shadow-lg shadow-coral/20">
-                🎉
-              </div>
-              <div>
-                <h2 className="font-display text-xl font-bold text-paper">Sala de Espera</h2>
-                <p className="text-xs text-paper-dim mt-1">
-                  Código: <span className="font-mono font-bold text-violet">{sala?.codigo}</span>
-                </p>
-              </div>
+              <h2 className="font-display text-[32px] font-semibold leading-tight text-paper">
+                Sala de <span className="acento">espera</span>
+              </h2>
+              {sala && <CodigoSalaBadge codigo={sala.codigo} />}
 
-              <div className="w-full rounded-xl bg-ink-950/80 p-3 text-xs text-paper-muted space-y-2 border border-paper/10">
+              <div className="w-full space-y-2 rounded-xl border border-paper/10 bg-paper/5 p-3 text-xs text-paper-muted">
                 <div className="flex justify-between items-center">
                   <span>Total de rondas:</span>
-                  <span className="font-bold text-paper px-2 py-0.5 rounded bg-ink-800 border border-paper/10">
-                    {totalRondas} rondas
-                  </span>
+                  <span className="font-semibold text-paper">{totalRondas} rondas</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span>Tiempo por ronda:</span>
@@ -852,13 +824,13 @@ export function PartyRoomPage() {
                   type="button"
                   onClick={iniciarRonda}
                   cargando={iniciandoRonda}
-                  className="w-full py-2.5 text-xs font-bold bg-gradient-to-r from-coral to-violet shadow-lg shadow-coral/30"
+                  className="w-full"
                 >
-                  🚀 Iniciar Partida (Ronda 1 de {totalRondas})
+                  Empezar
                 </Button>
               ) : (
-                <div className="flex items-center gap-2 text-xs text-amber animate-pulse">
-                  <span>⏳</span>
+                <div className="flex items-center gap-2 text-xs text-paper-muted">
+                  <span className="punto-vivo" aria-hidden />
                   <span>Esperando a que {sala?.anfitrionNombre} inicie la ronda 1...</span>
                 </div>
               )}
@@ -872,12 +844,11 @@ export function PartyRoomPage() {
             <motion.div
               initial={{ y: -10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="card px-5 py-3 flex items-center gap-4 border-amber/40 bg-ink-950/95 shadow-2xl backdrop-blur-md"
+              className="card card-fija borde-pro flex items-center gap-4 px-5 py-3"
             >
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">⏸</span>
-                  <span className="text-xs font-bold text-amber">
+                  <span className="font-display text-sm font-semibold text-paper">
                     ¡Ronda {numeroRonda} de {totalRondas} finalizada!
                   </span>
                 </div>
@@ -888,12 +859,12 @@ export function PartyRoomPage() {
                   type="button"
                   onClick={iniciarRonda}
                   cargando={iniciandoRonda}
-                  className="text-xs py-1.5 px-3 whitespace-nowrap bg-gradient-to-r from-coral to-violet"
+                  className="whitespace-nowrap px-3 py-1.5 text-xs"
                 >
-                  ▶ Ronda {numeroRonda + 1} de {totalRondas}
+                  Siguiente ronda →
                 </Button>
               ) : (
-                <span className="text-xs text-paper-dim animate-pulse whitespace-nowrap">
+                <span className="whitespace-nowrap text-xs text-paper-muted">
                   Esperando al anfitrión...
                 </span>
               )}
@@ -903,29 +874,28 @@ export function PartyRoomPage() {
 
         {/* Pantalla final de la partida al completar todas las rondas */}
         {terminado && !cargando && (
-          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-ink-950/90 p-4 backdrop-blur-md overflow-y-auto">
+          <div className="scrim absolute inset-0 z-30 flex flex-col items-center justify-center overflow-y-auto p-4">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="card max-w-lg w-full p-6 flex flex-col items-center gap-4 border-violet/40 shadow-2xl text-center bg-ink-900/95"
+              className="card card-fija borde-fiesta flex w-full max-w-lg flex-col items-center gap-4 p-6 text-center"
             >
-              <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-coral to-violet flex items-center justify-center text-3xl shadow-lg shadow-violet/30">
-                🎉
-              </div>
               <div>
-                <h2 className="font-display text-2xl font-bold text-paper">¡Partida Finalizada!</h2>
+                <h2 className="font-display text-[32px] font-semibold leading-tight text-paper">
+                  ¡Partida <span className="acento">finalizada</span>!
+                </h2>
                 <p className="text-xs text-paper-dim mt-1">
                   Se completaron las <span className="text-paper font-semibold">{totalRondas} rondas</span> colaborativas.
                 </p>
               </div>
 
               {/* Vista previa de la obra completada */}
-              <div className="w-full max-h-56 overflow-hidden rounded-xl border border-paper/10 bg-[#F5F1EA] shadow-inner flex items-center justify-center p-1">
+              <div className="w-full max-h-56 overflow-hidden rounded-xl border border-paper/10 bg-[#F5F1EA] flex items-center justify-center p-1">
                 {previewFinalUrl ? (
                   <img
                     src={previewFinalUrl}
                     alt="Obra colaborativa final"
-                    className="max-h-52 object-contain rounded-lg shadow-sm"
+                    className="max-h-52 object-contain rounded-lg"
                   />
                 ) : (
                   <div className="h-40 flex items-center justify-center text-xs text-paper-dim">
@@ -936,17 +906,17 @@ export function PartyRoomPage() {
 
               {/* Estadísticas de la partida */}
               <div className="grid grid-cols-3 gap-2 w-full text-xs">
-                <div className="rounded-lg bg-ink-950 p-2.5 border border-paper/10">
+                <div className="glass rounded-xl p-2.5">
                   <p className="text-paper-dim text-[10px]">Rondas</p>
-                  <p className="font-bold text-paper text-sm">{totalRondas} / {totalRondas}</p>
+                  <p className="font-display text-xl font-semibold text-paper">{totalRondas} / {totalRondas}</p>
                 </div>
-                <div className="rounded-lg bg-ink-950 p-2.5 border border-paper/10">
+                <div className="glass rounded-xl p-2.5">
                   <p className="text-paper-dim text-[10px]">Trazos hechos</p>
-                  <p className="font-bold text-paper text-sm">{totalTrazos}</p>
+                  <p className="font-display text-xl font-semibold text-paper">{totalTrazos}</p>
                 </div>
-                <div className="rounded-lg bg-ink-950 p-2.5 border border-paper/10">
+                <div className="glass rounded-xl p-2.5">
                   <p className="text-paper-dim text-[10px]">Artistas</p>
-                  <p className="font-bold text-paper text-sm">{sala?.totalParticipantes ?? 1}</p>
+                  <p className="font-display text-xl font-semibold text-paper">{sala?.totalParticipantes ?? 1}</p>
                 </div>
               </div>
 
@@ -955,17 +925,17 @@ export function PartyRoomPage() {
                 <Button
                   type="button"
                   onClick={abrirPublicar}
-                  className="flex-1 py-2 text-xs font-semibold bg-gradient-to-r from-coral to-violet shadow-lg shadow-coral/30"
+                  className="flex-1"
                 >
-                  🎨 Publicar en el Feed
+                  Publicar obra
                 </Button>
                 <Button
                   type="button"
                   variant="secondary"
                   onClick={descargarSnapshot}
-                  className="flex-1 py-2 text-xs border-paper/10 hover:border-paper"
+                  className="flex-1"
                 >
-                  📥 Descargar PNG
+                  Descargar
                 </Button>
               </div>
 
@@ -981,7 +951,7 @@ export function PartyRoomPage() {
 
         {/* Indicador de ayuda si no tiene herramienta seleccionada */}
         {!miHerramienta && !cargando && !enEsperaInicial && !terminado && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 pointer-events-none rounded-full bg-ink-900/80 px-4 py-1.5 text-xs text-paper-dim border border-paper/10 shadow-md backdrop-blur-sm">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 pointer-events-none glass rounded-full px-4 py-1.5 text-xs text-paper-muted">
             👆 Elige una de las herramientas disponibles arriba para comenzar a pintar
           </div>
         )}
@@ -1043,13 +1013,13 @@ function CronometroRonda({
   if (!enRonda) {
     if (numeroRonda === 0) {
       return (
-        <div className="rounded-xl border border-paper/10 bg-ink-900/60 px-3 py-1 font-display text-xs font-semibold text-paper-dim">
+        <div className="glass rounded-full px-3 py-1 text-xs font-medium text-paper-muted">
           ⏳ Esperando inicio · 0/{totalRondas} rondas
         </div>
       );
     }
     return (
-      <div className="rounded-xl border border-amber/40 bg-amber/15 px-3 py-1 font-display text-xs font-semibold text-amber">
+      <div className="glass rounded-full px-3 py-1 text-xs font-medium text-amber">
         ⏸ Ronda {numeroRonda}/{totalRondas}
       </div>
     );
@@ -1060,8 +1030,30 @@ function CronometroRonda({
   const ss = String(segundos % 60).padStart(2, '0');
 
   return (
-    <div className="rounded-xl border border-teal/50 bg-teal/15 px-3 py-1 font-display text-xs font-semibold tabular-nums text-teal">
-      ⏱ {mm}:{ss} · Ronda {numeroRonda}/{totalRondas}
+    <div
+      role="timer"
+      aria-label={`Quedan ${segundos} segundos de la ronda ${numeroRonda} de ${totalRondas}`}
+      className={`animate-latido font-display text-5xl font-semibold leading-none tabular-nums sm:text-[64px] ${segundos <= 10 ? 'text-coral' : 'text-paper'}`}
+    >
+      {mm}:{ss}
+    </div>
+  );
+}
+
+function SegmentosRonda({ actual, total, enRonda }: { actual: number; total: number; enRonda: boolean }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="whitespace-nowrap text-xs font-medium text-paper-muted">
+        Ronda {actual} de {total}
+      </span>
+      <div aria-hidden className="hidden gap-1 sm:flex">
+        {Array.from({ length: total }, (_, i) => (
+          <span
+            key={i}
+            className={`h-1.5 w-6 rounded-full ${i + 1 > actual ? 'bg-paper/20' : 'bg-coral'} ${i + 1 === actual && enRonda ? 'animate-pulso-vivo' : ''}`}
+          />
+        ))}
+      </div>
     </div>
   );
 }

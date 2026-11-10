@@ -417,30 +417,28 @@ export function CommunityBannerMural({
       />
 
       {cargando && (
-        <div className="absolute inset-0 z-10 grid place-items-center bg-ink-950/40 backdrop-blur-[2px]">
-          <div className="h-7 w-7 animate-spin rounded-full border-2 border-coral border-t-transparent" />
-        </div>
+        <div role="status" aria-label="Cargando mural" className="skeleton absolute inset-0 z-10 rounded-none" />
       )}
 
       {/* Indicador de estado de persistencia */}
       <div className="absolute top-2 right-2 z-20 flex items-center gap-2">
         {guardando && (
-          <span className="flex items-center gap-1.5 rounded-full bg-ink-900/90 border border-coral/40 px-2.5 py-1 text-[11px] font-medium text-coral-light backdrop-blur-md shadow-md animate-pulse">
-            <span className="h-2 w-2 rounded-full bg-coral animate-ping" />
+          <span className="flex items-center gap-1.5 glass rounded-full px-2.5 py-1 text-[11px] font-medium text-paper">
+            <span className="punto-vivo" aria-hidden />
             Grabando en mural permanente…
           </span>
         )}
       </div>
 
       {error && (
-        <div className="absolute bottom-2 left-2 z-20 rounded bg-coral/30 border border-coral px-2.5 py-1 text-xs text-coral-light backdrop-blur-md">
+        <div className="banner-error absolute bottom-2 left-2 z-20 py-1 text-xs">
           {error}
         </div>
       )}
 
       {/* Barra de herramientas flotante estilo fiesta si está activo el modo pintor */}
       {interactivo && mostrarBarraHerramientas && (
-        <div className="absolute bottom-3 left-3 right-3 z-30 flex flex-col gap-2 rounded-2xl border border-paper/10 bg-ink-950/95 p-3 shadow-2xl backdrop-blur-md">
+        <div className="absolute bottom-3 left-3 right-3 z-30 flex flex-col gap-2">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <BrushToolbar
               herramienta={herramienta}
@@ -454,11 +452,7 @@ export function CommunityBannerMural({
               <button
                 type="button"
                 onClick={() => setEsBorrador((v) => !v)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
-                  esBorrador
-                    ? 'bg-coral text-ink-800 shadow-glow-coral font-bold'
-                    : 'border border-paper/10 bg-ink-800 text-paper hover:bg-paper/10'
-                }`}
+                className={`text-xs px-3 py-1.5 ${esBorrador ? 'btn-primary' : 'btn-tertiary glass'}`}
               >
                 {esBorrador ? '🧹 Borrador activo' : '🧹 Borrador'}
               </button>

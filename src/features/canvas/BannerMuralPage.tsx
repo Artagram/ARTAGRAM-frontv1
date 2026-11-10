@@ -10,8 +10,10 @@ export function BannerMuralPage() {
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="label">Mural Comunitario Permanente · 1000×1000</p>
-          <h1 className="font-display text-2xl font-semibold">Lienzo Mural de la Comunidad</h1>
+          <p className="font-mono text-[11px] text-paper-dim">Mural Comunitario Permanente · 1000×1000</p>
+          <h1 className="font-display text-[32px] font-semibold leading-tight">
+            Lienzo Mural de la <span className="acento text-teal">Comunidad</span>
+          </h1>
           <p className="text-xs text-paper-muted">
             Dibuja con la barra de herramientas completa del modo fiesta. Tus trazos quedan grabados permanentemente y decoran el fondo de la comunidad.
           </p>
@@ -21,7 +23,7 @@ export function BannerMuralPage() {
         </Link>
       </div>
 
-      <div className="card overflow-hidden p-4 border-paper/10 bg-ink-950 shadow-2xl">
+      <div className="card card-fija overflow-hidden p-3.5">
         <CommunityBannerMural comunidadId={comunidadId} interactivo={true} alturaPx={620} />
       </div>
     </div>

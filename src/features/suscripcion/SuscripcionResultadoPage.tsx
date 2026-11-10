@@ -54,10 +54,12 @@ export function SuscripcionResultadoPage() {
         ? MENSAJES.demorado
         : MENSAJES[estado];
 
+  const borde = resultado === 'rechazado' ? 'borde-fiesta' : resultado !== 'pendiente' && estado === 'activo' ? 'borde-comunidad' : 'borde-pro';
+
   return (
     <div className="flex min-h-[calc(100vh-var(--alto-barra))] items-center justify-center px-4 py-12">
-      <div className="card flex w-full max-w-md flex-col gap-3 p-8 text-center">
-        <h1 className="font-display text-2xl font-semibold">{mensaje.titulo}</h1>
+      <div className={`card card-fija flex w-full max-w-md flex-col gap-3 p-8 text-center ${borde}`}>
+        <h1 className="font-display text-[32px] font-semibold leading-tight">{mensaje.titulo}</h1>
         <p className="text-sm text-paper-muted">{mensaje.texto}</p>
         {nombreArtista && (
           <Link to={`/perfil/${nombreArtista}`} className="btn-secondary mt-3">

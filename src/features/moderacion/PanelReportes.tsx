@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { extraerMensajeError } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
+import { Skeleton } from '../../components/ui/Skeleton';
 import {
   cargarReportes,
   procesarObrasSinMarca,
@@ -52,18 +53,18 @@ export function PanelReportes() {
     }
   }
 
-  if (cargando) return <p className="py-10 text-center text-paper-muted">Cargando…</p>;
+  if (cargando) return <Skeleton filas={3} claseFila="h-32" />;
 
   return (
     <div>
-      {error && <p className="mb-4 banner-error">{error}</p>}
+      {error && <p className="banner-error mb-4">{error}</p>}
 
       {reportes.length === 0 ? (
         <p className="py-10 text-center text-paper-muted">No hay reportes pendientes.</p>
       ) : (
         <div className="space-y-3">
           {reportes.map((r) => (
-            <div key={r.publicacionId} className="card flex flex-col gap-4 p-4 sm:flex-row">
+            <div key={r.publicacionId} className="card card-fija flex flex-col gap-4 p-3.5 sm:flex-row">
               <img src={r.imagenUrl} alt={r.titulo} className="h-24 w-24 flex-shrink-0 rounded-lg object-cover" />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
@@ -74,7 +75,15 @@ export function PanelReportes() {
                   {r.autorNombre} · {r.total} {r.total === 1 ? 'reporte' : 'reportes'} ·{' '}
                   {new Date(r.ultimoEn).toLocaleDateString('es')}
                 </p>
-                <p className="mt-1 text-sm text-paper-muted">{resumirMotivos(r.motivos)}</p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {resumirMotivos(r.motivos)
+                    .split(' · ')
+                    .map((motivo) => (
+                      <span key={motivo} className="chip">
+                        {motivo}
+                      </span>
+                    ))}
+                </div>
                 {r.detalles.length > 0 && (
                   <ul className="mt-2 space-y-1 text-xs text-paper-muted">
                     {r.detalles.map((d, i) => (
@@ -88,6 +97,7 @@ export function PanelReportes() {
               <div className="flex flex-shrink-0 items-start gap-2">
                 <Button
                   variant="secondary"
+                  className="border-teal/60 text-teal hover:border-teal"
                   disabled={resolviendo !== null}
                   onClick={() => resolver(r.publicacionId, 'RESTAURAR')}
                 >

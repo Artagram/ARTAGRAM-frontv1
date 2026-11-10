@@ -56,7 +56,7 @@ export function BuscarArtistas({ mostrarSugerencias, onSeguimientoCambiado }: Pr
           className="w-full bg-transparent text-sm text-paper placeholder:text-paper-dim focus:outline-none"
           aria-label="Buscar artistas por nombre"
         />
-        {buscando && <span className="h-4 w-4 animate-spin rounded-full border-2 border-coral border-t-transparent" />}
+        {buscando && <span className="h-4 w-4 animate-spin rounded-full border-2 border-teal border-t-transparent" />}
       </label>
 
       {visible && (

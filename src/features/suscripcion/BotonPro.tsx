@@ -28,12 +28,12 @@ export function BotonPro() {
 
   return (
     <div>
-      <Button onClick={pasarAPro} cargando={enviando}>
+      <Button variant="pro" onClick={pasarAPro} cargando={enviando}>
         Pasar a PRO
       </Button>
-      {error && <p className="mt-2 text-sm text-coral">{error}</p>}
+      {error && <p className="banner-error mt-2">{error}</p>}
       {aviso && (
-        <p role="status" className="mt-2 text-sm text-coral">
+        <p role="status" className="banner-aviso mt-2">
           Esta función está en proceso. Muy pronto podrás pasar a PRO.
         </p>
       )}

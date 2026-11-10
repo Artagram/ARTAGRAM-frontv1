@@ -3,6 +3,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { extraerMensajeError } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
+import { Skeleton } from '../../components/ui/Skeleton';
 import {
   agruparPorDia,
   cargarNotificaciones,
@@ -38,7 +39,7 @@ export function NotificationsPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
       <div className="mb-6 flex items-center justify-between gap-3">
-        <h1 className="font-display text-3xl font-semibold">Notificaciones</h1>
+        <h1 className="font-display text-[32px] font-semibold leading-tight">Notificaciones</h1>
         {noLeidas > 0 && (
           <Button variant="ghost" onClick={marcarTodas}>
             Marcar todas como leídas
@@ -46,10 +47,10 @@ export function NotificationsPage() {
         )}
       </div>
 
-      {error && <p className="mb-4 banner-error">{error}</p>}
+      {error && <p className="banner-error mb-4">{error}</p>}
 
       {cargando ? (
-        <p className="py-10 text-center text-paper-muted">Cargando…</p>
+        <Skeleton filas={4} claseFila="h-16" />
       ) : lista.length === 0 ? (
         !error && <p className="py-10 text-center text-paper-muted">Aún no tienes notificaciones.</p>
       ) : (
@@ -62,7 +63,7 @@ export function NotificationsPage() {
                   key={n.id}
                   onClick={() => abrir(n)}
                   className={`card flex w-full items-start gap-3 p-3 text-left transition-colors hover:bg-paper/10 ${
-                    n.leida ? 'opacity-70' : ''
+                    n.leida ? '' : 'bg-paper/10'
                   }`}
                 >
                   <span

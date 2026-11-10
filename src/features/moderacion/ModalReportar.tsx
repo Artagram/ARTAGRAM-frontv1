@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { extraerMensajeError } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
+import { Modal } from '../../components/ui/Modal';
 import { MOTIVOS, reportarObra, type MotivoReporte } from './reportesApi';
 
 interface ModalReportarProps {
@@ -30,41 +31,34 @@ export function ModalReportar({ publicacionId, onCerrar, onReportada }: ModalRep
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-ink-950/70 p-4" onClick={onCerrar}>
-      <form
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="reportar-titulo"
-        className="card w-full max-w-md p-6"
-        onClick={(e) => e.stopPropagation()}
-        onSubmit={enviar}
-      >
+    <Modal etiquetadoPor="reportar-titulo" onCerrar={onCerrar}>
+      <form onSubmit={enviar}>
         <h2 id="reportar-titulo" className="font-display text-xl font-semibold">
           Reportar obra
         </h2>
         <p className="mt-1 text-sm text-paper-muted">Un administrador revisará tu reporte.</p>
 
-        <div className="mt-4 space-y-2">
+        <div role="radiogroup" aria-label="Motivo del reporte" className="mt-4 flex flex-wrap gap-2">
           {(Object.entries(MOTIVOS) as [MotivoReporte, string][]).map(([valor, etiqueta]) => (
-            <label key={valor} className="flex items-center gap-2 text-sm text-paper">
-              <input type="radio" name="motivo" checked={motivo === valor} onChange={() => setMotivo(valor)} />
+            <button
+              key={valor}
+              type="button"
+              role="radio"
+              aria-checked={motivo === valor}
+              onClick={() => setMotivo(valor)}
+              className={`chip px-3 py-2 text-sm ${motivo === valor ? 'chip-activo' : 'hover:text-paper'}`}
+            >
               {etiqueta}
-            </label>
+            </button>
           ))}
         </div>
 
-        <label className="mt-4 block text-xs text-paper-dim">
+        <label className="label mt-4 block">
           Detalle (opcional)
-          <textarea
-            value={detalle}
-            onChange={(e) => setDetalle(e.target.value)}
-            rows={3}
-            maxLength={500}
-            className="mt-1 w-full rounded-lg border border-paper/10 bg-ink-800 px-3 py-1.5 text-sm text-paper focus:border-violet focus:outline-none"
-          />
+          <textarea value={detalle} onChange={(e) => setDetalle(e.target.value)} rows={3} maxLength={500} className="input mt-1 font-normal" />
         </label>
 
-        {error && <p className="mt-2 text-xs text-coral-light">{error}</p>}
+        {error && <p className="banner-error mt-3">{error}</p>}
 
         <div className="mt-5 flex justify-end gap-2">
           <Button type="button" variant="ghost" onClick={onCerrar}>
@@ -75,6 +69,6 @@ export function ModalReportar({ publicacionId, onCerrar, onReportada }: ModalRep
           </Button>
         </div>
       </form>
-    </div>
+    </Modal>
   );
 }

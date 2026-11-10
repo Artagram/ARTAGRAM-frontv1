@@ -127,7 +127,7 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
   }
 
   return (
-    <div className="card border-violet/30 bg-ink-900/90 p-6 shadow-xl backdrop-blur-md">
+    <div className="card card-fija p-6">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-paper/10 pb-4">
         <div>
           <div className="flex items-center gap-2">

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Skeleton } from '../../components/ui/Skeleton';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api, extraerMensajeError } from '../../lib/api';
 import { stompService } from '../../lib/stompClient';
@@ -263,13 +264,13 @@ export function PersonalChatPage() {
       <div className="mx-auto max-w-6xl px-4 py-6">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h1 className="font-display text-2xl font-bold tracking-tight text-paper">Mensajes Directos</h1>
+            <h1 className="font-display text-[32px] font-semibold leading-tight text-paper">Mensajes Directos</h1>
             <p className="text-xs text-paper-dim">Conversaciones privadas en tiempo real entre artistas</p>
           </div>
         </div>
 
         {error && (
-          <div className="mb-4 flex items-center justify-between rounded-xl bg-coral/15 border border-coral/30 px-4 py-2.5 text-sm text-coral-light animate-in fade-in">
+          <div className="banner-error mb-4 flex items-center justify-between">
             <span>{error}</span>
             <button onClick={() => setError(null)} className="text-xs underline hover:text-paper">
               Cerrar
@@ -278,16 +279,16 @@ export function PersonalChatPage() {
         )}
 
         {/* Panel principal de 2 columnas estilo mensajería moderna */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 h-[75vh] min-h-[520px]">
+        <div className="grid h-[75vh] min-h-[520px] grid-cols-1 gap-4 md:grid-cols-[320px_minmax(0,1fr)]">
           {/* Columna Izquierda: Conversaciones y Búsqueda */}
           <div
-            className={`md:col-span-4 lg:col-span-4 card flex flex-col p-3 overflow-hidden ${
+            className={`card card-fija flex flex-col overflow-hidden p-3 ${
               contactoActivo ? 'hidden md:flex' : 'flex'
             }`}
           >
             {/* Formulario para iniciar nuevo chat */}
             <form onSubmit={alBuscarSubmit} className="mb-3 space-y-2">
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-paper-muted">
+              <label className="label">
                 Iniciar nuevo chat
               </label>
               <div className="flex gap-2">
@@ -316,13 +317,13 @@ export function PersonalChatPage() {
                   value={filtroConversaciones}
                   onChange={(e) => setFiltroConversaciones(e.target.value)}
                   placeholder="Filtrar contactos..."
-                  className="input py-1 text-xs bg-ink-900/40"
+                  className="input py-1 text-xs"
                 />
               </div>
             )}
 
             <div className="flex items-center justify-between py-1 px-1 border-b border-paper/10 mb-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-paper-dim">
+              <span className="label">
                 Conversaciones ({conversaciones.length})
               </span>
             </div>
@@ -330,7 +331,7 @@ export function PersonalChatPage() {
             {/* Lista de chats activos */}
             <div className="flex-1 overflow-y-auto space-y-1 pr-1">
               {cargandoConversaciones ? (
-                <div className="py-8 text-center text-xs text-paper-dim">Cargando conversaciones...</div>
+                <Skeleton filas={4} claseFila="h-14" />
               ) : conversacionesFiltradas.length === 0 ? (
                 <div className="py-8 px-4 text-center text-xs text-paper-dim">
                   {conversaciones.length === 0
@@ -346,12 +347,12 @@ export function PersonalChatPage() {
                       onClick={() => seleccionarContacto({ id: conv.contactoId, nombre: conv.contactoNombre })}
                       className={`w-full text-left p-2.5 rounded-xl transition-all flex items-center gap-3 border ${
                         esSeleccionado
-                          ? 'bg-ink-700/90 border-coral/50 shadow-md'
-                          : 'bg-ink-800/40 border-transparent hover:bg-paper/10 hover:border-paper/10'
+                          ? 'bg-paper/10 border-paper/25'
+                          : 'border-transparent hover:bg-paper/10'
                       }`}
                     >
                       {/* Avatar con inicial */}
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-coral to-amber flex items-center justify-center font-bold text-ink-800 text-sm shrink-0 shadow-inner">
+                      <div className="w-10 h-10 rounded-full bg-ink-600 flex items-center justify-center font-semibold text-paper text-sm shrink-0">
                         {conv.contactoNombre.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -372,37 +373,37 @@ export function PersonalChatPage() {
 
           {/* Columna Derecha: Hilo de mensajes y escritura */}
           <div
-            className={`md:col-span-8 lg:col-span-8 card flex flex-col overflow-hidden ${
+            className={`card card-fija flex flex-col overflow-hidden ${
               contactoActivo ? 'flex' : 'hidden md:flex'
             }`}
           >
             {contactoActivo ? (
               <>
                 {/* Cabecera del chat actual */}
-                <div className="p-3.5 border-b border-paper/10 bg-ink-800/90 flex items-center justify-between">
+                <div className="p-3.5 border-b border-paper/10 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setContactoActivo(null)}
-                      className="md:hidden text-xs text-paper-dim hover:text-paper px-2 py-1 bg-ink-700 rounded-lg"
+                      className="btn-tertiary px-3 py-2 text-xs md:hidden"
                     >
                       ← Atrás
                     </button>
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-violet to-coral flex items-center justify-center font-bold text-paper text-sm shadow">
+                    <div className="w-9 h-9 rounded-full bg-ink-600 flex items-center justify-center font-semibold text-paper text-sm">
                       {contactoActivo.nombre.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <h2 className="text-sm font-bold text-paper flex items-center gap-2">
+                      <h2 className="flex items-center gap-2 text-base font-semibold text-paper">
                         {contactoActivo.nombre}
                       </h2>
                       <span className="text-[10px] text-teal font-medium flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-teal inline-block animate-pulse" /> En línea
+                        <span className="punto-vivo" aria-hidden /> En línea
                       </span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Link
                       to={`/perfil/${contactoActivo.nombre}`}
-                      className="text-xs text-violet hover:text-violet-light font-medium px-2.5 py-1 rounded-lg bg-ink-700/50 hover:bg-paper/10 border border-paper/10 transition-colors"
+                      className="btn-secondary px-3 py-1 text-xs"
                     >
                       Ver perfil
                     </Link>
@@ -410,15 +411,15 @@ export function PersonalChatPage() {
                 </div>
 
                 {/* Área de mensajes con scroll */}
-                <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-ink-950/20">
+                <div className="flex-1 p-4 overflow-y-auto space-y-3">
                   {cargandoMensajes ? (
-                    <div className="py-12 text-center text-xs text-paper-dim">Cargando mensajes...</div>
+                    <Skeleton filas={3} claseFila="h-12" />
                   ) : mensajes.length === 0 ? (
                     <div className="py-16 text-center">
-                      <div className="w-12 h-12 rounded-full bg-ink-700/50 mx-auto flex items-center justify-center text-xl mb-3 text-paper-dim">
-                        💬
-                      </div>
-                      <p className="text-sm font-medium text-paper">Sin mensajes aún</p>
+                      <div className="mb-3 text-3xl">💬</div>
+                      <p className="font-display text-xl font-semibold text-paper">
+                        Sin mensajes <span className="acento text-violet">aún</span>
+                      </p>
                       <p className="text-xs text-paper-dim mt-1">
                         Escribe tu primer mensaje para conversar con {contactoActivo.nombre}.
                       </p>
@@ -431,8 +432,8 @@ export function PersonalChatPage() {
                           <div
                             className={`max-w-[78%] px-3.5 py-2 text-sm leading-relaxed ${
                               esPropio
-                                ? 'bg-gradient-to-r from-coral to-coral-light text-paper rounded-2xl rounded-tr-xs shadow-md'
-                                : 'bg-ink-700/90 text-paper border border-paper/10 rounded-2xl rounded-tl-xs shadow-sm'
+                                ? 'rounded-2xl rounded-tr-xs bg-coral text-ink-800'
+                                : 'glass rounded-2xl rounded-tl-xs text-paper'
                             }`}
                           >
                             <p className="whitespace-pre-wrap break-words">{m.contenido}</p>
@@ -455,7 +456,7 @@ export function PersonalChatPage() {
                 </div>
 
                 {/* Barra de envío */}
-                <form onSubmit={enviar} className="p-3 border-t border-paper/10 bg-ink-800/90 flex gap-2 items-center">
+                <form onSubmit={enviar} className="p-3 border-t border-paper/10 flex gap-2 items-center">
                   <input
                     ref={inputMensajeRef}
                     type="text"
@@ -463,7 +464,7 @@ export function PersonalChatPage() {
                     onChange={(e) => setTexto(e.target.value)}
                     placeholder={`Escribe un mensaje a ${contactoActivo.nombre}...`}
                     maxLength={2000}
-                    className="input flex-1 py-2 text-sm bg-ink-900/60"
+                    className="input flex-1 py-2 text-sm"
                   />
                   <button
                     type="submit"
@@ -477,10 +478,10 @@ export function PersonalChatPage() {
             ) : (
               /* Estado cuando no hay contacto seleccionado */
               <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-ink-700/50 border border-paper/10 flex items-center justify-center text-3xl mb-4 text-paper-dim shadow-inner">
-                  ✉️
-                </div>
-                <h3 className="text-lg font-bold text-paper">Tus conversaciones directas</h3>
+                <div className="mb-4 text-4xl">✉️</div>
+                <h3 className="font-display text-xl font-semibold text-paper">
+                  Tus conversaciones <span className="acento text-violet">directas</span>
+                </h3>
                 <p className="text-xs text-paper-dim max-w-sm mt-1.5 leading-relaxed">
                   Selecciona una conversación existente del panel izquierdo o escribe el nombre de un artista para
                   iniciar un nuevo chat privado.

@@ -59,15 +59,17 @@ export function LoginPage() {
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="card flex w-full max-w-md flex-col gap-4 p-8"
+            className="card card-fija flex w-full max-w-md flex-col gap-4 p-8"
           >
             <div>
-              <h1 className="font-display text-2xl font-semibold">Bienvenido a Artagram</h1>
+              <h1 className="font-display text-[32px] font-semibold leading-tight">
+                Bienvenido a <span className="acento">Artagram</span>
+              </h1>
               <p className="mt-1 text-sm text-paper-muted">Entra con tu cuenta de Google para dibujar con tu comunidad.</p>
             </div>
 
             {avisoExpirada && (
-              <p className="rounded-lg bg-violet/10 px-3 py-2 text-sm text-paper">
+              <p className="banner-aviso">
                 Tu sesión expiró, inicia sesión de nuevo.
               </p>
             )}
@@ -75,7 +77,8 @@ export function LoginPage() {
             <div className="flex justify-center">
               <GoogleLogin
                 text="continue_with"
-                theme="filled_black"
+                theme="outline"
+                shape="pill"
                 onSuccess={(r) => {
                   if (r.credential) {
                     void alIngresar(r.credential);
@@ -142,10 +145,12 @@ function ElegirNombre({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       onSubmit={enviar}
-      className="card flex w-full max-w-md flex-col gap-4 p-8"
+      className="card card-fija flex w-full max-w-md flex-col gap-4 p-8"
     >
       <div>
-        <h1 className="font-display text-2xl font-semibold">Elige tu nombre de artista</h1>
+        <h1 className="font-display text-[32px] font-semibold leading-tight">
+          Elige tu nombre de <span className="acento">artista</span>
+        </h1>
         <p className="mt-1 text-sm text-paper-muted">Así te verán los demás en Artagram.</p>
       </div>
 
@@ -155,9 +160,15 @@ function ElegirNombre({
           required
           value={nombreArtista}
           onChange={(e) => setNombreArtista(limpiarNombreArtista(e.target.value))}
-          error={disponibilidad?.disponible === false ? 'Ese nombre ya lo tiene otra persona' : undefined}
           placeholder="lienzo_azul"
+          className={disponibilidad?.disponible === false ? 'border-coral focus:border-coral' : undefined}
         />
+        {disponibilidad && (
+          <p role="status" className="mt-1.5 flex items-center gap-1.5 text-xs text-paper-muted">
+            <span aria-hidden className={`h-2 w-2 rounded-full ${disponibilidad.disponible ? 'bg-teal' : 'bg-coral'}`} />
+            {disponibilidad.disponible ? 'disponible' : 'en uso'}
+          </p>
+        )}
         {disponibilidad?.disponible === false && disponibilidad.sugerencias.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
             {disponibilidad.sugerencias.map((s) => (

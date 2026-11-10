@@ -1,3 +1,4 @@
+import { Skeleton } from '../../components/ui/Skeleton';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { api, extraerMensajeError } from '../../lib/api';
@@ -37,14 +38,14 @@ export function AdminDashboardPage() {
       .finally(() => setCargando(false));
   }, []);
 
-  if (cargando) return <div className="p-16 text-center text-paper-muted">Cargando…</div>;
-  if (error) return <p className="mx-auto max-w-xl px-4 py-16 text-center text-coral-light">{error}</p>;
+  if (cargando) return <Skeleton filas={2} className="mx-auto max-w-6xl px-4 py-10" claseFila="h-40" />;
+  if (error) return <p className="banner-error mx-auto my-16 max-w-xl text-center">{error}</p>;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <div className="mb-6">
         <p className="label">Solo administradores</p>
-        <h1 className="font-display text-3xl font-semibold">{pestana === 'negocio' ? 'Panel de negocio' : 'Reportes de obras'}</h1>
+        <h1 className="font-display text-[32px] font-semibold leading-tight">{pestana === 'negocio' ? 'Panel de negocio' : 'Reportes de obras'}</h1>
         <p className="mt-1 text-paper-muted">
           {pestana === 'negocio'
             ? 'Los 4 KPIs de negocio, calculados en vivo, con su fórmula y periodo.'
@@ -52,16 +53,14 @@ export function AdminDashboardPage() {
         </p>
       </div>
 
-      <div role="tablist" className="mb-6 flex gap-4 border-b border-paper/10">
+      <div role="tablist" className="tabs mb-6">
         {PESTANAS.map((p) => (
           <button
             key={p.id}
             role="tab"
             aria-selected={pestana === p.id}
             onClick={() => setPestana(p.id)}
-            className={`-mb-px border-b-2 px-1 pb-2 text-sm font-medium transition-colors ${
-              pestana === p.id ? 'border-coral text-paper' : 'border-transparent text-paper-muted hover:text-paper'
-            }`}
+            className={`tab ${pestana === p.id ? 'tab-activa' : ''}`}
           >
             {p.titulo}
           </button>
@@ -76,11 +75,11 @@ export function AdminDashboardPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            className="card p-5"
+            className="card card-fija p-3.5"
           >
             <p className="label">{k.nombre}</p>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="font-display text-3xl font-semibold">{k.valorActual.toLocaleString('es')}</span>
+              <span className="font-display text-[32px] font-semibold leading-none">{k.valorActual.toLocaleString('es')}</span>
               <span className={`text-sm font-medium ${TENDENCIA_COLOR[k.tendencia]}`}>{TENDENCIA_ICONO[k.tendencia]}</span>
             </div>
             <p className="mt-1 text-xs text-paper-dim">Meta: {k.meta.toLocaleString('es')}</p>
@@ -107,7 +106,7 @@ export function AdminDashboardPage() {
 
 function PanelEnlace({ titulo, descripcion, url, color }: { titulo: string; descripcion: string; url: string; color: string }) {
   return (
-    <a href={url} target="_blank" rel="noreferrer" className="card group p-5 transition-transform hover:-translate-y-0.5">
+    <a href={url} target="_blank" rel="noreferrer" className="card group p-3.5">
       <h3 className={`font-display text-lg font-semibold ${color}`}>{titulo} ↗</h3>
       <p className="mt-1 text-sm text-paper-muted">{descripcion}</p>
     </a>

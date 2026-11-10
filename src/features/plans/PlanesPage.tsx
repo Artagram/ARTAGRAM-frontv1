@@ -18,8 +18,8 @@ function BarraUso({ etiqueta, usado, maximo, unidad }: { etiqueta: string; usado
           {usado} / {maximo} {unidad}
         </span>
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-ink-800">
-        <div className={clsx('h-full rounded-full', porcentaje >= 90 ? 'bg-coral' : 'bg-violet')} style={{ width: `${porcentaje}%` }} />
+      <div className="h-2 overflow-hidden rounded-full bg-paper/10">
+        <div className={clsx('h-full rounded-full', porcentaje > 80 ? 'bg-coral' : 'bg-teal')} style={{ width: `${porcentaje}%` }} />
       </div>
     </div>
   );
@@ -39,18 +39,18 @@ export function PlanesPage() {
   return (
       <div className="mx-auto max-w-3xl px-4 py-8">
         <div className="mb-6">
-          <h1 className="font-display text-2xl font-semibold">Tu plan</h1>
+          <h1 className="font-display text-[32px] font-semibold leading-tight">
+            Tu <span className="acento text-amber">plan</span>
+          </h1>
           <p className="text-sm text-paper-muted">Pásate a PRO para crear sin límites con tu comunidad.</p>
         </div>
 
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card mb-6 flex flex-col gap-4 p-5">
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card card-fija mb-6 flex flex-col gap-4 p-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="text-sm text-paper-muted">Plan actual:</span>
               {premium ? (
-                <span className="rounded-full border border-amber/40 bg-amber/10 px-2.5 py-0.5 text-xs font-semibold text-amber">
-                  ⭐ PRO
-                </span>
+                <span className="insignia-pro">PRO</span>
               ) : (
                 <span className="chip text-xs">Gratis</span>
               )}
@@ -69,7 +69,7 @@ export function PlanesPage() {
           )}
         </motion.div>
 
-        <div className="card p-5">
+        <div className="card card-fija p-5">
           <TablaPlanes />
           {!premium && (
             <div className="mt-5">

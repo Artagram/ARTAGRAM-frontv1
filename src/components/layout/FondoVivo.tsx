@@ -12,8 +12,8 @@ const TURQUESA = '#2FD9C4';
 const VIOLETA = '#8B5CF6';
 const AMBAR = '#FFC24B';
 
-const OPACIDADES_NORMALES: [number, number, number] = [0.45, 0.35, 0.28];
-const OPACIDADES_APAGADAS: [number, number, number] = [0.15, 0.15, 0.15];
+const OPACIDADES_NORMALES: [number, number, number] = [0.55, 0.45, 0.38];
+const OPACIDADES_APAGADAS: [number, number, number] = [0.2, 0.2, 0.2];
 
 const LIENZO = /^\/comunidades\/[^/]+\/lienzo/;
 
@@ -39,8 +39,8 @@ export function FondoVivo() {
 
   const opacidades = ambiente.opacidades ?? OPACIDADES_NORMALES;
   const duraciones = ambiente.rapido
-    ? { '--mancha-1': '8s', '--mancha-2': '9s', '--mancha-3': '8.5s' }
-    : { '--mancha-1': '14s', '--mancha-2': '18s', '--mancha-3': '16s' };
+    ? { '--mancha-1': '6s', '--mancha-2': '7s', '--mancha-3': '6.5s' }
+    : { '--mancha-1': '9s', '--mancha-2': '11s', '--mancha-3': '10s' };
 
   return (
     <div aria-hidden className="manchas" style={duraciones as CSSProperties}>

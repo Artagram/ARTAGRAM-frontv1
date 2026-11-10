@@ -166,7 +166,7 @@ export function FeedPage() {
     </div>
     {recomendados.length > 0 && (
       <aside className="hidden w-72 flex-shrink-0 lg:block">
-        <div className="sticky top-20">
+        <div className="sticky top-[var(--alto-barra)]">
           <ArtistasRecomendados artistas={recomendados} onSeguimientoCambiado={() => void cargar(pestana, true)} />
         </div>
       </aside>

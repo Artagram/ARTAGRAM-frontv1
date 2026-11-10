@@ -769,7 +769,7 @@ export function CanvasStudioPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-4.5rem)] flex-col bg-ink-950 p-2 sm:p-3 gap-2 overflow-hidden select-none">
+    <div className="flex h-[calc(100vh-var(--alto-barra))] flex-col bg-ink-950 p-2 sm:p-3 gap-2 overflow-hidden select-none">
       {/* Cabecera compacta del estudio */}
       <header className="flex flex-wrap items-center justify-between gap-2 px-1">
         <div className="flex items-center gap-3">

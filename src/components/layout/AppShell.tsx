@@ -1,8 +1,9 @@
-import { type ReactNode } from 'react';
+import { useCallback, useRef, useState, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import clsx from 'clsx';
 import { useAuthStore } from '../../lib/authStore';
-import { Button } from '../ui/Button';
+import { useCerrarAlExterior } from '../ui/useCerrarAlExterior';
 import { AvisoPlanLimite } from '../../features/suscripcion/AvisoPlanLimite';
 import { CampanaNotificaciones } from './CampanaNotificaciones';
 import { FondoVivo } from './FondoVivo';
@@ -13,8 +14,12 @@ import { useNotificacionesEnVivo } from '../../features/notifications/useNotific
 const enlaces = [
   { a: '/feed', texto: 'Feed' },
   { a: '/comunidades', texto: 'Comunidades' },
-  { a: '/fiesta', texto: 'Modo fiesta' },
+  { a: '/fiesta', texto: 'Fiesta' },
 ];
+
+function esActivo(ruta: string, enlace: string) {
+  return ruta === enlace || ruta.startsWith(enlace + '/');
+}
 
 function BotonNav({ a, titulo, cantidad, children }: { a: string; titulo: string; cantidad: number; children: ReactNode }) {
   return (
@@ -22,17 +27,67 @@ function BotonNav({ a, titulo, cantidad, children }: { a: string; titulo: string
       to={a}
       title={titulo}
       aria-label={cantidad > 0 ? `${titulo}: ${cantidad} sin leer` : titulo}
-      className="relative grid h-9 w-9 place-items-center rounded-lg text-paper-muted hover:bg-ink-800 hover:text-paper"
+      className="relative grid h-11 w-11 place-items-center rounded-[10px] text-paper-muted hover:bg-paper/10 hover:text-paper md:h-[30px] md:w-[30px]"
     >
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden>
         {children}
       </svg>
       {cantidad > 0 && (
-        <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-coral px-1 text-[10px] font-semibold text-ink-950">
+        <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-teal px-1 text-[10px] font-semibold text-ink-800">
           {contadorVisible(cantidad)}
         </span>
       )}
     </Link>
+  );
+}
+
+function MenuAvatar({ nombreArtista, premium, onSalir }: { nombreArtista: string; premium?: boolean; onSalir: () => void }) {
+  const [abierto, setAbierto] = useState(false);
+  const contenedorRef = useRef<HTMLDivElement>(null);
+  const cerrar = useCallback(() => setAbierto(false), []);
+  useCerrarAlExterior(contenedorRef, abierto, cerrar);
+
+  return (
+    <div ref={contenedorRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setAbierto((a) => !a)}
+        aria-haspopup="menu"
+        aria-expanded={abierto}
+        aria-label={`Menú de ${nombreArtista}${premium ? ', plan PRO' : ''}`}
+        className="grid h-11 w-11 place-items-center rounded-full md:h-9 md:w-9"
+      >
+        <span
+          className={clsx(
+            'grid h-8 w-8 place-items-center rounded-full bg-ink-600 text-xs font-semibold uppercase',
+            premium && 'shadow-[0_0_0_2px_#1B1626,0_0_0_4px_#FFC24B]',
+          )}
+        >
+          {nombreArtista.slice(0, 2)}
+        </span>
+      </button>
+      {abierto && (
+        <div role="menu" className="panel-flotante absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden py-1">
+          <Link
+            role="menuitem"
+            to={`/perfil/${nombreArtista}`}
+            onClick={cerrar}
+            className="block truncate px-4 py-2.5 text-sm text-paper hover:bg-paper/10"
+          >
+            {nombreArtista}
+            {premium && <span className="insignia-pro ml-2">PRO</span>}
+          </Link>
+          <button
+            role="menuitem"
+            type="button"
+            onClick={onSalir}
+            className="block w-full px-4 py-2.5 text-left text-sm text-paper-muted hover:bg-paper/10 hover:text-paper"
+          >
+            Salir
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -51,100 +106,72 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen flex flex-col">
       <FondoVivo />
       <AvisoPlanLimite />
-      <header className="sticky top-0 z-40 border-b border-paper/10 bg-ink-950/35 backdrop-blur-lg">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
-          <Link to="/feed" className="flex items-center gap-2 group">
-            <motion.img
-              src="/favicon.svg"
-              alt="Artagram"
-              className="h-8 w-8"
-              whileHover={{ scale: 1.1, rotate: -8 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-            />
-            <span className="hidden font-display text-lg font-semibold tracking-tight sm:inline">Artagram</span>
+      <header className="barra-vidrio sticky top-[18px] z-40 mx-[18px] mt-[18px]">
+        <div className="flex items-center justify-between gap-3 px-4 py-1.5 md:py-2.5">
+          <Link to="/feed" className="font-display text-xl font-medium italic tracking-tight">
+            artagram<span className="text-coral">.</span>
           </Link>
 
           {sesion && (
             <nav className="hidden items-center gap-1 md:flex">
               {enlacesVisibles.map((e) => {
-                const activo = location.pathname === e.a || location.pathname.startsWith(e.a + '/');
+                const activo = esActivo(location.pathname, e.a);
                 return (
                   <Link
                     key={e.a}
                     to={e.a}
-                    className={`relative rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                      activo ? 'text-paper' : 'text-paper-muted hover:text-paper'
-                    }`}
+                    aria-current={activo ? 'page' : undefined}
+                    className={clsx(
+                      'relative px-3 py-1.5 text-sm font-medium transition-colors',
+                      activo ? 'text-paper' : 'text-paper-muted hover:text-paper',
+                    )}
                   >
+                    {e.texto}
                     {activo && (
                       <motion.span
                         layoutId="nav-activo"
-                        className="absolute inset-0 rounded-lg bg-ink-800"
+                        className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-coral"
                         transition={{ type: 'spring', stiffness: 400, damping: 32 }}
                       />
                     )}
-                    <span className="relative">{e.texto}</span>
                   </Link>
                 );
               })}
             </nav>
           )}
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 md:gap-2">
             {sesion ? (
               <>
-                <div className="flex items-center gap-1">
-                  <BotonNav a="/mensajes" titulo="Mensajes" cantidad={mensajes}>
-                    <path d="M21 12a8 8 0 0 1-11.8 7L4 20l1-4.6A8 8 0 1 1 21 12Z" />
-                  </BotonNav>
-                  <CampanaNotificaciones />
-                </div>
-                <Link
-                  to={`/perfil/${sesion.nombreArtista}`}
-                  className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-paper-muted hover:bg-ink-800 hover:text-paper"
-                >
-                  <span
-                    className={`relative grid h-7 w-7 place-items-center rounded-full bg-ink-700 text-xs font-semibold uppercase ${
-                      sesion.premium ? 'ring-2 ring-amber-400/70' : ''
-                    }`}
-                  >
-                    {sesion.nombreArtista.slice(0, 2)}
-                    {sesion.premium && (
-                      <span className="absolute -bottom-1 -right-1 text-[10px]" aria-hidden>
-                        ⭐
-                      </span>
-                    )}
-                  </span>
-                  <span className="hidden sm:inline">{sesion.nombreArtista}</span>
-                  {sesion.premium && (
-                    <span className="rounded-full border border-amber-400/40 bg-amber-400/10 px-1.5 text-[10px] font-semibold text-amber-300">
-                      PRO
-                    </span>
-                  )}
-                </Link>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
+                <BotonNav a="/mensajes" titulo="Mensajes" cantidad={mensajes}>
+                  <path d="M21 12a8 8 0 0 1-11.8 7L4 20l1-4.6A8 8 0 1 1 21 12Z" />
+                </BotonNav>
+                <CampanaNotificaciones />
+                <MenuAvatar
+                  nombreArtista={sesion.nombreArtista}
+                  premium={sesion.premium}
+                  onSalir={() => {
                     cerrarSesion();
                     navigate('/login');
                   }}
-                >
-                  Salir
-                </Button>
+                />
               </>
             ) : (
-              <>
-                <Link to="/login" className="btn-primary">
-                  Entrar
-                </Link>
-              </>
+              <Link to="/login" className="btn-primary">
+                Entrar
+              </Link>
             )}
           </div>
         </div>
         {sesion && (
-          <nav className="flex gap-1 overflow-x-auto border-t border-ink-800 px-2 py-1.5 md:hidden">
+          <nav className="mx-2 mb-2 flex gap-1 rounded-full bg-paper/10 p-1 md:hidden">
             {enlacesConPlanes.map((e) => (
-              <Link key={e.a} to={e.a} className="whitespace-nowrap rounded-lg px-3 py-1.5 text-sm text-paper-muted hover:bg-ink-800">
+              <Link
+                key={e.a}
+                to={e.a}
+                aria-current={esActivo(location.pathname, e.a) ? 'page' : undefined}
+                className={clsx('tab px-1 py-2.5 text-xs', esActivo(location.pathname, e.a) && 'tab-activa')}
+              >
                 {e.texto}
               </Link>
             ))}

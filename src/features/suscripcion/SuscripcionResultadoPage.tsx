@@ -55,7 +55,7 @@ export function SuscripcionResultadoPage() {
         : MENSAJES[estado];
 
   return (
-    <div className="flex min-h-[calc(100vh-64px)] items-center justify-center px-4 py-12">
+    <div className="flex min-h-[calc(100vh-var(--alto-barra))] items-center justify-center px-4 py-12">
       <div className="card flex w-full max-w-md flex-col gap-3 p-8 text-center">
         <h1 className="font-display text-2xl font-semibold">{mensaje.titulo}</h1>
         <p className="text-sm text-paper-muted">{mensaje.texto}</p>

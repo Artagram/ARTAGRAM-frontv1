@@ -45,7 +45,7 @@ export function LoginPage() {
   }
 
   return (
-      <div className="flex min-h-[calc(100vh-64px)] items-center justify-center px-4 py-12">
+      <div className="flex min-h-[calc(100vh-var(--alto-barra))] items-center justify-center px-4 py-12">
         {idTokenPendiente ? (
           <ElegirNombre
             idToken={idTokenPendiente}

@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { api, extraerMensajeError } from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
 import { BotonSeguir } from '../feed/BotonSeguir';
-import { BotonPro } from '../suscripcion/BotonPro';
-import { TablaPlanes } from '../suscripcion/TablaPlanes';
 import { ObrasPerfil } from './ObrasPerfil';
 import { Button } from '../../components/ui/Button';
 import { TextField } from '../../components/ui/TextField';
@@ -147,19 +145,6 @@ export function ProfilePage() {
               </span>
             )}
           </div>
-          {esPropio && !perfil.premium && !sesion?.premium && (
-            <div className="mt-3 max-w-md">
-              <TablaPlanes />
-              <div className="mt-3">
-                <BotonPro />
-              </div>
-            </div>
-          )}
-          {esPropio && (
-            <Link to="/planes" className="mt-2 inline-block text-xs text-violet hover:underline">
-              {perfil.premium || sesion?.premium ? 'Ver mi plan' : 'Ver todos los planes'}
-            </Link>
-          )}
 
           {!editando ? (
             <>

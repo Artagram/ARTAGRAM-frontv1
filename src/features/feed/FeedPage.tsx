@@ -19,6 +19,62 @@ const PESTANAS: { id: PestanaFeed; texto: string }[] = [
   { id: 'explorar', texto: 'Explorar' },
 ];
 
+const CAMPO_DE_TEXTO = 'input, textarea, select, [contenteditable="true"]';
+
+/**
+ * El botón flotante de publicar tapa lo que queda abajo a la derecha en celular,
+ * como el "Enviar" de los comentarios. Se esconde mientras se escribe y al bajar
+ * por el feed, y vuelve al subir.
+ */
+function useBotonFlotanteVisible() {
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    let ultimoY = window.scrollY;
+    let bajando = false;
+    let escribiendo = false;
+    let temporizador: ReturnType<typeof setTimeout> | undefined;
+    const actualizar = () => setVisible(!bajando && !escribiendo);
+    const esCampo = (el: EventTarget | null) => el instanceof Element && el.matches(CAMPO_DE_TEXTO);
+
+    const alDesplazar = () => {
+      const y = window.scrollY;
+      if (Math.abs(y - ultimoY) < 8) return;
+      bajando = y > ultimoY && y > 80;
+      ultimoY = y;
+      actualizar();
+    };
+    const alEnfocar = (e: FocusEvent) => {
+      if (!esCampo(e.target)) return;
+      clearTimeout(temporizador);
+      escribiendo = true;
+      actualizar();
+    };
+    // Con espera: al tocar "Enviar" el campo pierde el foco antes del clic, y el
+    // botón flotante no debe reaparecer encima justo en ese momento.
+    const alDesenfocar = (e: FocusEvent) => {
+      if (!esCampo(e.target)) return;
+      clearTimeout(temporizador);
+      temporizador = setTimeout(() => {
+        escribiendo = false;
+        actualizar();
+      }, 400);
+    };
+
+    window.addEventListener('scroll', alDesplazar, { passive: true });
+    document.addEventListener('focusin', alEnfocar);
+    document.addEventListener('focusout', alDesenfocar);
+    return () => {
+      clearTimeout(temporizador);
+      window.removeEventListener('scroll', alDesplazar);
+      document.removeEventListener('focusin', alEnfocar);
+      document.removeEventListener('focusout', alDesenfocar);
+    };
+  }, []);
+
+  return visible;
+}
+
 export function FeedPage() {
   const [pestana, setPestana] = useState<PestanaFeed>('siguiendo');
   const [publicaciones, setPublicaciones] = useState<PublicacionDto[]>([]);
@@ -29,6 +85,7 @@ export function FeedPage() {
   const [error, setError] = useState<string | null>(null);
   const [mostrarPublicar, setMostrarPublicar] = useState(false);
   const [recomendados, setRecomendados] = useState<ArtistaRecomendado[]>([]);
+  const botonFlotanteVisible = useBotonFlotanteVisible();
 
   // Si se cambia de pestaña antes de que responda la anterior, esa respuesta se ignora.
   const ultimaCarga = useRef(0);
@@ -71,7 +128,7 @@ export function FeedPage() {
   const alCambiarSeguimiento = () => void cargar(pestana, true);
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-5 px-4 py-6 md:grid-cols-[minmax(0,1fr)_240px] md:gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
+    <div className="mx-auto grid max-w-6xl gap-5 px-4 pb-24 pt-6 sm:pb-6 md:grid-cols-[minmax(0,1fr)_240px] md:gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
       <div className="min-w-0 md:col-start-1 md:row-start-1">
         <div className="mb-5">
           <h1 className="font-display text-[32px] font-semibold leading-tight">Feed</h1>
@@ -162,8 +219,13 @@ export function FeedPage() {
         <button
           type="button"
           aria-label="Publicar"
+          aria-hidden={!botonFlotanteVisible}
+          tabIndex={botonFlotanteVisible ? undefined : -1}
           onClick={() => setMostrarPublicar(true)}
-          className="fixed bottom-5 right-5 z-30 grid h-14 w-14 place-items-center rounded-full bg-coral text-2xl text-ink-800 shadow-glow-coral sm:hidden"
+          className={clsx(
+            'fixed bottom-5 right-5 z-30 grid h-14 w-14 place-items-center rounded-full bg-coral text-2xl text-ink-800 shadow-glow-coral transition-all duration-200 sm:hidden',
+            !botonFlotanteVisible && 'pointer-events-none translate-y-24 opacity-0',
+          )}
         >
           +
         </button>

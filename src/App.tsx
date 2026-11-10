@@ -7,6 +7,7 @@ import { LandingPage } from './features/auth/LandingPage';
 import { RegisterPage } from './features/auth/RegisterPage';
 import { LoginPage } from './features/auth/LoginPage';
 import { VerifyPage } from './features/auth/VerifyPage';
+import { OAuthRetornoPage } from './features/auth/OAuthRetornoPage';
 import { FeedPage } from './features/feed/FeedPage';
 import { ProfilePage } from './features/profile/ProfilePage';
 import { CommunityListPage } from './features/community/CommunityListPage';
@@ -17,6 +18,8 @@ import { PartyLobbyPage } from './features/party/PartyLobbyPage';
 import { PartyRoomPage } from './features/party/PartyRoomPage';
 import { PersonalChatPage } from './features/chat/PersonalChatPage';
 import { AdminDashboardPage } from './features/admin/AdminDashboardPage';
+import { PlanesPage } from './features/plans/PlanesPage';
+import { PagoRetornoPage } from './features/plans/PagoRetornoPage';
 
 /**
  * Transición entre páginas: la clave de framer-motion es location.pathname,
@@ -39,6 +42,7 @@ function AnimatedRoutes() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/registro" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/login/oauth" element={<OAuthRetornoPage />} />
           <Route path="/verificar" element={<VerifyPage />} />
           <Route path="/perfil/:nombreArtista" element={<ProfilePage />} />
 
@@ -53,6 +57,9 @@ function AnimatedRoutes() {
           <Route path="/fiesta/:id" element={<ProtectedRoute><PartyRoomPage /></ProtectedRoute>} />
 
           <Route path="/mensajes" element={<ProtectedRoute><PersonalChatPage /></ProtectedRoute>} />
+
+          <Route path="/planes" element={<ProtectedRoute><PlanesPage /></ProtectedRoute>} />
+          <Route path="/planes/retorno" element={<ProtectedRoute><PagoRetornoPage /></ProtectedRoute>} />
 
           <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
 

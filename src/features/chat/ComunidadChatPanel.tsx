@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { stompService } from '../../lib/stompClient';
 import { useAuthStore } from '../../lib/authStore';
@@ -32,7 +33,15 @@ export function ComunidadChatPanel({ comunidadId }: { comunidadId: string }) {
 
   return (
     <div className="card flex h-96 flex-col p-4">
-      <h3 className="mb-2 font-display text-lg font-semibold">Chat de la comunidad</h3>
+      <div className="mb-2 flex items-baseline justify-between gap-2">
+        <h3 className="font-display text-lg font-semibold">Chat de la comunidad</h3>
+        {/* artagram-chat solo devuelve 30 días de historial al plan gratis */}
+        {sesion && !sesion.premium && (
+          <Link to="/planes" className="text-[11px] text-paper-dim hover:text-violet" title="Con Premium ves hasta 1 año">
+            Últimos 30 días · más con ⭐
+          </Link>
+        )}
+      </div>
       <div className="flex-1 space-y-2 overflow-y-auto pr-1">
         {mensajes.length === 0 && <p className="mt-8 text-center text-sm text-paper-dim">Todavía no hay mensajes</p>}
         {mensajes.map((m) => (

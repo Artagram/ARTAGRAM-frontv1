@@ -6,9 +6,13 @@ import { es } from 'date-fns/locale';
 import { api, extraerMensajeError } from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
 import { stompService } from '../../lib/stompClient';
+import { descargarConMarcaDeAgua } from '../../lib/marcaAgua';
+import { useDestacadasStore } from '../../lib/destacadasStore';
+import { funcionActiva } from '../../lib/features';
+import { ReportarObra } from './ReportarObra';
+import axios from 'axios';
 import type {
-  AnalisisObraDto,
-  AnalisisTecnicoResultado,
+  AnalisisIaDto,
   ComentarioDto,
   ComentarioEvento,
   LikeResponse,
@@ -55,12 +59,37 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
 
   // Estados de IA
   const [iaAbierta, setIaAbierta] = useState(false);
-  const [analisisIa, setAnalisisIa] = useState<AnalisisTecnicoResultado | null>(null);
+  const [analisisIa, setAnalisisIa] = useState<AnalisisIaDto | null>(null);
   const [cargandoIa, setCargandoIa] = useState(false);
   const [errorIa, setErrorIa] = useState<string | null>(null);
-  const [modeloIa, setModeloIa] = useState<string | null>(null);
+  const analisisPendiente = analisisIa?.estado === 'PENDIENTE';
+
+  const [descargando, setDescargando] = useState(false);
+  const [errorDescarga, setErrorDescarga] = useState<string | null>(null);
 
   const esAutor = sesion?.usuarioId === pub.autorId;
+
+  // Obras destacadas del perfil: solo importan en las publicaciones propias
+  const obrasDestacadas = useDestacadasStore((s) => s.obras);
+  const [destacando, setDestacando] = useState(false);
+  const [reportando, setReportando] = useState(false);
+  const [avisoDestacada, setAvisoDestacada] = useState<string | null>(null);
+  const esDestacada = !!obrasDestacadas?.some((o) => o.imagenUrl === pub.obraFinalUrl);
+  useEffect(() => {
+    if (esAutor) void useDestacadasStore.getState().cargar();
+  }, [esAutor]);
+
+  async function alternarDestacada() {
+    setDestacando(true);
+    setAvisoDestacada(null);
+    try {
+      await useDestacadasStore.getState().alternar({ titulo: pub.titulo, imagenUrl: pub.obraFinalUrl });
+    } catch (err) {
+      setAvisoDestacada(err instanceof Error && !axios.isAxiosError(err) ? err.message : extraerMensajeError(err));
+    } finally {
+      setDestacando(false);
+    }
+  }
 
   // El feed también necesita la conexión en tiempo real (es idempotente si ya está abierta)
   useEffect(() => {
@@ -132,7 +161,7 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
   // Eliminar comentario
   async function borrarComentario(comentarioId: string) {
     try {
-      await api.delete(`/api/comentarios/${comentarioId}`);
+      await api.delete(`/api/publicaciones/${pub.id}/comentarios/${comentarioId}`);
       setComentarios((prev) => prev.filter((c) => c.id !== comentarioId));
       setContadorComentarios((c) => Math.max(0, c - 1));
     } catch (err) {
@@ -153,11 +182,10 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
         .map((t) => t.trim())
         .filter(Boolean);
 
-      const { data } = await api.patch<PublicacionDto>(`/api/publicaciones/${pub.id}`, {
+      const { data } = await api.put<PublicacionDto>(`/api/publicaciones/${pub.id}`, {
         titulo: editTitulo.trim(),
         descripcion: editDescripcion.trim(),
         etiquetas: tagsArray,
-        version: pub.version ?? 0,
       });
 
       setPub(data);
@@ -188,6 +216,18 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
     }
   }
 
+  async function descargar() {
+    setDescargando(true);
+    setErrorDescarga(null);
+    try {
+      await descargarConMarcaDeAgua({ url: pub.obraFinalUrl, autor: pub.autorNombre, titulo: pub.titulo });
+    } catch (err) {
+      setErrorDescarga(err instanceof Error ? err.message : 'No se pudo descargar la obra');
+    } finally {
+      setDescargando(false);
+    }
+  }
+
   // Eliminar publicación
   async function eliminar() {
     setBorrando(true);
@@ -210,11 +250,9 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
       setCargandoIa(true);
       setErrorIa(null);
       try {
-        // Intentar obtener el último análisis guardado primero (historial)
-        const { data } = await api.get<AnalisisObraDto>(`/api/publicaciones/${pub.id}/analisis/ultimo?tipo=TECNICO`);
-        const parsed = JSON.parse(data.resultadoJson) as AnalisisTecnicoResultado;
-        setAnalisisIa(parsed);
-        setModeloIa(data.modelo);
+        // Último análisis guardado (404 ANALISIS_NO_DISPONIBLE si nunca se pidió)
+        const { data } = await api.get<AnalisisIaDto>(`/api/publicaciones/${pub.id}/analisis`);
+        setAnalisisIa(data);
       } catch {
         // Si no existe, dejamos listo para que el usuario solicite uno
         setAnalisisIa(null);
@@ -224,14 +262,24 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
     }
   }
 
+  // El POST deja el análisis en PENDIENTE: se reconsulta hasta que el worker de IA lo complete
+  useEffect(() => {
+    if (!iaAbierta || !analisisPendiente) return;
+    const temporizador = setTimeout(() => {
+      api
+        .get<AnalisisIaDto>(`/api/publicaciones/${pub.id}/analisis`)
+        .then((r) => setAnalisisIa(r.data))
+        .catch(() => setErrorIa('No se pudo consultar el estado del análisis'));
+    }, 3000);
+    return () => clearTimeout(temporizador);
+  }, [iaAbierta, analisisPendiente, analisisIa, pub.id]);
+
   async function pedirAnalisisIa() {
     setCargandoIa(true);
     setErrorIa(null);
     try {
-      const { data } = await api.post<AnalisisObraDto>(`/api/publicaciones/${pub.id}/analisis?tipo=TECNICO`);
-      const parsed = JSON.parse(data.resultadoJson) as AnalisisTecnicoResultado;
-      setAnalisisIa(parsed);
-      setModeloIa(data.modelo);
+      const { data } = await api.post<AnalisisIaDto>(`/api/publicaciones/${pub.id}/analisis`);
+      setAnalisisIa(data);
     } catch (err) {
       setErrorIa(extraerMensajeError(err, 'No se pudo generar el análisis de IA'));
     } finally {
@@ -253,8 +301,29 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
           <span className="text-xs text-paper-dim">
             {formatDistanceToNow(new Date(pub.creadoEn), { addSuffix: true, locale: es })}
           </span>
+          {sesion && !esAutor && funcionActiva('reportes') && (
+            <button
+              onClick={() => setReportando((r) => !r)}
+              title="Reportar esta obra"
+              aria-label="Reportar esta obra"
+              aria-expanded={reportando}
+              className={`text-sm transition-colors ${reportando ? 'text-coral' : 'text-paper-dim hover:text-coral'}`}
+            >
+              ⚑
+            </button>
+          )}
           {esAutor && (
             <div className="flex items-center gap-2">
+              <button
+                onClick={alternarDestacada}
+                disabled={destacando || obrasDestacadas === null}
+                title={esDestacada ? 'Quitar de las destacadas de tu perfil' : 'Destacar en tu perfil'}
+                aria-label={esDestacada ? 'Quitar de destacadas' : 'Destacar en tu perfil'}
+                aria-pressed={esDestacada}
+                className={`text-sm transition-colors disabled:opacity-50 ${esDestacada ? 'text-amber-400' : 'text-paper-dim hover:text-amber-400'}`}
+              >
+                {esDestacada ? '★' : '☆'}
+              </button>
               <button
                 onClick={() => setEditando(true)}
                 title="Editar publicación"
@@ -273,6 +342,12 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
           )}
         </div>
       </div>
+
+      {avisoDestacada && <p className="px-5 pt-2 text-xs text-coral-light">{avisoDestacada}</p>}
+
+      <AnimatePresence>
+        {reportando && <ReportarObra publicacionId={pub.id} onCerrar={() => setReportando(false)} />}
+      </AnimatePresence>
 
       {/* Alerta de confirmación de borrado */}
       <AnimatePresence>
@@ -445,6 +520,21 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
               <span>💬</span>
               <span>{contadorComentarios}</span>
             </button>
+
+            {/* Descargar con marca de agua */}
+            <button
+              onClick={descargar}
+              disabled={descargando}
+              title="Descargar la obra (con marca de agua)"
+              aria-label="Descargar la obra con marca de agua"
+              className="flex items-center gap-1.5 text-sm text-paper-muted transition-colors hover:text-paper disabled:opacity-60"
+            >
+              {descargando ? (
+                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                <span aria-hidden>⬇</span>
+              )}
+            </button>
           </div>
 
           {/* Botón Análisis IA */}
@@ -460,6 +550,7 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
             <span>Feedback IA</span>
           </button>
         </div>
+        {errorDescarga && <p className="mt-2 text-xs text-coral-light">{errorDescarga}</p>}
 
         {/* Panel de Comentarios en Vivo (Linear / Flat) */}
         <AnimatePresence>
@@ -548,22 +639,30 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
                   <span>🎨</span>
                   <span>Análisis Técnico de la Obra</span>
                 </div>
-                {modeloIa && <span className="text-[10px] text-paper-dim">Modelo: {modeloIa}</span>}
               </div>
 
-              {cargandoIa ? (
+              {cargandoIa || analisisPendiente ? (
                 <div className="py-6 text-center text-paper-dim">
                   <span className="inline-block animate-spin text-lg mr-2">⚙️</span>
                   Analizando composición, luces y técnica con visión artificial…
                 </div>
+              ) : analisisIa?.estado === 'ERROR' ? (
+                <div className="py-4 text-center space-y-2">
+                  <p className="text-coral-light">La IA no pudo analizar esta obra.</p>
+                  <button onClick={pedirAnalisisIa} className="text-[11px] text-violet hover:underline">
+                    🔄 Intentar de nuevo
+                  </button>
+                </div>
               ) : analisisIa ? (
                 <div className="mt-3 space-y-3">
+                  {analisisIa.diagnosticoGeneral && <p className="text-paper-muted">{analisisIa.diagnosticoGeneral}</p>}
+
                   <div className="flex items-center justify-between bg-ink-800/60 p-2.5 rounded-lg">
                     <span className="font-medium text-paper">Puntaje Pedagógico Estimado:</span>
                     <span className="text-base font-bold text-violet">{analisisIa.scoreEstimado}/100</span>
                   </div>
 
-                  {analisisIa.puntosFuertes?.length > 0 && (
+                  {analisisIa.puntosFuertes && analisisIa.puntosFuertes.length > 0 && (
                     <div>
                       <p className="font-semibold text-emerald-400 mb-1">✓ Puntos Fuertes:</p>
                       <ul className="list-disc list-inside space-y-0.5 text-paper-muted">
@@ -574,7 +673,7 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
                     </div>
                   )}
 
-                  {analisisIa.areasMejora?.length > 0 && (
+                  {analisisIa.areasMejora && analisisIa.areasMejora.length > 0 && (
                     <div>
                       <p className="font-semibold text-amber-400 mb-1">⚠ Áreas a Pulir:</p>
                       <ul className="list-disc list-inside space-y-0.5 text-paper-muted">
@@ -585,7 +684,7 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
                     </div>
                   )}
 
-                  {analisisIa.consejos?.length > 0 && (
+                  {analisisIa.consejos && analisisIa.consejos.length > 0 && (
                     <div>
                       <p className="font-semibold text-teal-400 mb-1">💡 Consejos Técnicos:</p>
                       <ul className="list-disc list-inside space-y-0.5 text-paper-muted">

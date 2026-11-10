@@ -1,8 +1,11 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../../lib/authStore';
+import { useNotificacionesStore } from '../../lib/notificacionesStore';
+import { useDestacadasStore } from '../../lib/destacadasStore';
 import { Button } from '../ui/Button';
+import { BotonMensajes, CampanaNotificaciones } from './BotonesActividad';
 
 const enlaces = [
   { a: '/feed', texto: 'Feed' },
@@ -17,6 +20,18 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const enlacesVisibles = sesion?.rolGlobal === 'ADMIN' ? [...enlaces, { a: '/admin', texto: 'Admin' }] : enlaces;
+
+  // El stream de notificaciones vive mientras haya sesión (en cualquier página) y se corta al salir
+  const token = sesion?.accessToken;
+  useEffect(() => {
+    if (!token) return;
+    useNotificacionesStore.getState().iniciar(token);
+    return () => {
+      useNotificacionesStore.getState().detener();
+      // Las destacadas son del usuario de la sesión: otra cuenta no debe heredarlas
+      useDestacadasStore.getState().limpiar();
+    };
+  }, [token]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -62,12 +77,34 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-3">
             {sesion ? (
               <>
+                {!sesion.premium && (
+                  <Link
+                    to="/planes"
+                    className="hidden rounded-full border border-amber-400/40 bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-300 hover:bg-amber-400/20 lg:inline-block"
+                  >
+                    ⭐ Hazte Premium
+                  </Link>
+                )}
+                <div className="flex items-center gap-1">
+                  <BotonMensajes />
+                  <CampanaNotificaciones />
+                </div>
                 <Link
                   to={`/perfil/${sesion.nombreArtista}`}
+                  title={sesion.premium ? 'Plan Premium' : undefined}
                   className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-paper-muted hover:bg-ink-800 hover:text-paper"
                 >
-                  <span className="grid h-7 w-7 place-items-center rounded-full bg-ink-700 text-xs font-semibold uppercase">
+                  <span
+                    className={`relative grid h-7 w-7 place-items-center rounded-full bg-ink-700 text-xs font-semibold uppercase ${
+                      sesion.premium ? 'ring-2 ring-amber-400/70' : ''
+                    }`}
+                  >
                     {sesion.nombreArtista.slice(0, 2)}
+                    {sesion.premium && (
+                      <span className="absolute -bottom-1 -right-1 text-[10px]" aria-hidden>
+                        ⭐
+                      </span>
+                    )}
                   </span>
                   <span className="hidden sm:inline">{sesion.nombreArtista}</span>
                 </Link>
@@ -95,7 +132,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
         {sesion && (
           <nav className="flex gap-1 overflow-x-auto border-t border-ink-800 px-2 py-1.5 md:hidden">
-            {enlaces.map((e) => (
+            {[...enlaces, { a: '/planes', texto: sesion.premium ? 'Mi plan' : '⭐ Premium' }].map((e) => (
               <Link key={e.a} to={e.a} className="whitespace-nowrap rounded-lg px-3 py-1.5 text-sm text-paper-muted hover:bg-ink-800">
                 {e.texto}
               </Link>

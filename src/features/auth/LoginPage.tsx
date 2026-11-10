@@ -6,6 +6,8 @@ import { useAuthStore } from '../../lib/authStore';
 import { FondoArtistico } from '../../components/layout/FondoArtistico';
 import { Button } from '../../components/ui/Button';
 import { TextField } from '../../components/ui/TextField';
+import { funcionActiva } from '../../lib/features';
+import { BotonLoginExterno } from './BotonLoginExterno';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -78,6 +80,8 @@ export function LoginPage() {
           <Button type="submit" cargando={enviando}>
             Entrar
           </Button>
+
+          {funcionActiva('loginExterno') && <BotonLoginExterno />}
 
           <p className="text-center text-sm text-ink-950/65">
             ¿Aún no tienes cuenta?{' '}

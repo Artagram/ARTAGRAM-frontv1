@@ -6,38 +6,59 @@ import { FondoEstudio } from '../../components/layout/FondoEstudio';
 import { PostCard } from './PostCard';
 import { PublishWizard } from './PublishWizard';
 import { BuscarArtistas } from './BuscarArtistas';
+import { ArtistasRecomendados } from './ArtistasRecomendados';
+import { SeguidosDibujando } from './SeguidosDibujando';
+import { funcionActiva } from '../../lib/features';
 import type { FeedResponse, PublicacionDto } from '../../types';
 
+type PestanaFeed = 'siguiendo' | 'explorar';
+
+const TAMANO_PAGINA = 10;
+
+const PESTANAS: { id: PestanaFeed; texto: string }[] = [
+  { id: 'siguiendo', texto: 'Siguiendo' },
+  { id: 'explorar', texto: 'Explorar' },
+];
+
 export function FeedPage() {
+  const [pestana, setPestana] = useState<PestanaFeed>('siguiendo');
   const [publicaciones, setPublicaciones] = useState<PublicacionDto[]>([]);
-  const [cursor, setCursor] = useState<{ fecha: string; id: string } | null>(null);
+  // artagram-feed pagina por numero de pagina (no por cursor): esta es la siguiente a pedir
+  const [paginaSiguiente, setPaginaSiguiente] = useState(0);
   const [hayMas, setHayMas] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [cargandoMas, setCargandoMas] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mostrarPublicar, setMostrarPublicar] = useState(false);
 
-  async function cargar(desdeInicio: boolean) {
+  async function cargar(dePestana: PestanaFeed, pagina: number) {
+    setError(null);
     try {
-      const { data } = await api.get<FeedResponse>('/api/feed', {
-        params: desdeInicio || !cursor ? {} : { cursorFecha: cursor.fecha, cursorId: cursor.id },
+      const { data } = await api.get<FeedResponse>(`/api/feed/${dePestana}`, {
+        params: { pagina, tamano: TAMANO_PAGINA },
       });
-      setPublicaciones((prev) => (desdeInicio ? data.publicaciones : [...prev, ...data.publicaciones]));
+      setPublicaciones((prev) => (pagina === 0 ? data.publicaciones : [...prev, ...data.publicaciones]));
       setHayMas(data.hayMas);
-      setCursor(data.cursorFechaSiguiente && data.cursorIdSiguiente ? { fecha: data.cursorFechaSiguiente, id: data.cursorIdSiguiente } : null);
+      setPaginaSiguiente(pagina + 1);
     } catch (err) {
       setError(extraerMensajeError(err));
     }
   }
 
   useEffect(() => {
-    cargar(true).finally(() => setCargando(false));
+    setCargando(true);
+    setPublicaciones([]);
+    cargar(pestana, 0).finally(() => setCargando(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [pestana]);
+
+  function recargarSiguiendo() {
+    if (pestana === 'siguiendo') void cargar('siguiendo', 0);
+  }
 
   async function cargarMas() {
     setCargandoMas(true);
-    await cargar(false);
+    await cargar(pestana, paginaSiguiente);
     setCargandoMas(false);
   }
 
@@ -52,11 +73,28 @@ export function FeedPage() {
         {!mostrarPublicar && <Button onClick={() => setMostrarPublicar(true)}>Publicar</Button>}
       </div>
 
-      {/* Buscar personas y seguirlas: el feed muestra tus obras y las de quienes sigues */}
-      <BuscarArtistas
-        mostrarSugerencias={!cargando && publicaciones.length === 0}
-        onSeguimientoCambiado={() => void cargar(true)}
-      />
+      {funcionActiva('presencia') && <SeguidosDibujando />}
+
+      {/* Buscar personas y seguirlas: el feed "Siguiendo" muestra las obras de quienes sigues */}
+      <BuscarArtistas onSeguimientoCambiado={recargarSiguiendo} />
+      <ArtistasRecomendados onSeguimientoCambiado={recargarSiguiendo} />
+
+      <div className="mb-6 flex gap-1 rounded-xl border border-ink-700 bg-ink-900/40 p-1" role="tablist">
+        {PESTANAS.map((p) => (
+          <button
+            key={p.id}
+            type="button"
+            role="tab"
+            aria-selected={pestana === p.id}
+            onClick={() => setPestana(p.id)}
+            className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+              pestana === p.id ? 'bg-ink-800 text-paper' : 'text-paper-muted hover:text-paper'
+            }`}
+          >
+            {p.texto}
+          </button>
+        ))}
+      </div>
 
       <AnimatePresence>
         {mostrarPublicar && (
@@ -79,8 +117,20 @@ export function FeedPage() {
       ) : publicaciones.length === 0 ? (
         <div className="card flex flex-col items-center gap-3 p-12 text-center">
           <div className="text-4xl">🖌️</div>
-          <h3 className="font-display text-lg font-semibold">Todavía no hay nada en tu feed</h3>
-          <p className="max-w-sm text-sm text-paper-muted">Publica tu primera obra o busca artistas arriba y síguelos para ver lo que hacen.</p>
+          {pestana === 'siguiendo' ? (
+            <>
+              <h3 className="font-display text-lg font-semibold">Todavía no hay nada en tu feed</h3>
+              <p className="max-w-sm text-sm text-paper-muted">Busca artistas arriba y síguelos para ver lo que hacen.</p>
+              <Button variant="secondary" onClick={() => setPestana('explorar')}>
+                Ir a Explorar
+              </Button>
+            </>
+          ) : (
+            <>
+              <h3 className="font-display text-lg font-semibold">Aún no hay obras publicadas</h3>
+              <p className="max-w-sm text-sm text-paper-muted">Publica tu primera obra para estrenar la comunidad.</p>
+            </>
+          )}
         </div>
       ) : (
         <div className="flex flex-col gap-6">

@@ -19,6 +19,8 @@ interface AuthState {
    */
   sesionExpirada: boolean;
   iniciarSesion: (sesion: SesionUsuario) => void;
+  /** Cambia campos de la sesión guardada sin tocar el token (p. ej. premium tras pagar). */
+  actualizarSesion: (cambios: Partial<Omit<SesionUsuario, 'accessToken'>>) => void;
   cerrarSesion: () => void;
   expirarSesion: () => void;
   limpiarAvisoSesionExpirada: () => void;
@@ -42,6 +44,13 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.setItem(CLAVE_STORAGE, JSON.stringify(sesion));
     set({ sesion, sesionExpirada: false });
   },
+  actualizarSesion: (cambios) =>
+    set((s) => {
+      if (!s.sesion) return s;
+      const sesion = { ...s.sesion, ...cambios };
+      localStorage.setItem(CLAVE_STORAGE, JSON.stringify(sesion));
+      return { sesion };
+    }),
   cerrarSesion: () => {
     localStorage.removeItem(CLAVE_STORAGE);
     set({ sesion: null, sesionExpirada: false });

@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { api, extraerMensajeError } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
+import type { Seguimiento } from '../../types';
 
 interface Props {
   usuarioId: string;
   loSigo: boolean;
-  /** Avisa el nuevo estado para que quien lo usa actualice contadores o recargue el feed. */
-  onCambio?: (loSigo: boolean) => void;
+  /** Avisa el nuevo estado (y el total de seguidores) para que quien lo usa actualice contadores o recargue el feed. */
+  onCambio?: (seguimiento: Seguimiento) => void;
   className?: string;
 }
 
@@ -18,12 +19,9 @@ export function BotonSeguir({ usuarioId, loSigo, onCambio, className }: Props) {
     setEnviando(true);
     setError(null);
     try {
-      if (loSigo) {
-        await api.delete(`/api/artistas/${usuarioId}/seguir`);
-      } else {
-        await api.post(`/api/artistas/${usuarioId}/seguir`);
-      }
-      onCambio?.(!loSigo);
+      // artagram-users expone seguir como un toggle: el mismo POST sigue o deja de seguir
+      const { data } = await api.post<Seguimiento>(`/api/artistas/${usuarioId}/seguir`);
+      onCambio?.(data);
     } catch (err) {
       setError(extraerMensajeError(err, 'No se pudo actualizar'));
     } finally {

@@ -6,6 +6,8 @@ import { useAuthStore } from '../../lib/authStore';
 import { FondoArtistico } from '../../components/layout/FondoArtistico';
 import { Button } from '../../components/ui/Button';
 import { TextField } from '../../components/ui/TextField';
+import { funcionActiva } from '../../lib/features';
+import { BotonLoginExterno } from './BotonLoginExterno';
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -163,6 +165,8 @@ export function RegisterPage() {
         <Button type="submit" cargando={enviando} disabled={disponibilidad?.disponible === false}>
           Crear cuenta
         </Button>
+
+        {funcionActiva('loginExterno') && <BotonLoginExterno texto="Registrarme con Google" />}
 
         <p className="text-center text-sm text-ink-950/65">
           ¿Ya tienes cuenta?{' '}

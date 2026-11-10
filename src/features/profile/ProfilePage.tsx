@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { api, extraerMensajeError } from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
+import { mensajeErrorSubida, subirArchivo } from '../../lib/subirArchivo';
+import { useDestacadasStore } from '../../lib/destacadasStore';
 import { BotonSeguir } from '../feed/BotonSeguir';
 import { Button } from '../../components/ui/Button';
 import { TextField } from '../../components/ui/TextField';
-import type { PerfilResponse, Seguimiento } from '../../types';
+import type { ArtistaResumen, PerfilResponse, Seguimiento } from '../../types';
 
 interface EnlaceForm {
   etiqueta: string;
@@ -14,7 +16,8 @@ interface EnlaceForm {
 }
 interface ObraForm {
   titulo: string;
-  rutaImagen: string;
+  /** Lo que se guarda: la URL que ya tenía la obra, o la clave S3 si se acaba de subir. */
+  imagenUrl: string;
   previewUrl: string;
 }
 
@@ -43,7 +46,7 @@ export function ProfilePage() {
         setPerfil(r.data);
         setBiografia(r.data.biografia ?? '');
         setEnlaces(r.data.enlaces.map((e) => ({ etiqueta: e.etiqueta, url: e.url })));
-        setObras(r.data.obrasDestacadas.map((o) => ({ titulo: o.titulo, rutaImagen: '', previewUrl: o.imagenUrl })));
+        setObras(r.data.obrasDestacadas.map((o) => ({ titulo: o.titulo, imagenUrl: o.imagenUrl, previewUrl: o.imagenUrl })));
       })
       .catch((err) => setError(extraerMensajeError(err, 'No encontramos a ese artista')))
       .finally(() => setCargando(false));
@@ -54,8 +57,8 @@ export function ProfilePage() {
   useEffect(() => {
     if (!usuarioIdPerfil || !sesion) return;
     api
-      .get<Seguimiento>(`/api/artistas/${usuarioIdPerfil}/seguimiento`)
-      .then((r) => setSeguimientoDe({ usuarioId: usuarioIdPerfil, datos: r.data }))
+      .get<ArtistaResumen>(`/api/artistas/${usuarioIdPerfil}`)
+      .then((r) => setSeguimientoDe({ usuarioId: usuarioIdPerfil, datos: { loSigo: r.data.loSigo, seguidores: r.data.seguidores } }))
       .catch(() => {});
   }, [usuarioIdPerfil, sesion]);
   const seguimiento = sesion && seguimientoDe?.usuarioId === usuarioIdPerfil ? seguimientoDe.datos : null;
@@ -65,12 +68,12 @@ export function ProfilePage() {
     if (!archivo) return;
     setSubiendoFoto(true);
     try {
-      const form = new FormData();
-      form.append('archivo', archivo);
-      const { data } = await api.post<{ fotoUrl: string }>('/api/perfil/me/foto', form);
-      setPerfil((p) => (p ? { ...p, fotoUrl: data.fotoUrl } : p));
+      // Solo se manda fotoUrl: artagram-users deja intacto lo que llegue en null
+      const fotoUrl = await subirArchivo(archivo);
+      const { data } = await api.put<PerfilResponse>('/api/perfil/me', { fotoUrl });
+      setPerfil(data);
     } catch (err) {
-      setError(extraerMensajeError(err));
+      setError(mensajeErrorSubida(err));
     } finally {
       setSubiendoFoto(false);
     }
@@ -80,12 +83,10 @@ export function ProfilePage() {
     const archivo = e.target.files?.[0];
     if (!archivo || obras.length >= 3) return;
     try {
-      const form = new FormData();
-      form.append('archivo', archivo);
-      const { data } = await api.post<{ rutaImagen: string }>('/api/perfil/me/obras/imagen', form);
-      setObras((prev) => [...prev, { titulo: '', rutaImagen: data.rutaImagen, previewUrl: URL.createObjectURL(archivo) }]);
+      const imagenUrl = await subirArchivo(archivo);
+      setObras((prev) => [...prev, { titulo: '', imagenUrl, previewUrl: URL.createObjectURL(archivo) }]);
     } catch (err) {
-      setError(extraerMensajeError(err));
+      setError(mensajeErrorSubida(err));
     }
   }
 
@@ -96,9 +97,11 @@ export function ProfilePage() {
       const { data } = await api.put<PerfilResponse>('/api/perfil/me', {
         biografia,
         enlaces: enlaces.filter((e) => e.etiqueta.trim() && e.url.trim()),
-        obrasDestacadas: obras.filter((o) => o.titulo.trim() && o.rutaImagen).map((o) => ({ titulo: o.titulo, rutaImagen: o.rutaImagen })),
+        obrasDestacadas: obras.filter((o) => o.titulo.trim() && o.imagenUrl).map((o) => ({ titulo: o.titulo, imagenUrl: o.imagenUrl })),
       });
       setPerfil(data);
+      // Las estrellas del feed leen esta lista: queda al día con lo que se acaba de guardar
+      useDestacadasStore.setState({ obras: data.obrasDestacadas });
       setEditando(false);
     } catch (err) {
       setError(extraerMensajeError(err));
@@ -143,11 +146,7 @@ export function ProfilePage() {
               <BotonSeguir
                 usuarioId={perfil.usuarioId}
                 loSigo={seguimiento.loSigo}
-                onCambio={(loSigo) =>
-                  setSeguimientoDe((s) =>
-                    s ? { ...s, datos: { loSigo, seguidores: Math.max(0, s.datos.seguidores + (loSigo ? 1 : -1)) } } : s,
-                  )
-                }
+                onCambio={(datos) => setSeguimientoDe((s) => (s ? { ...s, datos } : s))}
               />
             )}
           </div>
@@ -163,6 +162,11 @@ export function ProfilePage() {
               <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/40 bg-amber-400/10 px-2.5 py-0.5 text-xs font-semibold text-amber-300 shadow-sm">
                 ⭐ Plan Premium
               </span>
+            )}
+            {esPropio && (
+              <Link to="/planes" className="text-xs text-violet hover:underline">
+                {sesion?.premium ? 'Ver mi plan' : 'Pasar a Premium'}
+              </Link>
             )}
           </div>
 

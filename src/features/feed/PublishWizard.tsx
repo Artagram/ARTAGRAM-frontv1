@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { api, extraerMensajeError } from '../../lib/api';
+import { mensajeErrorSubida, subirArchivo } from '../../lib/subirArchivo';
 import { Button } from '../../components/ui/Button';
 import { TextField } from '../../components/ui/TextField';
 import type { PublicacionDto, SugerenciaEtiquetasResultado } from '../../types';
@@ -86,21 +87,22 @@ export function PublishWizard({
     setError(null);
     setEnviando(true);
     try {
-      const form = new FormData();
-      form.append('titulo', titulo.trim());
-      if (descripcion.trim()) form.append('descripcion', descripcion.trim());
-      etiquetasTexto
-        .split(',')
-        .map((t) => t.trim())
-        .filter(Boolean)
-        .forEach((t) => form.append('etiquetas', t));
-      form.append('obraFinal', obraFinal);
-      imagenesProceso.forEach((f) => form.append('imagenesProceso', f));
+      const imagenUrl = await subirArchivo(obraFinal);
+      const imagenesProcesoUrls = await Promise.all(imagenesProceso.map(subirArchivo));
 
-      const { data } = await api.post<PublicacionDto>('/api/publicaciones', form);
+      const { data } = await api.post<PublicacionDto>('/api/publicaciones', {
+        titulo: titulo.trim(),
+        descripcion: descripcion.trim() || null,
+        imagenUrl,
+        imagenesProcesoUrls,
+        etiquetas: etiquetasTexto
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
+      });
       onPublicado(data);
     } catch (err) {
-      setError(extraerMensajeError(err));
+      setError(mensajeErrorSubida(err));
     } finally {
       setEnviando(false);
     }

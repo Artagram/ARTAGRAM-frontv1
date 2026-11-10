@@ -31,6 +31,25 @@ describe('iniciarSesion', () => {
   });
 });
 
+describe('actualizarSesion', () => {
+  it('cambia solo los campos indicados, conserva el token y lo persiste', () => {
+    useAuthStore.getState().iniciarSesion(SESION_DEMO);
+
+    useAuthStore.getState().actualizarSesion({ premium: true });
+
+    const esperada = { ...SESION_DEMO, premium: true };
+    expect(useAuthStore.getState().sesion).toEqual(esperada);
+    expect(JSON.parse(localStorage.getItem(CLAVE_STORAGE)!)).toEqual(esperada);
+  });
+
+  it('no crea una sesion si no habia una iniciada', () => {
+    useAuthStore.getState().actualizarSesion({ premium: true });
+
+    expect(useAuthStore.getState().sesion).toBeNull();
+    expect(localStorage.getItem(CLAVE_STORAGE)).toBeNull();
+  });
+});
+
 describe('cerrarSesion', () => {
   it('borra la sesion del store y de localStorage', () => {
     useAuthStore.getState().iniciarSesion(SESION_DEMO);

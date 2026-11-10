@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { api, extraerMensajeError } from '../../lib/api';
+import { funcionActiva } from '../../lib/features';
+import { ReportesPanel } from './ReportesPanel';
 import type { KpiDetalle as KpiDetalleDto } from '../../types';
 
 interface DashboardInfo {
@@ -70,6 +72,8 @@ export function AdminDashboardPage() {
           <PanelEnlace titulo="Prometheus" descripcion="Métricas crudas expuestas por el backend." url={info.prometheusUrl} color="text-amber" />
         </div>
       )}
+
+      {funcionActiva('reportes') && <ReportesPanel />}
     </div>
   );
 }

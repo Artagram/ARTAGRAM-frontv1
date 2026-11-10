@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import axios from 'axios';
 import { api, extraerMensajeError } from '../../lib/api';
+import { useAuthStore } from '../../lib/authStore';
+import { funcionActiva } from '../../lib/features';
+import { ComunidadesRecomendadas } from './ComunidadesRecomendadas';
 import { Button } from '../../components/ui/Button';
 import { FondoEstudio } from '../../components/layout/FondoEstudio';
 import { TextField } from '../../components/ui/TextField';
@@ -17,6 +21,9 @@ export function CommunityListPage() {
   const [enviando, setEnviando] = useState(false);
   const [codigoUnirse, setCodigoUnirse] = useState('');
   const [cargando, setCargando] = useState(true);
+  // El plan gratis tiene tope de comunidades creadas: el error enlaza a /planes
+  const [topeAlcanzado, setTopeAlcanzado] = useState(false);
+  const premium = useAuthStore((s) => s.sesion?.premium ?? false);
 
   useEffect(() => {
     cargarMisComunidades();
@@ -34,6 +41,7 @@ export function CommunityListPage() {
   async function crear(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setTopeAlcanzado(false);
     setEnviando(true);
     try {
       await api.post<ComunidadResponse>('/api/comunidades', { nombre, descripcion, publica });
@@ -43,6 +51,7 @@ export function CommunityListPage() {
       setDescripcion('');
     } catch (err) {
       setError(extraerMensajeError(err));
+      setTopeAlcanzado(axios.isAxiosError(err) && err.response?.data?.code === 'TOPE_COMUNIDADES');
     } finally {
       setEnviando(false);
     }
@@ -54,6 +63,7 @@ export function CommunityListPage() {
       await cargarMisComunidades();
     } catch (err) {
       setError(extraerMensajeError(err));
+      setTopeAlcanzado(false);
     }
   }
 
@@ -68,7 +78,19 @@ export function CommunityListPage() {
         <Button onClick={() => setMostrarCrear((v) => !v)}>{mostrarCrear ? 'Cancelar' : 'Crear comunidad'}</Button>
       </div>
 
-      {error && <p className="mb-4 rounded-lg bg-coral/10 px-3 py-2 text-sm text-coral-light">{error}</p>}
+      {error && (
+        <p className="mb-4 rounded-lg bg-coral/10 px-3 py-2 text-sm text-coral-light">
+          {error}
+          {topeAlcanzado && (
+            <>
+              {' '}
+              <Link to="/planes" className="font-semibold text-amber-300 underline">
+                Ver Premium
+              </Link>
+            </>
+          )}
+        </p>
+      )}
 
       {mostrarCrear && (
         <motion.form
@@ -88,11 +110,23 @@ export function CommunityListPage() {
             <input type="checkbox" checked={publica} onChange={(e) => setPublica(e.target.checked)} className="accent-coral" />
             Pública (cualquiera se puede unir)
           </label>
-          <Button type="submit" cargando={enviando} className="self-start">
-            Crear
-          </Button>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button type="submit" cargando={enviando}>
+              Crear
+            </Button>
+            {!premium && (
+              <span className="text-xs text-paper-dim">
+                Plan gratis: hasta 3 comunidades creadas.{' '}
+                <Link to="/planes" className="text-violet hover:underline">
+                  Ilimitadas con Premium
+                </Link>
+              </span>
+            )}
+          </div>
         </motion.form>
       )}
+
+      {funcionActiva('comunidadesRecomendadas') && <ComunidadesRecomendadas onUnido={() => void cargarMisComunidades()} />}
 
       <div className="mb-8 card flex flex-wrap items-end gap-3 p-4">
         <TextField

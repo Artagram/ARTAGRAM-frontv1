@@ -195,20 +195,22 @@ export interface ComentarioEvento {
   contadorComentarios: number;
 }
 
-export interface AnalisisTecnicoResultado {
-  puntosFuertes: string[];
-  areasMejora: string[];
-  consejos: string[];
-  scoreEstimado: number;
-}
-
-export interface AnalisisObraDto {
+/**
+ * Respuesta de GET/POST /api/publicaciones/{id}/analisis (artagram-feed).
+ * El POST devuelve el registro en PENDIENTE y el resultado llega despues por
+ * ai.completed, asi que hay que volver a consultar hasta que cambie el estado.
+ */
+export interface AnalisisIaDto {
   id: string;
   publicacionId: string;
-  solicitanteId: string;
-  tipo: 'TECNICO' | 'SUGERENCIA_ETIQUETAS';
-  resultadoJson: string;
-  modelo: string;
+  estado: 'PENDIENTE' | 'COMPLETADO' | 'ERROR' | string;
+  diagnosticoGeneral: string | null;
+  puntosFuertes: string[] | null;
+  areasMejora: string[] | null;
+  consejos: string[] | null;
+  scoreEstimado: number;
+  paletaDetectada: string | null;
+  composicion: string | null;
   creadoEn: string;
 }
 
@@ -258,6 +260,82 @@ export interface FeedResponse {
   cursorIdSiguiente: string | null;
   hayMas: boolean;
   artistasSugeridos: string[];
+}
+
+/** GET /api/suscripcion/actual (artagram-payment). */
+export interface SuscripcionDto {
+  plan: 'GRATIS' | 'PRO' | string;
+  estado: string;
+  fechaInicio: string;
+  fechaFin: string | null;
+  premium: boolean;
+  megabytesUsados: number;
+  maxMegabytes: number;
+  obrasSubidas: number;
+  maxObras: number;
+}
+
+/** POST /api/suscripcion/checkout: checkoutUrl es la página del proveedor (o el retorno directo si es simulado). */
+export interface CheckoutResponse {
+  checkoutUrl: string;
+  idTransaccion: string;
+  proveedor: string;
+}
+
+// --- Funciones que esperan backend: ver docs/CONTRATO_FUNCIONES_PENDIENTES.md ---
+
+export type MotivoReporte = 'SPAM' | 'CONTENIDO_INAPROPIADO' | 'PLAGIO' | 'ACOSO' | 'OTRO';
+
+export interface ReporteDto {
+  id: string;
+  publicacionId: string;
+  publicacionTitulo: string;
+  obraUrl: string;
+  autorNombre: string;
+  reportanteNombre: string;
+  motivo: MotivoReporte;
+  detalle: string | null;
+  estado: 'PENDIENTE' | 'ACEPTADO' | 'DESCARTADO';
+  creadoEn: string;
+}
+
+export interface ArtistaDibujandoDto {
+  usuarioId: string;
+  nombreArtista: string;
+  lugar: 'LIENZO' | 'FIESTA';
+  comunidadId: string | null;
+  comunidadNombre: string | null;
+  salaId: string | null;
+  desde: string;
+}
+
+export interface PresenciaEvento {
+  tipo: 'EMPEZO_A_DIBUJAR' | 'DEJO_DE_DIBUJAR';
+  artista: ArtistaDibujandoDto;
+}
+
+export interface ComunidadRecomendadaDto extends ComunidadResponse {
+  motivo: string;
+}
+
+export type TipoNotificacion =
+  | 'NUEVO_SEGUIDOR'
+  | 'NUEVO_LIKE'
+  | 'NUEVO_COMENTARIO'
+  | 'SUSCRIPCION_PREMIUM'
+  | 'ANALISIS_IA_LISTO'
+  | 'MENSAJE_DIRECTO';
+
+export interface NotificacionDto {
+  id: string;
+  destinatarioId: string;
+  tipo: TipoNotificacion | string;
+  actorId: string | null;
+  actorNombre: string | null;
+  referenciaId: string | null;
+  mensaje: string;
+  leida: boolean;
+  creadoEn: string;
 }
 
 export interface KpiDetalle {

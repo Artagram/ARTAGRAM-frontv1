@@ -192,7 +192,7 @@ export function BrushToolbar({
   return (
     <div
       className={clsx(
-        'card card-fija flex flex-wrap items-center justify-between gap-3 rounded-[14px] p-2.5 select-none',
+        'card card-fija flex max-w-full flex-wrap items-center justify-between gap-3 rounded-[14px] p-2.5 select-none',
         deshabilitado && 'opacity-50 pointer-events-none',
       )}
     >

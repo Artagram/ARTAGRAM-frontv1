@@ -274,7 +274,7 @@ export function PartyLobbyPage() {
                         <button
                           type="button"
                           onClick={() => salirDeSala(s.id)}
-                          className="px-3 py-1.5 text-xs text-paper-dim hover:text-paper rounded-full bg-ink-700 hover:bg-ink-600 transition-colors"
+                          className="btn-tertiary px-3 py-1.5 text-xs"
                           title="Salir de esta sala"
                         >
                           Salir

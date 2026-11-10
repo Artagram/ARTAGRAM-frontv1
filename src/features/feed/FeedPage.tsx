@@ -114,7 +114,7 @@ export function FeedPage() {
         {error && <p className="banner-error mb-4">{error}</p>}
 
         {cargando ? (
-          <Skeleton filas={4} className="lg:grid lg:grid-cols-2" claseFila="h-80" />
+          <Skeleton filas={2} className="mx-auto max-w-2xl" claseFila="h-96" />
         ) : publicaciones.length === 0 ? (
           <div className="card card-fija flex flex-col items-center gap-3 p-12 text-center">
             <div className="text-4xl">🖌️</div>
@@ -138,7 +138,7 @@ export function FeedPage() {
             )}
           </div>
         ) : (
-          <div className="grid items-start gap-5 lg:grid-cols-2">
+          <div className="mx-auto flex max-w-2xl flex-col gap-5">
             {publicaciones.map((p) => (
               <PostCard
                 key={p.id}

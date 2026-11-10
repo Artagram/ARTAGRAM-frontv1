@@ -674,7 +674,7 @@ export function PartyRoomPage() {
               type="button"
               onClick={iniciarRonda}
               cargando={iniciandoRonda}
-              className="text-xs px-2.5 py-1.5 border border-ink-700 bg-gradient-to-r from-coral to-violet text-white hover:brightness-110 shadow-sm"
+              className="text-xs px-2.5 py-1.5 border border-ink-700 bg-gradient-to-r from-coral to-violet text-paper hover:brightness-110 shadow-sm"
               title="Iniciar o avanzar a la siguiente ronda"
             >
               {enEsperaInicial

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { api, extraerMensajeError } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
@@ -11,7 +11,15 @@ import { ArtistasRecomendados } from './ArtistasRecomendados';
 import { cargarArtistasRecomendados, type ArtistaRecomendado } from './recomendacionesApi';
 import type { FeedResponse, PublicacionDto } from '../../types';
 
+type PestanaFeed = 'siguiendo' | 'explorar';
+
+const PESTANAS: { id: PestanaFeed; texto: string }[] = [
+  { id: 'siguiendo', texto: 'Siguiendo' },
+  { id: 'explorar', texto: 'Explorar' },
+];
+
 export function FeedPage() {
+  const [pestana, setPestana] = useState<PestanaFeed>('siguiendo');
   const [publicaciones, setPublicaciones] = useState<PublicacionDto[]>([]);
   const [pagina, setPagina] = useState(0);
   const [hayMas, setHayMas] = useState(false);
@@ -21,27 +29,41 @@ export function FeedPage() {
   const [mostrarPublicar, setMostrarPublicar] = useState(false);
   const [recomendados, setRecomendados] = useState<ArtistaRecomendado[]>([]);
 
-  async function cargar(desdeInicio: boolean) {
+  // Si se cambia de pestaña antes de que responda la anterior, esa respuesta se ignora.
+  const ultimaCarga = useRef(0);
+
+  async function cargar(dePestana: PestanaFeed, desdeInicio: boolean) {
+    const carga = ++ultimaCarga.current;
     try {
       const siguiente = desdeInicio ? 0 : pagina + 1;
-      const { data } = await api.get<FeedResponse>('/api/feed', { params: { pagina: siguiente } });
+      const { data } = await api.get<FeedResponse>(`/api/feed/${dePestana}`, { params: { pagina: siguiente } });
+      if (carga !== ultimaCarga.current) return;
       setPublicaciones((prev) => (desdeInicio ? data.publicaciones : [...prev, ...data.publicaciones]));
       setHayMas(data.hayMas);
       setPagina(siguiente);
     } catch (err) {
-      setError(extraerMensajeError(err));
+      if (carga === ultimaCarga.current) setError(extraerMensajeError(err));
+    } finally {
+      if (carga === ultimaCarga.current) setCargando(false);
     }
   }
 
   useEffect(() => {
-    cargar(true).finally(() => setCargando(false));
-    cargarArtistasRecomendados().then(setRecomendados).catch(() => undefined);
+    setCargando(true);
+    setPublicaciones([]);
+    setHayMas(false);
+    setError(null);
+    void cargar(pestana, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pestana]);
+
+  useEffect(() => {
+    cargarArtistasRecomendados().then(setRecomendados).catch(() => undefined);
   }, []);
 
   async function cargarMas() {
     setCargandoMas(true);
-    await cargar(false);
+    await cargar(pestana, false);
     setCargandoMas(false);
   }
 
@@ -62,14 +84,31 @@ export function FeedPage() {
       {/* Buscar personas y seguirlas: el feed muestra tus obras y las de quienes sigues */}
       <BuscarArtistas
         mostrarSugerencias={!cargando && publicaciones.length === 0}
-        onSeguimientoCambiado={() => void cargar(true)}
+        onSeguimientoCambiado={() => void cargar(pestana, true)}
       />
 
       {recomendados.length > 0 && (
         <div className="lg:hidden">
-          <ArtistasRecomendados artistas={recomendados} onSeguimientoCambiado={() => void cargar(true)} />
+          <ArtistasRecomendados artistas={recomendados} onSeguimientoCambiado={() => void cargar(pestana, true)} />
         </div>
       )}
+
+      <div className="mb-6 flex gap-1 rounded-xl border border-ink-700 bg-ink-900/40 p-1" role="tablist" aria-label="Feed">
+        {PESTANAS.map((p) => (
+          <button
+            key={p.id}
+            type="button"
+            role="tab"
+            aria-selected={pestana === p.id}
+            onClick={() => setPestana(p.id)}
+            className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+              pestana === p.id ? 'bg-ink-800 text-paper' : 'text-paper-muted hover:text-paper'
+            }`}
+          >
+            {p.texto}
+          </button>
+        ))}
+      </div>
 
       <AnimatePresence>
         {mostrarPublicar && (
@@ -92,8 +131,20 @@ export function FeedPage() {
       ) : publicaciones.length === 0 ? (
         <div className="card flex flex-col items-center gap-3 p-12 text-center">
           <div className="text-4xl">🖌️</div>
-          <h3 className="font-display text-lg font-semibold">Todavía no hay nada en tu feed</h3>
-          <p className="max-w-sm text-sm text-paper-muted">Publica tu primera obra o busca artistas arriba y síguelos para ver lo que hacen.</p>
+          {pestana === 'siguiendo' ? (
+            <>
+              <h3 className="font-display text-lg font-semibold">Todavía no hay nada aquí</h3>
+              <p className="max-w-sm text-sm text-paper-muted">Publica tu primera obra o sigue artistas para ver lo que hacen.</p>
+              <Button variant="secondary" onClick={() => setPestana('explorar')}>
+                Ir a Explorar
+              </Button>
+            </>
+          ) : (
+            <>
+              <h3 className="font-display text-lg font-semibold">Todavía no hay obras para explorar</h3>
+              <p className="max-w-sm text-sm text-paper-muted">Publica la primera y aparecerá aquí.</p>
+            </>
+          )}
         </div>
       ) : (
         <div className="flex flex-col gap-6">
@@ -118,7 +169,7 @@ export function FeedPage() {
     {recomendados.length > 0 && (
       <aside className="hidden w-72 flex-shrink-0 lg:block">
         <div className="sticky top-20">
-          <ArtistasRecomendados artistas={recomendados} onSeguimientoCambiado={() => void cargar(true)} />
+          <ArtistasRecomendados artistas={recomendados} onSeguimientoCambiado={() => void cargar(pestana, true)} />
         </div>
       </aside>
     )}

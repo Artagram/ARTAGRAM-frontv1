@@ -1,17 +1,17 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FondoArtistico } from '../../components/layout/FondoArtistico';
+import { FondoEstudio } from '../../components/layout/FondoEstudio';
 
 export function LandingPage() {
   return (
-    <FondoArtistico>
+    <FondoEstudio>
       <div className="relative overflow-hidden">
         <section className="relative mx-auto flex max-w-6xl flex-col items-center px-4 pb-20 pt-20 text-center sm:pt-28">
-          <div className="rounded-[2.5rem] bg-paper/50 px-6 py-10 backdrop-blur-[3px] sm:px-16 sm:py-14">
+          <div className="rounded-[2.5rem] bg-ink-900/50 px-6 py-10 backdrop-blur-[3px] sm:px-16 sm:py-14">
             <motion.span
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="chip mb-6 border-violet/40 bg-paper/80 text-violet-dark"
+              className="chip mb-6 border-violet/40 text-paper"
             >
               El proceso importa tanto como la obra
             </motion.span>
@@ -19,15 +19,15 @@ export function LandingPage() {
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
-              className="max-w-3xl font-display text-4xl font-semibold leading-tight text-ink-950 sm:text-6xl"
+              className="max-w-3xl font-display text-4xl font-semibold leading-tight sm:text-6xl"
             >
-              Dibuja <span className="text-coral-dark">junto a otros</span>, en el mismo lienzo, al mismo tiempo
+              Dibuja <span className="text-coral">junto a otros</span>, en el mismo lienzo, al mismo tiempo
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="mx-auto mt-6 max-w-xl text-lg text-ink-950/75"
+              className="mx-auto mt-6 max-w-xl text-lg text-paper-muted"
             >
               Publica tu obra con su proceso, únete a comunidades con lienzos compartidos y entra al modo fiesta:
               rondas cronometradas donde todos pintan con el mismo pincel.
@@ -48,7 +48,7 @@ export function LandingPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25, duration: 0.6 }}
-            className="card-light relative mt-16 w-full max-w-4xl overflow-hidden p-2"
+            className="card relative mt-16 w-full max-w-4xl overflow-hidden p-2"
           >
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <VistaLienzo color="#FF6B57" nombre="lienzo_azul" />
@@ -63,27 +63,27 @@ export function LandingPage() {
             {
               titulo: 'Comunidades con lienzo compartido',
               texto: 'Varios artistas pintando la misma obra en tiempo real, con pinceles con textura de verdad.',
-              color: 'text-coral-dark',
+              color: 'text-coral',
             },
             {
               titulo: 'Modo fiesta',
               texto: 'Rondas cronometradas por el servidor, sin borrar ni deshacer, y un borrador que se disputa entre todos.',
-              color: 'text-violet-dark',
+              color: 'text-violet',
             },
             {
               titulo: 'El proceso, no solo el resultado',
               texto: 'Publica tu obra final junto con cómo la fuiste armando, paso a paso.',
-              color: 'text-teal-dark',
+              color: 'text-teal',
             },
           ].map((f) => (
-            <div key={f.titulo} className="card-light p-6">
+            <div key={f.titulo} className="card p-6">
               <h3 className={`font-display text-lg font-semibold ${f.color}`}>{f.titulo}</h3>
-              <p className="mt-2 text-sm text-ink-950/70">{f.texto}</p>
+              <p className="mt-2 text-sm text-paper-muted">{f.texto}</p>
             </div>
           ))}
         </section>
       </div>
-    </FondoArtistico>
+    </FondoEstudio>
   );
 }
 

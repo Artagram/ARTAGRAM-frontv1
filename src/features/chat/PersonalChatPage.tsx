@@ -273,7 +273,7 @@ export function PersonalChatPage() {
         {error && (
           <div className="mb-4 flex items-center justify-between rounded-xl bg-coral/15 border border-coral/30 px-4 py-2.5 text-sm text-coral-light animate-in fade-in">
             <span>{error}</span>
-            <button onClick={() => setError(null)} className="text-xs underline hover:text-white">
+            <button onClick={() => setError(null)} className="text-xs underline hover:text-paper">
               Cerrar
             </button>
           </div>
@@ -389,7 +389,7 @@ export function PersonalChatPage() {
                     >
                       ← Atrás
                     </button>
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-violet to-coral flex items-center justify-center font-bold text-white text-sm shadow">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-violet to-coral flex items-center justify-center font-bold text-paper text-sm shadow">
                       {contactoActivo.nombre.charAt(0).toUpperCase()}
                     </div>
                     <div>
@@ -433,7 +433,7 @@ export function PersonalChatPage() {
                           <div
                             className={`max-w-[78%] px-3.5 py-2 text-sm leading-relaxed ${
                               esPropio
-                                ? 'bg-gradient-to-r from-coral to-coral-light text-white rounded-2xl rounded-tr-xs shadow-md'
+                                ? 'bg-gradient-to-r from-coral to-coral-light text-paper rounded-2xl rounded-tr-xs shadow-md'
                                 : 'bg-ink-700/90 text-paper border border-ink-600/50 rounded-2xl rounded-tl-xs shadow-sm'
                             }`}
                           >

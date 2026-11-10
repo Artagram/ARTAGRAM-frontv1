@@ -72,18 +72,4 @@
   .chip {
     @apply inline-flex items-center gap-1 rounded-full bg-ink-700 px-2.5 py-1 text-xs text-paper-muted border border-ink-600;
   }
-
-  /* Superficies claras para las páginas públicas (landing/login/registro) que
-     van sobre el fondo acuarela — mismo sistema, paleta invertida. */
-  .card-light {
-    @apply bg-paper border border-ink-950/10 rounded-2xl shadow-[0_20px_60px_-12px_rgba(11,9,18,0.35)];
-  }
-  .input-light {
-    @apply w-full rounded-xl bg-white border border-ink-950/10 px-3.5 py-2.5 text-sm text-ink-950
-      placeholder:text-ink-950/35 outline-none transition-colors
-      focus:border-violet focus:ring-1 focus:ring-violet;
-  }
-  .label-light {
-    @apply text-xs font-medium uppercase tracking-wide text-ink-950/55;
-  }
 }

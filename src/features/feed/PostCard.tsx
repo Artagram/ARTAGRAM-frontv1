@@ -405,7 +405,7 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-violet px-3 py-1 text-xs font-medium text-white hover:bg-violet-600 disabled:opacity-60"
+                  className="rounded-lg bg-violet px-3 py-1 text-xs font-medium text-paper hover:bg-violet-600 disabled:opacity-60"
                   disabled={guardandoEdicion}
                 >
                   {guardandoEdicion ? 'Guardando…' : 'Guardar cambios'}
@@ -677,7 +677,7 @@ export function PostCard({ publicacion, onEliminada, onActualizada }: PostCardPr
                   <p className="text-paper-muted">Esta obra aún no ha sido analizada por la IA.</p>
                   <button
                     onClick={pedirAnalisisIa}
-                    className="rounded-lg bg-violet px-3 py-1.5 font-medium text-white hover:bg-violet-600 shadow-sm"
+                    className="rounded-lg bg-violet px-3 py-1.5 font-medium text-paper hover:bg-violet-600 shadow-sm"
                   >
                     ⚡ Generar análisis técnico ahora
                   </button>

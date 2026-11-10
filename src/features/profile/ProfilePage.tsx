@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { api, extraerMensajeError } from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
@@ -154,6 +154,11 @@ export function ProfilePage() {
                 <BotonPro />
               </div>
             </div>
+          )}
+          {esPropio && (
+            <Link to="/planes" className="mt-2 inline-block text-xs text-violet hover:underline">
+              {perfil.premium || sesion?.premium ? 'Ver mi plan' : 'Ver todos los planes'}
+            </Link>
           )}
 
           {!editando ? (

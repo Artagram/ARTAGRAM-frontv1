@@ -7,6 +7,17 @@ interface CheckoutResponse {
   proveedor: string;
 }
 
+export interface Suscripcion {
+  plan: string;
+  estado: string;
+  fechaFin: string | null;
+  premium: boolean;
+  megabytesUsados: number;
+  maxMegabytes: number;
+  obrasSubidas: number;
+  maxObras: number;
+}
+
 export type ResultadoPago = 'aprobado' | 'pendiente' | 'rechazado';
 
 export const PREFIJO_SIMULADO = 'sim_';
@@ -14,6 +25,11 @@ export const PREFIJO_SIMULADO = 'sim_';
 export async function crearCheckout(retornoUrl: string): Promise<string> {
   const { data } = await api.post<CheckoutResponse>('/api/suscripcion/checkout', { plan: 'PRO', retornoUrl });
   return data.checkoutUrl;
+}
+
+export async function cargarSuscripcion(): Promise<Suscripcion> {
+  const { data } = await api.get<Suscripcion>('/api/suscripcion/actual');
+  return data;
 }
 
 export async function refrescarSesion(): Promise<SesionUsuario> {

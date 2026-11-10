@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { GoogleLogin } from '@react-oauth/google';
 import { api, extraerMensajeError } from '../../lib/api';
 import { useAuthStore } from '../../lib/authStore';
-import { FondoArtistico } from '../../components/layout/FondoArtistico';
+import { FondoEstudio } from '../../components/layout/FondoEstudio';
 import { Button } from '../../components/ui/Button';
 import { TextField } from '../../components/ui/TextField';
 import {
@@ -46,7 +46,7 @@ export function LoginPage() {
   }
 
   return (
-    <FondoArtistico>
+    <FondoEstudio>
       <div className="flex min-h-[calc(100vh-64px)] items-center justify-center px-4 py-12">
         {idTokenPendiente ? (
           <ElegirNombre
@@ -61,15 +61,15 @@ export function LoginPage() {
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="card-light flex w-full max-w-md flex-col gap-4 p-8"
+            className="card flex w-full max-w-md flex-col gap-4 p-8"
           >
             <div>
-              <h1 className="font-display text-2xl font-semibold text-ink-950">Bienvenido a Artagram</h1>
-              <p className="mt-1 text-sm text-ink-950/65">Entra con tu cuenta de Google para dibujar con tu comunidad.</p>
+              <h1 className="font-display text-2xl font-semibold">Bienvenido a Artagram</h1>
+              <p className="mt-1 text-sm text-paper-muted">Entra con tu cuenta de Google para dibujar con tu comunidad.</p>
             </div>
 
             {avisoExpirada && (
-              <p className="rounded-lg bg-violet/10 px-3 py-2 text-sm text-violet-dark">
+              <p className="rounded-lg bg-violet/10 px-3 py-2 text-sm text-paper">
                 Tu sesión expiró, inicia sesión de nuevo.
               </p>
             )}
@@ -77,6 +77,7 @@ export function LoginPage() {
             <div className="flex justify-center">
               <GoogleLogin
                 text="continue_with"
+                theme="filled_black"
                 onSuccess={(r) => {
                   if (r.credential) {
                     void alIngresar(r.credential);
@@ -86,11 +87,11 @@ export function LoginPage() {
               />
             </div>
 
-            {error && <p className="rounded-lg bg-coral/10 px-3 py-2 text-sm text-coral-dark">{error}</p>}
+            {error && <p className="rounded-lg bg-coral/10 px-3 py-2 text-sm text-coral-light">{error}</p>}
           </motion.div>
         )}
       </div>
-    </FondoArtistico>
+    </FondoEstudio>
   );
 }
 
@@ -144,11 +145,11 @@ function ElegirNombre({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       onSubmit={enviar}
-      className="card-light flex w-full max-w-md flex-col gap-4 p-8"
+      className="card flex w-full max-w-md flex-col gap-4 p-8"
     >
       <div>
-        <h1 className="font-display text-2xl font-semibold text-ink-950">Elige tu nombre de artista</h1>
-        <p className="mt-1 text-sm text-ink-950/65">Así te verán los demás en Artagram.</p>
+        <h1 className="font-display text-2xl font-semibold">Elige tu nombre de artista</h1>
+        <p className="mt-1 text-sm text-paper-muted">Así te verán los demás en Artagram.</p>
       </div>
 
       <div>
@@ -159,7 +160,6 @@ function ElegirNombre({
           onChange={(e) => setNombreArtista(limpiarNombreArtista(e.target.value))}
           error={disponibilidad?.disponible === false ? 'Ese nombre ya lo tiene otra persona' : undefined}
           placeholder="lienzo_azul"
-          variant="light"
         />
         {disponibilidad?.disponible === false && disponibilidad.sugerencias.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
@@ -168,7 +168,7 @@ function ElegirNombre({
                 type="button"
                 key={s}
                 onClick={() => setNombreArtista(s)}
-                className="chip !bg-paper/70 !text-ink-950/70 !border-ink-950/15 hover:!border-violet hover:!text-violet-dark"
+                className="chip hover:border-violet hover:text-paper"
               >
                 {s}
               </button>
@@ -177,7 +177,7 @@ function ElegirNombre({
         )}
       </div>
 
-      {error && <p className="rounded-lg bg-coral/10 px-3 py-2 text-sm text-coral-dark">{error}</p>}
+      {error && <p className="rounded-lg bg-coral/10 px-3 py-2 text-sm text-coral-light">{error}</p>}
 
       <Button type="submit" cargando={enviando} disabled={disponibilidad?.disponible === false}>
         Crear cuenta

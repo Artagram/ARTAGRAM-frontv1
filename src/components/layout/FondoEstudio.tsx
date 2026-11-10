@@ -1,11 +1,8 @@
 import { type ReactNode } from 'react';
 
 /**
- * Fondo decorativo para las páginas "de estudio" (feed, comunidades, modo
- * fiesta, mensajes): el mismo patrón de íconos con glow que FondoArtistico
- * pero en la paleta oscura de la app, para que estas pantallas se sientan
- * tan vivas como landing/login en vez de un gris plano. Fixed detrás del
- * header igual que FondoArtistico; las .card ya son semitransparentes con
+ * Fondo decorativo de toda la app: patrón de íconos con glow en la paleta
+ * oscura. Fixed detrás del header; las .card ya son semitransparentes con
  * blur, así que quedan flotando sobre la textura sin perder legibilidad.
  */
 export function FondoEstudio({ children }: { children: ReactNode }) {

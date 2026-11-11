@@ -4,7 +4,7 @@ import type { TipoPincel } from '../../types';
 
 export type HerramientaFiesta = TipoPincel | 'BORRADOR';
 
-const PINCELES: { valor: TipoPincel; etiqueta: string; icono: string; descripcion: string }[] = [
+export const PINCELES: { valor: TipoPincel; etiqueta: string; icono: string; descripcion: string }[] = [
   { valor: 'LAPIZ', etiqueta: 'Lápiz', icono: '✎', descripcion: 'Trazo fino y preciso' },
   { valor: 'MARCADOR', etiqueta: 'Marcador', icono: '🖊', descripcion: 'Bordes definidos y planos' },
   { valor: 'ACUARELA', etiqueta: 'Acuarela', icono: '🖌', descripcion: 'Efecto suave y traslúcido' },
@@ -12,7 +12,7 @@ const PINCELES: { valor: TipoPincel; etiqueta: string; icono: string; descripcio
   { valor: 'AEROGRAFO', etiqueta: 'Spray', icono: '💨', descripcion: 'Aerógrafo difuminado' },
 ];
 
-const COLORES_CLASICOS = [
+export const COLORES_CLASICOS = [
   '#0B0912', // Negro
   '#F5F1EA', // Blanco marfil
   '#6B7280', // Gris neutro
@@ -26,7 +26,7 @@ const COLORES_CLASICOS = [
   '#EC4899', // Rosa
 ];
 
-const COLORES_MATES = [
+export const COLORES_MATES = [
   '#D98A7D', // Rosa mate
   '#C87D55', // Terracota
   '#8E9F8B', // Verde salvia
@@ -40,7 +40,7 @@ const COLORES_MATES = [
   '#2E383F', // Carbón mate
 ];
 
-const PRESETS_GROSOR = [4, 12, 24, 42];
+export const PRESETS_GROSOR = [4, 12, 24, 42];
 
 export interface Herramienta {
   tipoPincel: TipoPincel;

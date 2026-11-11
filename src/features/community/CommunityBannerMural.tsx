@@ -3,8 +3,8 @@ import { api, extraerMensajeError } from '../../lib/api';
 import { stompService } from '../../lib/stompClient';
 import { useAuthStore } from '../../lib/authStore';
 import { dibujarPunto, dibujarSegmento, dibujarTrazoCompleto, type EstiloPincel } from '../../lib/canvasEngine';
-import { BrushToolbar, type Herramienta } from '../canvas/BrushToolbar';
-import { Button } from '../../components/ui/Button';
+import { type Herramienta } from '../canvas/BrushToolbar';
+import { RielHerramientas, cerrarRielAlDibujar } from '../canvas/RielHerramientas';
 import type { BannerTrazoEvento, Punto, RegionEstado, TipoPincel } from '../../types';
 
 const REGIONES_POR_LADO = 10;
@@ -40,6 +40,7 @@ export function CommunityBannerMural({
     opacidad: 0.95,
   });
   const [esBorrador, setEsBorrador] = useState(false);
+  const [rielAbiertoMovil, setRielAbiertoMovil] = useState(false);
 
   // Almacén en memoria de snapshots y trazos de las 100 regiones
   const regionesRef = useRef<Map<number, { snapshotBase64: string | null; trazos: BannerTrazoEvento[] }>>(new Map());
@@ -272,6 +273,9 @@ export function CommunityBannerMural({
 
   function alPresionar(e: React.PointerEvent<HTMLCanvasElement>) {
     if (!interactivo) return;
+    // Cerrar el riel en móvil al empezar a pintar en el mural
+    setRielAbiertoMovil(false);
+    cerrarRielAlDibujar();
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     } catch {
@@ -436,34 +440,32 @@ export function CommunityBannerMural({
         </div>
       )}
 
-      {/* Barra de herramientas flotante estilo fiesta si está activo el modo pintor */}
+      {/* Riel lateral ocultable sobre el mural cuando está activo el modo pintor */}
       {interactivo && mostrarBarraHerramientas && (
-        <div className="absolute bottom-3 left-3 right-3 z-30 flex flex-col gap-2 rounded-2xl border border-paper/10 bg-ink-800/95 p-3 shadow-2xl">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <BrushToolbar
-              herramienta={herramienta}
-              onCambiar={(nueva) => {
-                setHerramienta(nueva);
-                setEsBorrador(false);
-              }}
-              orientacion="horizontal"
-            />
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setEsBorrador((v) => !v)}
-                className={`text-xs px-3 py-1.5 ${esBorrador ? 'btn-primary' : 'btn-tertiary glass'}`}
-              >
-                {esBorrador ? '🧹 Borrador activo' : '🧹 Borrador'}
-              </button>
-              {onCerrarEdicion && (
-                <Button variant="primary" onClick={onCerrarEdicion} className="text-xs py-1.5 px-3">
-                  Listo
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
+        <RielHerramientas
+          herramienta={herramienta}
+          onCambiar={(nueva) => {
+            setHerramienta(nueva);
+            setEsBorrador(false);
+          }}
+          borradorActivo={esBorrador}
+          onBorrador={() => setEsBorrador((v) => !v)}
+          abiertoMovil={rielAbiertoMovil}
+          onCambiarAbierto={setRielAbiertoMovil}
+          claveMemoria="mural"
+          acciones={
+            onCerrarEdicion
+              ? [
+                  {
+                    id: 'listo',
+                    icono: '✓',
+                    etiqueta: 'Listo',
+                    onClick: onCerrarEdicion,
+                  },
+                ]
+              : undefined
+          }
+        />
       )}
     </div>
   );

@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { api, extraerMensajeError } from '../../lib/api';
 import { exportarConMarca } from '../../lib/marcaAgua';
 import { stompService } from '../../lib/stompClient';
 import { useAuthStore } from '../../lib/authStore';
 import { anchoDeLineaPx, dibujarPunto, dibujarSegmento, dibujarTrazoCompleto, type EstiloPincel } from '../../lib/canvasEngine';
-import { BrushToolbar, type Herramienta } from './BrushToolbar';
+import { type Herramienta } from './BrushToolbar';
+import { RielHerramientas, cerrarRielAlDibujar } from './RielHerramientas';
 import { CursorRemoto } from './CursorRemoto';
 import { PublishWizard } from '../feed/PublishWizard';
 import { Modal } from '../../components/ui/Modal';
@@ -97,6 +99,11 @@ export function CanvasStudioPage() {
   // Estado para el modal de publicación directa desde el lienzo
   const [modalPublicar, setModalPublicar] = useState(false);
   const [archivoPublicar, setArchivoPublicar] = useState<File | null>(null);
+
+  // Estado del riel lateral en móvil y del menú compacto de cabecera
+  const [rielAbiertoMovil, setRielAbiertoMovil] = useState(false);
+  const [menuAccionesAbierto, setMenuAccionesAbierto] = useState(false);
+  const menuAccionesRef = useRef<HTMLDivElement>(null);
 
   const trazosRef = useRef<Map<number, TrazoDto>>(new Map());
   const maxSecuenciaRef = useRef(0);
@@ -592,7 +599,30 @@ export function CanvasStudioPage() {
     void seleccionarEn(coordenadasDesdeCliente(e.clientX, e.clientY));
   }
 
+  // Cerrar menú compacto de cabecera al tocar fuera o pulsar Escape
+  useEffect(() => {
+    if (!menuAccionesAbierto) return;
+    function alPresionarFuera(e: PointerEvent) {
+      if (menuAccionesRef.current && !menuAccionesRef.current.contains(e.target as Node)) {
+        setMenuAccionesAbierto(false);
+      }
+    }
+    function alTeclear(e: KeyboardEvent) {
+      if (e.key === 'Escape') setMenuAccionesAbierto(false);
+    }
+    document.addEventListener('pointerdown', alPresionarFuera);
+    window.addEventListener('keydown', alTeclear);
+    return () => {
+      document.removeEventListener('pointerdown', alPresionarFuera);
+      window.removeEventListener('keydown', alTeclear);
+    };
+  }, [menuAccionesAbierto]);
+
   function alPresionar(e: React.PointerEvent<HTMLCanvasElement>) {
+    // Cerrar el riel en móvil al tocar el lienzo para empezar a trazar o seleccionar
+    setRielAbiertoMovil(false);
+    cerrarRielAlDibujar();
+
     if (!comunidadId) return;
     const punto = coordenadasRelativas(e);
     const { ancho, alto } = dimRef.current;
@@ -772,22 +802,22 @@ export function CanvasStudioPage() {
 
   return (
     <div className="flex h-[calc(100vh-var(--alto-barra))] flex-col p-2 sm:p-3 gap-2 overflow-hidden select-none">
-      {/* Cabecera compacta del estudio */}
-      <header className="flex flex-wrap items-center justify-between gap-2 px-1">
-        <div className="flex items-center gap-3">
+      {/* Cabecera compacta del estudio: una sola fila en móvil, completa en sm+ */}
+      <header className="flex items-center justify-between gap-2 px-1">
+        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
           <Link
             to={`/comunidades/${comunidadId}`}
-            className="btn-ghost text-xs px-3 py-1.5"
+            className="btn-ghost flex-shrink-0 text-xs px-2.5 py-1.5 sm:px-3"
             title="Volver a la página de la comunidad"
           >
             ← Volver
           </Link>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-display text-lg font-semibold tracking-tight text-paper">
+          <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 items-center gap-2">
+              <h1 className="truncate font-display text-sm sm:text-lg font-semibold tracking-tight text-paper">
                 {comunidad?.nombre ?? 'Lienzo Colaborativo'}
               </h1>
-              <span className="flex items-center gap-1.5 text-[11px] font-medium text-teal">
+              <span className="flex flex-shrink-0 items-center gap-1.5 text-[11px] font-medium text-teal">
                 <span className="punto-vivo" aria-hidden />
                 En vivo
               </span>
@@ -798,7 +828,8 @@ export function CanvasStudioPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Acciones de cabecera en sm+ */}
+        <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
           <button
             type="button"
             aria-pressed={modoEditar}
@@ -829,6 +860,75 @@ export function CanvasStudioPage() {
             Publicar obra
           </button>
         </div>
+
+        {/* Menú compacto "⋯" en móvil (<sm) */}
+        <div ref={menuAccionesRef} className="relative flex sm:hidden items-center flex-shrink-0">
+          <button
+            type="button"
+            aria-label="Más acciones del estudio"
+            aria-expanded={menuAccionesAbierto}
+            aria-haspopup="menu"
+            onClick={() => setMenuAccionesAbierto((v) => !v)}
+            className="btn-ghost h-9 w-9 min-h-[36px] min-w-[36px] p-0 text-base leading-none"
+            title="Más acciones"
+          >
+            ⋯
+          </button>
+
+          <AnimatePresence>
+            {menuAccionesAbierto && (
+              <motion.div
+                role="menu"
+                initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                transition={{ duration: 0.14 }}
+                className="panel-flotante absolute right-0 top-full z-40 mt-1.5 flex w-52 flex-col gap-1 p-2"
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  aria-pressed={modoEditar}
+                  onClick={() => {
+                    setMenuAccionesAbierto(false);
+                    if (modoEditar) {
+                      void salirDelModoEditar();
+                    } else {
+                      setModoEditar(true);
+                    }
+                  }}
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium text-paper hover:bg-paper/10"
+                >
+                  ✏️ {modoEditar ? 'Editando trazos' : 'Editar trazos'}
+                </button>
+
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuAccionesAbierto(false);
+                    descargarSnapshot();
+                  }}
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium text-paper hover:bg-paper/10"
+                >
+                  ⬇ Descargar PNG
+                </button>
+
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuAccionesAbierto(false);
+                    abrirPublicar();
+                  }}
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold text-teal hover:bg-paper/10"
+                >
+                  ✨ Publicar obra
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </header>
 
       {/* Banner de aviso o notificación */}
@@ -841,8 +941,8 @@ export function CanvasStudioPage() {
         </div>
       )}
 
-      {/* En modo edición los pinceles no aplican: su lugar lo toma la barra de edición, fuera del lienzo */}
-      {modoEditar ? (
+      {/* Barra de edición cuando modoEditar está activo */}
+      {modoEditar && (
         <div className="flex flex-wrap items-center justify-between gap-3 glass rounded-[14px] px-4 py-2.5">
           <p className="text-xs text-paper font-medium">
             ✏️{' '}
@@ -861,41 +961,53 @@ export function CanvasStudioPage() {
             </button>
           </div>
         </div>
-      ) : (
-        <div className="lg:hidden">
-          <BrushToolbar herramienta={herramienta} onCambiar={setHerramienta} orientacion="horizontal" />
-        </div>
       )}
 
       <div className="flex min-h-0 flex-1 gap-2">
-      {!modoEditar && (
-        <div className="hidden w-52 flex-shrink-0 self-start lg:block">
-          <BrushToolbar herramienta={herramienta} onCambiar={setHerramienta} orientacion="vertical" />
-        </div>
-      )}
+        {/* Contenedor del lienzo que ocupa toda la forma de la pantalla restante */}
+        <div
+          ref={containerRef}
+          className="relative h-full min-h-0 w-full flex-1 overflow-hidden rounded-2xl border border-paper/10 bg-[#F5F1EA] cursor-crosshair"
+        >
+          {cargando && (
+            <div role="status" className="skeleton absolute inset-0 z-10 grid place-items-center rounded-none">
+              <p className="text-xs text-paper-muted">Sincronizando lienzo con la comunidad…</p>
+            </div>
+          )}
 
-      {/* Contenedor del lienzo que ocupa toda la forma de la pantalla restante */}
-      <div
-        ref={containerRef}
-        className="relative h-full min-h-0 w-full flex-1 overflow-hidden rounded-2xl border border-paper/10 bg-[#F5F1EA] cursor-crosshair"
-      >
-        {cargando && (
-          <div role="status" className="skeleton absolute inset-0 z-10 grid place-items-center rounded-none">
-            <p className="text-xs text-paper-muted">Sincronizando lienzo con la comunidad…</p>
-          </div>
-        )}
+          <canvas
+            ref={canvasRef}
+            className="absolute inset-0 h-full w-full touch-none select-none"
+            style={{ cursor: modoEditar ? 'pointer' : 'crosshair' }}
+            onPointerDown={alPresionar}
+            onPointerMove={alMover}
+            onPointerUp={alSoltar}
+            onPointerLeave={alSoltar}
+            onDoubleClick={alDobleClic}
+            onContextMenu={alClicDerecho}
+          />
 
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 h-full w-full touch-none select-none"
-          style={{ cursor: modoEditar ? 'pointer' : 'crosshair' }}
-          onPointerDown={alPresionar}
-          onPointerMove={alMover}
-          onPointerUp={alSoltar}
-          onPointerLeave={alSoltar}
-          onDoubleClick={alDobleClic}
-          onContextMenu={alClicDerecho}
-        />
+          {/* Riel lateral único flotante sobre el lienzo */}
+          <RielHerramientas
+            herramienta={herramienta}
+            onCambiar={(nueva) => {
+              setHerramienta(nueva);
+              if (modoEditar) void salirDelModoEditar();
+            }}
+            deshabilitado={false}
+            abiertoMovil={rielAbiertoMovil}
+            onCambiarAbierto={setRielAbiertoMovil}
+            claveMemoria="estudio"
+            acciones={[
+              {
+                id: 'editar-trazos',
+                icono: '✏️',
+                etiqueta: modoEditar ? 'Editando trazos' : 'Editar trazos',
+                activo: modoEditar,
+                onClick: () => (modoEditar ? void salirDelModoEditar() : setModoEditar(true)),
+              },
+            ]}
+          />
 
         {/* Capa de cursores e indicadores flotantes en tiempo real con nombre */}
         <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">

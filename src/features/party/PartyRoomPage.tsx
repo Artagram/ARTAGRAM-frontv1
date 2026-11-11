@@ -7,7 +7,8 @@ import { stompService } from '../../lib/stompClient';
 import { useAuthStore } from '../../lib/authStore';
 import { Button } from '../../components/ui/Button';
 import { dibujarBorrado, dibujarPunto, dibujarSegmento, dibujarTrazoCompleto, type EstiloPincel } from '../../lib/canvasEngine';
-import { BrushToolbar, type Herramienta, type HerramientaFiesta } from '../canvas/BrushToolbar';
+import { type Herramienta, type HerramientaFiesta } from '../canvas/BrushToolbar';
+import { RielHerramientas, cerrarRielAlDibujar } from '../canvas/RielHerramientas';
 import { PublishWizard } from '../feed/PublishWizard';
 import { Modal } from '../../components/ui/Modal';
 import { CodigoSalaBadge } from './CodigoSalaBadge';
@@ -86,6 +87,11 @@ export function PartyRoomPage() {
   // Modal para publicar directamente desde el lienzo
   const [modalPublicar, setModalPublicar] = useState(false);
   const [archivoPublicar, setArchivoPublicar] = useState<File | null>(null);
+
+  // Estado del riel lateral en móvil y del menú compacto de cabecera
+  const [rielAbiertoMovil, setRielAbiertoMovil] = useState(false);
+  const [menuAccionesAbierto, setMenuAccionesAbierto] = useState(false);
+  const menuAccionesRef = useRef<HTMLDivElement>(null);
 
   const trazosRef = useRef<Map<number, PartyTrazoDto>>(new Map());
   const maxSecuenciaRef = useRef(0);
@@ -419,6 +425,25 @@ export function PartyRoomPage() {
     return desuscribir;
   }, [salaId, sesion, cargarEstado, solicitarRedibujado]);
 
+  // Cerrar menú compacto de cabecera al tocar fuera o pulsar Escape
+  useEffect(() => {
+    if (!menuAccionesAbierto) return;
+    function alPresionarFuera(e: PointerEvent) {
+      if (menuAccionesRef.current && !menuAccionesRef.current.contains(e.target as Node)) {
+        setMenuAccionesAbierto(false);
+      }
+    }
+    function alTeclear(e: KeyboardEvent) {
+      if (e.key === 'Escape') setMenuAccionesAbierto(false);
+    }
+    document.addEventListener('pointerdown', alPresionarFuera);
+    window.addEventListener('keydown', alTeclear);
+    return () => {
+      document.removeEventListener('pointerdown', alPresionarFuera);
+      window.removeEventListener('keydown', alTeclear);
+    };
+  }, [menuAccionesAbierto]);
+
   function coordenadas(e: React.PointerEvent<HTMLCanvasElement>): Punto {
     const canvas = canvasRef.current;
     const rect = canvas ? canvas.getBoundingClientRect() : e.currentTarget.getBoundingClientRect();
@@ -431,6 +456,10 @@ export function PartyRoomPage() {
   }
 
   function alPresionar(e: React.PointerEvent<HTMLCanvasElement>) {
+    // Cerrar el riel en móvil al empezar a dibujar sobre el lienzo
+    setRielAbiertoMovil(false);
+    cerrarRielAlDibujar();
+
     if (terminado) {
       setAviso('🎉 La partida ha finalizado. Puedes publicar la obra colaborativa o descargarla.');
       setTimeout(() => setAviso(null), 3500);
@@ -635,23 +664,25 @@ export function PartyRoomPage() {
 
   return (
     <div className="flex h-[calc(100vh-var(--alto-barra))] flex-col p-2 sm:p-3 gap-2 overflow-hidden select-none">
-      {/* Cabecera del modo fiesta */}
-      <header className="flex flex-wrap items-center justify-between gap-2 px-1">
-        <div className="flex items-center gap-3">
+      {/* Cabecera del modo fiesta: una sola fila en móvil, completa en sm+ */}
+      <header className="flex items-center justify-between gap-2 px-1">
+        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
           <Link
             to="/fiesta"
-            className="btn-ghost text-xs px-3 py-1.5"
+            className="btn-ghost flex-shrink-0 text-xs px-2.5 py-1.5 sm:px-3"
             title="Salir de la sala"
           >
             ← Salir
           </Link>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-display text-lg font-semibold tracking-tight text-paper">
+          <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+              <h1 className="truncate font-display text-sm sm:text-lg font-semibold tracking-tight text-paper">
                 Sala de {sala?.anfitrionNombre ?? '…'}
               </h1>
               {sala && <CodigoSalaBadge codigo={sala.codigo} compacto />}
-              <span className="chip">{sala?.totalParticipantes ?? 1} artista(s)</span>
+              <span className="chip flex-shrink-0 px-2 py-0.5 text-[11px]">
+                {sala?.totalParticipantes ?? 1} artista(s)
+              </span>
             </div>
             <p className="text-[11px] text-paper-dim hidden sm:block">
               Panel estilo Paint exclusivo · 1 persona por herramienta en tiempo real
@@ -659,7 +690,8 @@ export function PartyRoomPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Acciones de cabecera en sm+ */}
+        <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
           {numeroRonda > 0 && <SegmentosRonda actual={numeroRonda} total={totalRondas} enRonda={enRonda} />}
 
           {esAnfitrion && !terminado && (
@@ -673,8 +705,8 @@ export function PartyRoomPage() {
               {enEsperaInicial
                 ? 'Empezar'
                 : enIntermision
-                ? 'Siguiente ronda →'
-                : 'Reiniciar ronda'}
+                  ? 'Siguiente ronda →'
+                  : 'Reiniciar ronda'}
             </Button>
           )}
 
@@ -695,6 +727,83 @@ export function PartyRoomPage() {
           >
             Publicar obra
           </button>
+        </div>
+
+        {/* Menú compacto "⋯" visible solo en <sm */}
+        <div ref={menuAccionesRef} className="relative flex sm:hidden items-center flex-shrink-0">
+          <button
+            type="button"
+            aria-label="Más acciones de la sala"
+            aria-expanded={menuAccionesAbierto}
+            aria-haspopup="menu"
+            onClick={() => setMenuAccionesAbierto((v) => !v)}
+            className="btn-ghost h-9 w-9 min-h-[36px] min-w-[36px] p-0 text-base leading-none"
+            title="Más acciones"
+          >
+            ⋯
+          </button>
+
+          <AnimatePresence>
+            {menuAccionesAbierto && (
+              <motion.div
+                role="menu"
+                initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                transition={{ duration: 0.14 }}
+                className="panel-flotante absolute right-0 top-full z-40 mt-1.5 flex w-52 flex-col gap-1 p-2"
+              >
+                {numeroRonda > 0 && (
+                  <div className="border-b border-paper/10 px-2.5 py-1 text-[11px] font-medium text-paper-muted">
+                    Ronda {numeroRonda} de {totalRondas}
+                  </div>
+                )}
+
+                {esAnfitrion && !terminado && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    disabled={iniciandoRonda}
+                    onClick={() => {
+                      setMenuAccionesAbierto(false);
+                      void iniciarRonda();
+                    }}
+                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold text-coral hover:bg-paper/10"
+                  >
+                    {enEsperaInicial
+                      ? '▶ Empezar'
+                      : enIntermision
+                        ? '⏭ Siguiente ronda →'
+                        : '↻ Reiniciar ronda'}
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuAccionesAbierto(false);
+                    descargarSnapshot();
+                  }}
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-medium text-paper hover:bg-paper/10"
+                >
+                  ⬇ Descargar PNG
+                </button>
+
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuAccionesAbierto(false);
+                    abrirPublicar();
+                  }}
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold text-teal hover:bg-paper/10"
+                >
+                  ✨ Publicar obra
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </header>
 
@@ -734,20 +843,6 @@ export function PartyRoomPage() {
         </div>
       )}
 
-      {/* Panel horizontal Paint permanente (con exclusividad de 1 persona por herramienta) */}
-      <BrushToolbar
-        herramienta={herramientaEstilo}
-        onCambiar={setHerramientaEstilo}
-        modoFiesta={true}
-        herramientasTomadas={herramientasTomadas}
-        usuarioActualNombre={sesion?.nombreArtista}
-        herramientaActivaFiesta={miHerramienta}
-        onTomarHerramienta={tomarHerramientaFiesta}
-        deshabilitado={false}
-        orientacion="horizontal"
-        onPublicar={abrirPublicar}
-      />
-
       {/* Contenedor responsivo con la forma de la pantalla para el lienzo colaborativo de fiesta */}
       <div
         ref={containerRef}
@@ -768,6 +863,21 @@ export function PartyRoomPage() {
           onPointerMove={alMover}
           onPointerUp={alSoltar}
           onPointerLeave={alSoltar}
+        />
+
+        {/* Riel lateral ocultable sobre el lienzo (exclusividad de 1 persona por herramienta) */}
+        <RielHerramientas
+          herramienta={herramientaEstilo}
+          onCambiar={setHerramientaEstilo}
+          modoFiesta={true}
+          herramientasTomadas={herramientasTomadas}
+          usuarioActualNombre={sesion?.nombreArtista}
+          herramientaActivaFiesta={miHerramienta}
+          onTomarHerramienta={tomarHerramientaFiesta}
+          deshabilitado={false}
+          abiertoMovil={rielAbiertoMovil}
+          onCambiarAbierto={setRielAbiertoMovil}
+          claveMemoria="fiesta"
         />
 
         {/* Capa de cursores e indicadores flotantes en tiempo real con nombre */}

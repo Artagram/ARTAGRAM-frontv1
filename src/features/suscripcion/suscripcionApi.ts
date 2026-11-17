@@ -58,6 +58,21 @@ export async function confirmarPagoSimulado(tx: string): Promise<void> {
   await api.post('/api/suscripcion/confirmar', null, { params: { tx } });
 }
 
+/**
+ * Pide al backend que consulte el pago a Mercado Pago. No depende del webhook,
+ * que puede tardar o no llegar: el backend verifica estado, monto y dueño con
+ * la API de Mercado Pago, así que el id del navegador no basta para activar nada.
+ */
+export async function verificarPago(pagoId: string): Promise<void> {
+  await api.post('/api/suscripcion/verificar', null, { params: { pagoId } });
+}
+
+/** Mercado Pago devuelve el id del pago en `payment_id` o `collection_id`. */
+export function leerIdPago(params: URLSearchParams): string | null {
+  const id = params.get('payment_id') ?? params.get('collection_id');
+  return id && /^\d+$/.test(id) ? id : null;
+}
+
 /** Mercado Pago devuelve el estado en `status` o `collection_status`. */
 export function leerResultadoPago(params: URLSearchParams): ResultadoPago {
   const estado = params.get('collection_status') ?? params.get('status');

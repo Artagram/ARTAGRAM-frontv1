@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { esperarPremium, leerResultadoPago, validarUrlCheckout } from './suscripcionApi';
+import { esperarPremium, leerIdPago, leerResultadoPago, validarUrlCheckout } from './suscripcionApi';
 
 vi.mock('../../lib/api', () => ({ api: { post: vi.fn() } }));
 
@@ -73,5 +73,15 @@ describe('validarUrlCheckout', () => {
   it('rechaza protocolos no seguros o peligrosos', () => {
     expect(() => validarUrlCheckout('http://www.mercadopago.com.co/checkout')).toThrow('URL de pago no permitida');
     expect(() => validarUrlCheckout('javascript:alert(1)')).toThrow('URL de pago no permitida');
+  });
+});
+
+describe('leerIdPago', () => {
+  it('lee payment_id o collection_id y solo acepta números', () => {
+    expect(leerIdPago(new URLSearchParams('payment_id=123456'))).toBe('123456');
+    expect(leerIdPago(new URLSearchParams('collection_id=987'))).toBe('987');
+    expect(leerIdPago(new URLSearchParams('payment_id=null'))).toBeNull();
+    expect(leerIdPago(new URLSearchParams('payment_id=1;drop'))).toBeNull();
+    expect(leerIdPago(new URLSearchParams(''))).toBeNull();
   });
 });

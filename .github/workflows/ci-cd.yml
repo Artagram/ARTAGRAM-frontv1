@@ -1,7 +1,8 @@
 name: CI/CD - Frontend (build, test y deploy a S3 + CloudFront)
 
 # Este workflow realiza:
-# 1. Linting y pruebas unitarias de Frontend (Vitest & Oxlint).
+# 1. Linting, pruebas unitarias con cobertura (Vitest & Oxlint) y análisis
+#    estático en SonarQube Cloud.
 # 2. Build de producción con Vite.
 # 3. Sincronizacion del build a S3 e invalidacion de cache en CloudFront.
 #
@@ -33,8 +34,14 @@ jobs:
   test:
     name: Pruebas y Linting
     runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Sonar necesita el historial completo para el blame y para
+          # detectar el código nuevo del PR.
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -47,8 +54,19 @@ jobs:
       - name: Linting de código
         run: npm run lint
 
-      - name: Pruebas unitarias (Vitest)
-        run: npm run test
+      - name: Pruebas unitarias con cobertura (Vitest)
+        run: npm run test:coverage
+
+      # Solo reporta: si el Quality Gate falla o Sonar no responde, el job
+      # sigue en verde. Sin el secret SONAR_TOKEN (PRs desde forks) se omite.
+      - name: Análisis estático (SonarQube Cloud)
+        if: env.SONAR_TOKEN != ''
+        continue-on-error: true
+        uses: SonarSource/sonarqube-scan-action@v5
+        with:
+          args: >
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION || 'artagram' }}
 
       - name: Build de verificación (Vite)
         run: npm run build

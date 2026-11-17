@@ -11,7 +11,7 @@ function archivoABase64(archivo: File): Promise<string> {
       const resultado = reader.result as string;
       resolve(resultado.split(',')[1] ?? resultado);
     };
-    reader.onerror = () => reject(reader.error);
+    reader.onerror = () => reject(reader.error ?? new Error('No se pudo leer el archivo'));
     reader.readAsDataURL(archivo);
   });
 }

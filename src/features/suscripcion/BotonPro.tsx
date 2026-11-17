@@ -19,7 +19,8 @@ export function BotonPro() {
     setError(null);
     setEnviando(true);
     try {
-      window.location.assign(await crearCheckout(`${window.location.origin}/suscripcion/resultado`));
+      // URL validada por validarUrlCheckout en crearCheckout (Mercado Pago HTTPS o mismo origen)
+      window.location.assign(await crearCheckout(`${window.location.origin}/suscripcion/resultado`)); // NOSONAR tssecurity:S6105
     } catch (err) {
       setError(extraerMensajeError(err, 'No pudimos iniciar el pago, intenta de nuevo'));
       setEnviando(false);

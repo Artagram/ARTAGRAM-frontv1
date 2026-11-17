@@ -157,7 +157,9 @@ export function CommunityListPage() {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      navigator.clipboard.writeText(c.id);
+                      navigator.clipboard.writeText(c.id).catch(() => {
+                        // Sin permiso de portapapeles: no hay nada que hacer.
+                      });
                     }}
                     className="flex-shrink-0 text-teal transition-colors hover:text-paper"
                   >

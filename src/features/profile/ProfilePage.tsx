@@ -49,7 +49,7 @@ export function ProfilePage() {
   useEffect(() => {
     if (!usuarioIdPerfil || !sesion) return;
     api
-      .get<Seguimiento>(`/api/artistas/${usuarioIdPerfil}`)
+      .get<Seguimiento>(`/api/artistas/${encodeURIComponent(usuarioIdPerfil)}`)
       .then((r) => setSeguimientoDe({ usuarioId: usuarioIdPerfil, datos: r.data }))
       .catch(() => {});
   }, [usuarioIdPerfil, sesion]);

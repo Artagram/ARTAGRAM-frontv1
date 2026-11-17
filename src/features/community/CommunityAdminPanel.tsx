@@ -30,7 +30,7 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
   const [borrandoPub, setBorrandoPub] = useState(false);
 
   useEffect(() => {
-    cargarMiembros();
+    void cargarMiembros();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [comunidad.id]);
 

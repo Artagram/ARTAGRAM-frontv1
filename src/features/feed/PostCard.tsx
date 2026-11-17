@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useId, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
@@ -54,6 +54,7 @@ export function PostCard({ publicacion, onEliminada, onActualizada, variante = '
 
   // Estados de Edición
   const [editando, setEditando] = useState(false);
+  const idEdicion = useId();
   const [editTitulo, setEditTitulo] = useState(pub.titulo);
   const [editDescripcion, setEditDescripcion] = useState(pub.descripcion);
   const [editEtiquetas, setEditEtiquetas] = useState(pub.etiquetas.join(', '));
@@ -352,16 +353,17 @@ export function PostCard({ publicacion, onEliminada, onActualizada, variante = '
             <form onSubmit={guardarEdicion} className="flex flex-col gap-3">
               <h4 className="text-base font-semibold text-paper">Editar publicación</h4>
               <div>
-                <label className="label">Título</label>
-                <input type="text" value={editTitulo} onChange={(e) => setEditTitulo(e.target.value)} className="input mt-1 py-1.5" required />
+                <label className="label" htmlFor={`${idEdicion}-titulo`}>Título</label>
+                <input id={`${idEdicion}-titulo`} type="text" value={editTitulo} onChange={(e) => setEditTitulo(e.target.value)} className="input mt-1 py-1.5" required />
               </div>
               <div>
-                <label className="label">Descripción</label>
-                <textarea value={editDescripcion} onChange={(e) => setEditDescripcion(e.target.value)} rows={2} className="input mt-1 py-1.5" />
+                <label className="label" htmlFor={`${idEdicion}-descripcion`}>Descripción</label>
+                <textarea id={`${idEdicion}-descripcion`} value={editDescripcion} onChange={(e) => setEditDescripcion(e.target.value)} rows={2} className="input mt-1 py-1.5" />
               </div>
               <div>
-                <label className="label">Etiquetas (separadas por coma)</label>
+                <label className="label" htmlFor={`${idEdicion}-etiquetas`}>Etiquetas (separadas por coma)</label>
                 <input
+                  id={`${idEdicion}-etiquetas`}
                   type="text"
                   value={editEtiquetas}
                   onChange={(e) => setEditEtiquetas(e.target.value)}

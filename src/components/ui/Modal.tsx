@@ -16,7 +16,7 @@ interface Props {
  */
 export function Modal({ onCerrar, etiquetadoPor, className, children }: Props) {
   return createPortal(
-    <div className="scrim fixed inset-0 z-50 grid place-items-center overflow-y-auto sm:p-4" onClick={onCerrar}>
+    <div className="scrim fixed inset-0 z-50 grid place-items-center overflow-y-auto sm:p-4" role="presentation" onClick={onCerrar}>
       <div
         role="dialog"
         aria-modal="true"

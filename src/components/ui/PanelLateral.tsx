@@ -11,7 +11,7 @@ interface Props {
 /** Panel de vidrio que entra desde la derecha; en celular es una hoja inferior. */
 export function PanelLateral({ etiqueta, onCerrar, children }: Props) {
   return createPortal(
-    <div className="scrim fixed inset-0 z-50" onClick={onCerrar}>
+    <div className="scrim fixed inset-0 z-50" role="presentation" onClick={onCerrar}>
       <motion.aside
         role="dialog"
         aria-modal="true"

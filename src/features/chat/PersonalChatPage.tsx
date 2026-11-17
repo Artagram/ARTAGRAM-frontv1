@@ -87,7 +87,7 @@ export function PersonalChatPage() {
       }
 
       if (paramUser) {
-        abrirPorNombre(paramUser);
+        void abrirPorNombre(paramUser);
         return;
       }
 
@@ -168,7 +168,7 @@ export function PersonalChatPage() {
     setBuscandoArtista(true);
     setError(null);
     try {
-      const { data } = await api.get<PerfilResponse>(`/api/perfiles/${nombre.trim()}`);
+      const { data } = await api.get<PerfilResponse>(`/api/perfiles/${encodeURIComponent(nombre.trim())}`);
       const nuevo: ContactoSeleccionado = { id: data.usuarioId, nombre: data.nombreArtista };
       setNuevoArtista('');
       seleccionarContacto(nuevo);
@@ -181,7 +181,7 @@ export function PersonalChatPage() {
 
   function alBuscarSubmit(e: React.FormEvent) {
     e.preventDefault();
-    abrirPorNombre(nuevoArtista);
+    void abrirPorNombre(nuevoArtista);
   }
 
   // Enviar mensaje confiable con confirmación y actualización optimista
@@ -288,11 +288,12 @@ export function PersonalChatPage() {
           >
             {/* Formulario para iniciar nuevo chat */}
             <form onSubmit={alBuscarSubmit} className="mb-3 space-y-2">
-              <label className="label">
+              <label className="label" htmlFor="nuevo-chat-artista">
                 Iniciar nuevo chat
               </label>
               <div className="flex gap-2">
                 <input
+                  id="nuevo-chat-artista"
                   type="text"
                   value={nuevoArtista}
                   onChange={(e) => setNuevoArtista(e.target.value)}

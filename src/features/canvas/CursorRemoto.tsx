@@ -9,9 +9,9 @@ interface Props {
 
 /** El color es del usuario, así que el texto se elige según lo claro que sea. */
 function textoLegible(hex: string) {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
+  const r = Number.parseInt(hex.slice(1, 3), 16);
+  const g = Number.parseInt(hex.slice(3, 5), 16);
+  const b = Number.parseInt(hex.slice(5, 7), 16);
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.55 ? '#1B1626' : '#F5F1EA';
 }
 

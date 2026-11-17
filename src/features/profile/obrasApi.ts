@@ -9,19 +9,19 @@ interface PaginaObras {
 }
 
 export async function cargarDestacadas(autorId: string): Promise<PublicacionDto[]> {
-  const { data } = await api.get<PublicacionDto[]>(`/api/publicaciones/artista/${autorId}/destacadas`);
+  const { data } = await api.get<PublicacionDto[]>(`/api/publicaciones/artista/${encodeURIComponent(autorId)}/destacadas`);
   return data;
 }
 
 export async function cargarObras(autorId: string, pagina: number): Promise<PaginaObras> {
-  const { data } = await api.get<PaginaObras>(`/api/publicaciones/artista/${autorId}`, {
+  const { data } = await api.get<PaginaObras>(`/api/publicaciones/artista/${encodeURIComponent(autorId)}`, {
     params: { pagina, tamano: OBRAS_POR_PAGINA },
   });
   return data;
 }
 
 export async function alternarDestacada(obra: PublicacionDto): Promise<PublicacionDto> {
-  const url = `/api/publicaciones/${obra.id}/destacar`;
+  const url = `/api/publicaciones/${encodeURIComponent(obra.id)}/destacar`;
   const { data } = obra.destacada ? await api.delete<PublicacionDto>(url) : await api.put<PublicacionDto>(url);
   return data;
 }

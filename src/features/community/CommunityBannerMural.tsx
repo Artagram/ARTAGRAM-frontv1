@@ -195,7 +195,7 @@ export function CommunityBannerMural({
       }
     }
 
-    inicializar();
+    void inicializar();
 
     if (sesion?.accessToken) {
       stompService.conectar(sesion.accessToken);
@@ -306,7 +306,7 @@ export function CommunityBannerMural({
     if (!ctx || !actual) return;
 
     if (e.pointerType === 'mouse' && e.buttons === 0) {
-      alSoltar(e);
+      void alSoltar(e);
       return;
     }
 

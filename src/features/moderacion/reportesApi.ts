@@ -23,7 +23,7 @@ export interface ReporteAgrupado {
 }
 
 export async function reportarObra(publicacionId: string, motivo: MotivoReporte, detalle: string): Promise<void> {
-  await api.post(`/api/publicaciones/${publicacionId}/reportar`, { motivo, detalle: detalle.trim() || null });
+  await api.post(`/api/publicaciones/${encodeURIComponent(publicacionId)}/reportar`, { motivo, detalle: detalle.trim() || null });
 }
 
 export async function cargarReportes(): Promise<ReporteAgrupado[]> {
@@ -32,7 +32,7 @@ export async function cargarReportes(): Promise<ReporteAgrupado[]> {
 }
 
 export async function resolverReporte(publicacionId: string, accion: AccionModeracion): Promise<void> {
-  await api.post(`/api/moderacion/publicaciones/${publicacionId}/resolver`, { accion });
+  await api.post(`/api/moderacion/publicaciones/${encodeURIComponent(publicacionId)}/resolver`, { accion });
 }
 
 export async function procesarObrasSinMarca(): Promise<number> {

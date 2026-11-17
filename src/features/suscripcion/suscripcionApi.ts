@@ -22,9 +22,25 @@ export type ResultadoPago = 'aprobado' | 'pendiente' | 'rechazado';
 
 export const PREFIJO_SIMULADO = 'sim_';
 
+const HOST_MERCADO_PAGO = /(^|\.)mercadopago\.(com(\.[a-z]{2})?|[a-z]{2})$/;
+
+/**
+ * Solo se redirige al checkout de Mercado Pago (https) o de vuelta a este mismo
+ * sitio (proveedor simulado). Cualquier otra URL se rechaza (open redirect).
+ */
+export function validarUrlCheckout(url: string): string {
+  const destino = new URL(url, window.location.origin);
+  const mismoSitio = destino.origin === window.location.origin;
+  const mercadoPago = destino.protocol === 'https:' && HOST_MERCADO_PAGO.test(destino.hostname);
+  if (!mismoSitio && !mercadoPago) {
+    throw new Error('URL de pago no permitida');
+  }
+  return destino.href;
+}
+
 export async function crearCheckout(retornoUrl: string): Promise<string> {
   const { data } = await api.post<CheckoutResponse>('/api/suscripcion/checkout', { plan: 'PRO', retornoUrl });
-  return data.checkoutUrl;
+  return validarUrlCheckout(data.checkoutUrl);
 }
 
 export async function cargarSuscripcion(): Promise<Suscripcion> {

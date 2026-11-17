@@ -34,9 +34,15 @@ export function CommunityDetailPage() {
 
   function copiarId() {
     if (!comunidad) return;
-    navigator.clipboard.writeText(comunidad.id);
-    setCopiado(true);
-    setTimeout(() => setCopiado(false), 2000);
+    navigator.clipboard
+      .writeText(comunidad.id)
+      .then(() => {
+        setCopiado(true);
+        setTimeout(() => setCopiado(false), 2000);
+      })
+      .catch(() => {
+        // Sin permiso de portapapeles: no se muestra "copiado".
+      });
   }
 
   if (error) {

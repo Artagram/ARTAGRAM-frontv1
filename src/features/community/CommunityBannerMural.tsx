@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { api, extraerMensajeError } from '../../lib/api';
+import { IndicadorConexion } from '../../components/ui/IndicadorConexion';
 import { stompService } from '../../lib/stompClient';
 import { useAuthStore } from '../../lib/authStore';
 import { dibujarPunto, dibujarSegmento, dibujarTrazoCompleto, type EstiloPincel } from '../../lib/canvasEngine';
@@ -228,9 +229,15 @@ export function CommunityBannerMural({
       }
     });
 
+    // Tras un corte de red se vuelve a pedir el banner: el servidor es la autoridad.
+    const dejarDeResincronizar = stompService.alReconectar(() => {
+      if (activo) void inicializar();
+    });
+
     return () => {
       activo = false;
       desuscribir();
+      dejarDeResincronizar();
     };
   }, [comunidadId, sesion?.accessToken, sesion?.usuarioId, redibujarTodo]);
 
@@ -432,6 +439,10 @@ export function CommunityBannerMural({
             Grabando en mural permanente…
           </span>
         )}
+      </div>
+
+      <div className="absolute left-2 right-2 top-2 z-20">
+        <IndicadorConexion />
       </div>
 
       {error && (

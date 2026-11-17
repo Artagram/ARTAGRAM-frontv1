@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { api, extraerMensajeError } from '../../lib/api';
 import { exportarConMarca } from '../../lib/marcaAgua';
+import { IndicadorConexion } from '../../components/ui/IndicadorConexion';
 import { stompService } from '../../lib/stompClient';
 import { useAuthStore } from '../../lib/authStore';
 import { Button } from '../../components/ui/Button';
@@ -422,7 +423,13 @@ export function PartyRoomPage() {
       .catch((err) => setError(extraerMensajeError(err, 'No puedes entrar a esta sala')))
       .finally(() => setCargando(false));
 
-    return desuscribir;
+    // Tras un corte de red se vuelve a pedir el estado de la ronda al servidor.
+    const dejarDeResincronizar = stompService.alReconectar(() => void cargarEstado());
+
+    return () => {
+      desuscribir();
+      dejarDeResincronizar();
+    };
   }, [salaId, sesion, cargarEstado, solicitarRedibujado]);
 
   // Cerrar menú compacto de cabecera al tocar fuera o pulsar Escape
@@ -543,12 +550,12 @@ export function PartyRoomPage() {
     });
 
     if (actual.esBorrador) {
-      stompService.publicar(`/app/fiesta/${salaId}/borrar`, {
+      stompService.publicarConfiable(`/app/fiesta/${salaId}/borrar`, {
         puntos: actual.puntos,
         grosor: actual.estilo.grosor || 40,
       });
     } else {
-      stompService.publicar(`/app/fiesta/${salaId}/trazo`, {
+      stompService.publicarConfiable(`/app/fiesta/${salaId}/trazo`, {
         tipoPincel: actual.estilo.tipoPincel,
         colorHex: actual.estilo.colorHex,
         grosor: actual.estilo.grosor,
@@ -806,6 +813,8 @@ export function PartyRoomPage() {
           </AnimatePresence>
         </div>
       </header>
+
+      <IndicadorConexion />
 
       {/* Alerta de notificación o estado de herramientas */}
       <AnimatePresence>

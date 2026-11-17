@@ -4,9 +4,11 @@ import { useAuthStore } from '../../lib/authStore';
 import {
   confirmarPagoSimulado,
   esperarPremium,
+  leerIdPago,
   leerResultadoPago,
   PREFIJO_SIMULADO,
   refrescarSesion,
+  verificarPago,
 } from './suscripcionApi';
 
 type Estado = 'procesando' | 'activo' | 'demorado';
@@ -31,9 +33,13 @@ export function SuscripcionResultadoPage() {
     if (resultado !== 'aprobado') return;
     let activo = true;
     const referencia = params.get('external_reference') ?? '';
+    const idPago = leerIdPago(params);
+    // Si la verificación falla, el webhook todavía puede activar el plan.
     const confirmar = referencia.startsWith(PREFIJO_SIMULADO)
       ? confirmarPagoSimulado(referencia)
-      : Promise.resolve();
+      : idPago
+        ? verificarPago(idPago).catch(() => undefined)
+        : Promise.resolve();
     confirmar
       .then(() => esperarPremium(refrescarSesion))
       .then((sesion) => {

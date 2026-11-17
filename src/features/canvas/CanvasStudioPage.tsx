@@ -11,6 +11,7 @@ import { RielHerramientas, cerrarRielAlDibujar } from './RielHerramientas';
 import { CursorRemoto } from './CursorRemoto';
 import { PublishWizard } from '../feed/PublishWizard';
 import { Modal } from '../../components/ui/Modal';
+import { IndicadorConexion } from '../../components/ui/IndicadorConexion';
 import { generarUUID } from '../../lib/uuid';
 import {
   anclaOpuesta,
@@ -262,29 +263,43 @@ export function CanvasStudioPage() {
       forzarRender();
     });
 
-    api
-      .get<TrazoDto[]>(`/api/comunidades/${comunidadId}/lienzo/trazos`, { params: { desde: 0 } })
-      .then((r) => {
-        if (!activo) return;
-        for (const t of r.data) {
-          trazosRef.current.set(t.secuencia, t);
-          maxSecuenciaRef.current = Math.max(maxSecuenciaRef.current, t.secuencia);
-        }
-        redibujarTodo();
-        snapshotCargado = true;
-        for (const evento of bufferMensajes) {
-          if (evento.tipo === 'FINAL' && evento.secuencia && evento.secuencia <= maxSecuenciaRef.current) {
-            continue;
+    // El servidor es la autoridad: al entrar y tras cada reconexion se pide el
+    // lienzo completo y se reemplaza lo local (escenario 4). Lo que llegue en
+    // vivo mientras tanto se guarda y se aplica despues, en orden.
+    function cargarEstado() {
+      snapshotCargado = false;
+      return api
+        .get<TrazoDto[]>(`/api/comunidades/${comunidadId}/lienzo/trazos`, { params: { desde: 0 } })
+        .then((r) => {
+          if (!activo) return;
+          trazosRef.current.clear();
+          maxSecuenciaRef.current = 0;
+          for (const t of r.data) {
+            trazosRef.current.set(t.secuencia, t);
+            maxSecuenciaRef.current = Math.max(maxSecuenciaRef.current, t.secuencia);
           }
-          procesarEvento(evento);
-        }
-        bufferMensajes.length = 0;
-      })
-      .catch(() => {
-        // Sin snapshot no hay orden que proteger: procesar en vivo de todos modos
-        snapshotCargado = true;
-      })
-      .finally(() => activo && setCargando(false));
+          redibujarTodo();
+          snapshotCargado = true;
+          for (const evento of bufferMensajes) {
+            if (evento.tipo === 'FINAL' && evento.secuencia && evento.secuencia <= maxSecuenciaRef.current) {
+              continue;
+            }
+            procesarEvento(evento);
+          }
+          bufferMensajes.length = 0;
+        })
+        .catch(() => {
+          // Sin snapshot no hay orden que proteger: procesar en vivo de todos modos
+          snapshotCargado = true;
+          for (const evento of bufferMensajes) procesarEvento(evento);
+          bufferMensajes.length = 0;
+        });
+    }
+
+    cargarEstado().finally(() => activo && setCargando(false));
+    const dejarDeResincronizar = stompService.alReconectar(() => {
+      if (activo) void cargarEstado();
+    });
 
     function procesarEvento(evento: TrazoEvento) {
       const ctx = ctxRef.current;
@@ -393,6 +408,7 @@ export function CanvasStudioPage() {
       activo = false;
       desuscribirTrazos();
       desuscribirBloqueos();
+      dejarDeResincronizar();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [comunidadId, sesion?.accessToken, solicitarRedibujado]);
@@ -688,7 +704,8 @@ export function CanvasStudioPage() {
         capa: 0,
         creadoEn: Date.now(),
       });
-      stompService.publicar(`/app/lienzo/${comunidadId}/final`, {
+      // Un trazo terminado no se pierde si la red se cae: queda en cola hasta reconectar.
+      stompService.publicarConfiable(`/app/lienzo/${comunidadId}/final`, {
         trazoEnProgresoId: actual.id,
         tipoPincel: actual.estilo.tipoPincel,
         colorHex: actual.estilo.colorHex,
@@ -930,6 +947,8 @@ export function CanvasStudioPage() {
           </AnimatePresence>
         </div>
       </header>
+
+      <IndicadorConexion />
 
       {/* Banner de aviso o notificación */}
       {aviso && (

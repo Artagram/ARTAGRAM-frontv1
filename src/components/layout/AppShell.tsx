@@ -149,7 +149,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   premium={sesion.premium}
                   onSalir={() => {
                     cerrarSesion();
-                    navigate('/login');
+                    void navigate('/login');
                   }}
                 />
               </>

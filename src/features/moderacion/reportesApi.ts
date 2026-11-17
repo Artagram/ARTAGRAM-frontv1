@@ -23,7 +23,7 @@ export interface ReporteAgrupado {
 }
 
 export async function reportarObra(publicacionId: string, motivo: MotivoReporte, detalle: string): Promise<void> {
-  await api.post(`/api/publicaciones/${encodeURIComponent(publicacionId)}/reportar`, { motivo, detalle: detalle.trim() || null });
+  await api.post(`/api/publicaciones/${encodeURIComponent(publicacionId)}/reportar`, { motivo, detalle: detalle.trim() || null }); // NOSONAR tssecurity:S8476 cliente con baseURL fija y segmento codificado: el host no es controlable
 }
 
 export async function cargarReportes(): Promise<ReporteAgrupado[]> {

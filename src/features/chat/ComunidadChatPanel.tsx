@@ -12,7 +12,12 @@ export function ComunidadChatPanel({ comunidadId }: { comunidadId: string }) {
   const finRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    api.get<MensajeComunidadDto[]>(`/api/comunidades/${comunidadId}/chat`).then((r) => setMensajes(r.data));
+    api
+      .get<MensajeComunidadDto[]>(`/api/comunidades/${encodeURIComponent(comunidadId)}/chat`)
+      .then((r) => setMensajes(r.data))
+      .catch(() => {
+        // Sin historial: el chat arranca vacío y sigue recibiendo mensajes en vivo.
+      });
     if (sesion) stompService.conectar(sesion.accessToken);
     const desuscribir = stompService.suscribir<MensajeComunidadDto>(`/topic/comunidad/${comunidadId}/chat`, (m) =>
       setMensajes((prev) => [...prev, m]),

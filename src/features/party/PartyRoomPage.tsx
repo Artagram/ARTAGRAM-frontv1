@@ -290,15 +290,15 @@ export function PartyRoomPage() {
         relojRef.current = { recibidoEn: performance.now(), msRestantes: evento.msRestantes ?? 0 };
         if (!enRondaRef.current) {
           enRondaRef.current = true;
-          cargarEstado();
+          void cargarEstado();
         }
       } else if (evento.tipo === 'RONDA_TERMINADA') {
         enRondaRef.current = false;
-        cargarEstado();
+        void cargarEstado();
       } else if (evento.tipo === 'JUEGO_TERMINADO') {
         enRondaRef.current = false;
         setJuegoFinalizado(true);
-        cargarEstado();
+        void cargarEstado();
       } else if (evento.tipo === 'HERRAMIENTA_TOMADA' && evento.herramienta && evento.propietarioHerramienta) {
         setHerramientasTomadas((prev) => ({
           ...prev,

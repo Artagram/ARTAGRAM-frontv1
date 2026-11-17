@@ -34,7 +34,7 @@ export function LoginPage() {
       const respuesta = await ingresarConGoogle(idToken);
       if (respuesta.sesion) {
         iniciarSesion(respuesta.sesion);
-        navigate('/feed');
+        void navigate('/feed');
         return;
       }
       setNombreSugerido(respuesta.nombreSugerido ?? '');
@@ -52,7 +52,7 @@ export function LoginPage() {
             nombreInicial={nombreSugerido}
             alCompletar={(sesion) => {
               iniciarSesion(sesion);
-              navigate('/feed');
+              void navigate('/feed');
             }}
           />
         ) : (

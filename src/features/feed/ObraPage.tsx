@@ -23,7 +23,7 @@ export function ObraPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <PostCard variante="detalle" publicacion={obra} onEliminada={() => navigate('/feed')} />
+      <PostCard variante="detalle" publicacion={obra} onEliminada={() => void navigate('/feed')} />
     </div>
   );
 }

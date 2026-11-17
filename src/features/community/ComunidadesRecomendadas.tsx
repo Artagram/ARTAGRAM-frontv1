@@ -50,7 +50,7 @@ export function ComunidadesRecomendadas({ onUnida }: { onUnida: () => void }) {
               <h3 className="mt-1 font-display text-lg font-semibold group-hover:text-coral">{c.nombre}</h3>
               <p className="mt-1 line-clamp-2 text-sm text-paper-muted">{c.descripcion || 'Sin descripción'}</p>
             </Link>
-            <Button variant="secondary" className="mt-3 self-start" cargando={uniendo === c.id} disabled={uniendo !== null} onClick={() => unirse(c.id)}>
+            <Button variant="secondary" className="mt-3 self-start" cargando={uniendo === c.id} disabled={uniendo !== null} onClick={() => void unirse(c.id)}>
               Unirme
             </Button>
           </div>

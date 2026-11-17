@@ -42,7 +42,7 @@ export function PartyLobbyPage() {
 
   useEffect(() => {
     if (sesion) {
-      cargarSalasActivas();
+      void cargarSalasActivas();
     }
   }, [sesion, cargarSalasActivas]);
 
@@ -56,7 +56,7 @@ export function PartyLobbyPage() {
         cupoMaximo: cupo,
         totalRondas: rondas,
       });
-      navigate(`/fiesta/${data.id}`);
+      void navigate(`/fiesta/${data.id}`);
     } catch (err) {
       setError(extraerMensajeError(err));
     } finally {
@@ -72,7 +72,7 @@ export function PartyLobbyPage() {
       const { data } = await api.post<SalaFiestaResponse>('/api/fiestas/unirse', null, {
         params: { codigo: codigo.trim() },
       });
-      navigate(`/fiesta/${data.id}`);
+      void navigate(`/fiesta/${data.id}`);
     } catch (err) {
       setError(extraerMensajeError(err, 'No encontramos una sala con ese código'));
     } finally {
@@ -256,7 +256,7 @@ export function PartyLobbyPage() {
                     <div className="flex items-center gap-2 pt-2 border-t border-paper/10">
                       <Button
                         type="button"
-                        onClick={() => navigate(`/fiesta/${s.id}`)}
+                        onClick={() => void navigate(`/fiesta/${s.id}`)}
                         className="flex-1 py-1.5 text-xs"
                       >
                         Entrar a la sala
@@ -264,7 +264,7 @@ export function PartyLobbyPage() {
                       {esAnfitrion ? (
                         <button
                           type="button"
-                          onClick={() => cerrarSala(s.id)}
+                          onClick={() => void cerrarSala(s.id)}
                           className="px-3 py-1.5 text-xs text-coral-light hover:text-paper rounded-full border border-coral/40 transition-colors hover:bg-coral/20"
                           title="Cerrar la sala permanentemente para todos los participantes"
                         >
@@ -273,7 +273,7 @@ export function PartyLobbyPage() {
                       ) : (
                         <button
                           type="button"
-                          onClick={() => salirDeSala(s.id)}
+                          onClick={() => void salirDeSala(s.id)}
                           className="btn-tertiary px-3 py-1.5 text-xs"
                           title="Salir de esta sala"
                         >

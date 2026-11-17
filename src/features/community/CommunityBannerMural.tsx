@@ -250,7 +250,7 @@ export function CommunityBannerMural({
         canvas.height = alto;
         dimRef.current = { ancho, alto };
         ctxRef.current = canvas.getContext('2d');
-        redibujarTodo();
+        void redibujarTodo();
       }
     }
 

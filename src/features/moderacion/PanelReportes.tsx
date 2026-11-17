@@ -99,11 +99,11 @@ export function PanelReportes() {
                   variant="secondary"
                   className="border-teal/60 text-teal hover:border-teal"
                   disabled={resolviendo !== null}
-                  onClick={() => resolver(r.publicacionId, 'RESTAURAR')}
+                  onClick={() => void resolver(r.publicacionId, 'RESTAURAR')}
                 >
                   {r.oculta ? 'Restaurar' : 'Descartar'}
                 </Button>
-                <Button disabled={resolviendo !== null} onClick={() => resolver(r.publicacionId, 'OCULTAR')}>
+                <Button disabled={resolviendo !== null} onClick={() => void resolver(r.publicacionId, 'OCULTAR')}>
                   {r.oculta ? 'Mantener oculta' : 'Ocultar'}
                 </Button>
               </div>

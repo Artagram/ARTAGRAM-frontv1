@@ -13,6 +13,6 @@ export function useAbrirNotificacion() {
       marcarLeida(n.id).catch(() => undefined);
     }
     const destino = destinoNotificacion(n, nombrePropio);
-    if (destino) navigate(destino);
+    if (destino) void navigate(destino);
   };
 }

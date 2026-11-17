@@ -49,7 +49,7 @@ export function ProfilePage() {
   useEffect(() => {
     if (!usuarioIdPerfil || !sesion) return;
     api
-      .get<Seguimiento>(`/api/artistas/${encodeURIComponent(usuarioIdPerfil)}`)
+      .get<Seguimiento>(`/api/artistas/${encodeURIComponent(usuarioIdPerfil)}`) // NOSONAR tssecurity:S8476 cliente con baseURL fija y segmento codificado: el host no es controlable
       .then((r) => setSeguimientoDe({ usuarioId: usuarioIdPerfil, datos: r.data }))
       .catch(() => {});
   }, [usuarioIdPerfil, sesion]);

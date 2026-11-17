@@ -23,7 +23,7 @@ export function CommunityListPage() {
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    cargarMisComunidades();
+    void cargarMisComunidades();
   }, []);
 
   function cargarMisComunidades() {
@@ -122,7 +122,12 @@ export function CommunityListPage() {
           placeholder="pega el id que te compartieron"
           className="min-w-[240px] flex-1 font-mono"
         />
-        <Button variant="secondary" onClick={() => codigoUnirse && unirsePorId(codigoUnirse)}>
+        <Button
+          variant="secondary"
+          onClick={() => {
+            if (codigoUnirse) void unirsePorId(codigoUnirse);
+          }}
+        >
           Unirme
         </Button>
       </div>

@@ -37,7 +37,7 @@ class StompService {
   }
 
   desconectar(): void {
-    this.client?.deactivate();
+    void this.client?.deactivate();
     this.client = null;
   }
 

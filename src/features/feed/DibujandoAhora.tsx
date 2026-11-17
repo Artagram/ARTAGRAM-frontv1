@@ -179,7 +179,9 @@ function MiniLienzo({ nombre }: { nombre: string }) {
       <svg viewBox="0 0 112 64" preserveAspectRatio="none" className="absolute inset-0 h-full w-full" aria-hidden>
         <path d={boceto(nombre)} fill="none" stroke="#1B1626" strokeOpacity="0.22" strokeWidth="2.5" strokeLinecap="round" />
       </svg>
-      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" role="presentation" />
+      <span className="absolute inset-0" aria-hidden="true">
+        <canvas ref={canvasRef} className="block h-full w-full" />
+      </span>
     </span>
   );
 }

@@ -214,7 +214,7 @@ export function CommunityAdminPanel({ comunidad, esAdmin, esCreador, onMiembrosA
                         <>
                           <select
                             value={m.rol}
-                            onChange={(e) => cambiarRol(m.usuarioId, m.nombreArtista, e.target.value)}
+                            onChange={(e) => void cambiarRol(m.usuarioId, m.nombreArtista, e.target.value)}
                             className="input w-auto rounded-full py-1 text-xs"
                           >
                             <option value="MIEMBRO">Miembro</option>

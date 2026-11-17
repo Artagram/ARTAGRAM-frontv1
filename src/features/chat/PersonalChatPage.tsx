@@ -68,7 +68,7 @@ export function PersonalChatPage() {
   const seleccionarContacto = useCallback((contacto: ContactoSeleccionado) => {
     setContactoActivo(contacto);
     setSearchParams({ con: contacto.id, nombre: contacto.nombre }, { replace: true });
-    cargarHistorial(contacto);
+    void cargarHistorial(contacto);
   }, [cargarHistorial, setSearchParams]);
 
   // Inicialización: sincronizar contacto desde query param, localStorage o la lista
@@ -109,6 +109,8 @@ export function PersonalChatPage() {
       if (lista.length > 0) {
         seleccionarContacto({ id: lista[0].contactoId, nombre: lista[0].contactoNombre });
       }
+    }).catch(() => {
+      // cargarConversaciones ya maneja sus errores; aquí solo se evita una promesa sin manejar.
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sesion]);

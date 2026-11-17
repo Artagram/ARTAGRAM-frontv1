@@ -544,7 +544,7 @@ export function PostCard({ publicacion, onEliminada, onActualizada, variante = '
                       </div>
                       {puedeEliminar && (
                         <button
-                          onClick={() => borrarComentario(c.id)}
+                          onClick={() => void borrarComentario(c.id)}
                           title="Eliminar comentario"
                           className="text-paper-dim transition-colors hover:text-coral"
                         >

@@ -280,13 +280,23 @@ export function CanvasStudioPage() {
           }
           redibujarTodo();
           snapshotCargado = true;
+          let habiaPendientesConfirmados = false;
           for (const evento of bufferMensajes) {
             if (evento.tipo === 'FINAL' && evento.secuencia && evento.secuencia <= maxSecuenciaRef.current) {
+              // Ya viene en el snapshot. Si era un trazo propio enviado desde la
+              // cola al reconectar, hay que soltar su copia local: si no, se
+              // pintaba dos veces (escenario 4).
+              if (evento.trazoEnProgresoId) {
+                habiaPendientesConfirmados =
+                  trazosLocalesPendientesRef.current.delete(evento.trazoEnProgresoId) || habiaPendientesConfirmados;
+                remotosRef.current.delete(evento.trazoEnProgresoId);
+              }
               continue;
             }
             procesarEvento(evento);
           }
           bufferMensajes.length = 0;
+          if (habiaPendientesConfirmados) redibujarTodo();
         })
         .catch(() => {
           // Sin snapshot no hay orden que proteger: procesar en vivo de todos modos

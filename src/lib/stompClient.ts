@@ -58,6 +58,10 @@ class StompService {
     const client = new Client({
       brokerURL: urlConToken(token),
       reconnectDelay: 1000,
+      // Un intento que se queda colgado (p. ej. justo cuando vuelve la red) se
+      // corta a los 3 s y se reintenta; sin esto se esperaba el timeout del
+      // navegador (~20 s) y la reconexion pasaba de los 5 s del escenario 4.
+      connectionTimeout: 3000,
       heartbeatIncoming: 10000,
       heartbeatOutgoing: 10000,
       // En cada intento se usa el token vigente: tras una hora el del primer

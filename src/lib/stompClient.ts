@@ -46,6 +46,17 @@ class StompService {
   private oyentesEstado = new Set<(estado: EstadoConexion) => void>();
   private pendientes: MensajePendiente[] = [];
 
+  /**
+   * Cuando el navegador avisa que volvio la red no se espera a que venza un
+   * intento de conexion que quedo colgado durante el corte: se corta y la
+   * reconexion arranca de inmediato (escenario 4, reconexion en < 5 s).
+   */
+  private readonly alVolverLaRed = () => {
+    if (this.client?.active && this.estado === 'reconectando') {
+      this.client.forceDisconnect();
+    }
+  };
+
   conectar(token: string): void {
     if (this.client?.active && this.tokenActual === token) {
       return;
@@ -82,6 +93,7 @@ class StompService {
     });
     this.client = client;
     client.activate();
+    globalThis.addEventListener?.('online', this.alVolverLaRed);
   }
 
   private alAbrirConexion(): void {
@@ -99,6 +111,7 @@ class StompService {
   desconectar(): void {
     const anterior = this.client;
     this.client = null;
+    globalThis.removeEventListener?.('online', this.alVolverLaRed);
     void anterior?.deactivate();
     this.pendientes = [];
     this.cambiarEstado('desconectado');

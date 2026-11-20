@@ -34,6 +34,10 @@ class ClienteFalso {
     this.connected = true;
     (this.config.onConnect as () => void)();
   }
+  forzados = 0;
+  forceDisconnect() {
+    this.forzados++;
+  }
   cortar() {
     this.connected = false;
     (this.config.onWebSocketClose as () => void)();
@@ -50,6 +54,22 @@ describe('stompService (escenario 4: reconexion)', () => {
   beforeEach(() => {
     stompService.desconectar();
     instancias.length = 0;
+  });
+
+  it('al volver la red corta el intento colgado para reconectar de inmediato', () => {
+    stompService.conectar('token-1');
+    const cliente = instancias[0];
+    cliente.abrir();
+    window.dispatchEvent(new Event('online'));
+    expect(cliente.forzados).toBe(0); // conectado: no hay nada que forzar
+
+    cliente.cortar();
+    window.dispatchEvent(new Event('online'));
+    expect(cliente.forzados).toBe(1);
+
+    stompService.desconectar();
+    window.dispatchEvent(new Event('online'));
+    expect(cliente.forzados).toBe(1); // ya no escucha tras desconectar
   });
 
   it('al reconectar re-suscribe, envia lo encolado y avisa para pedir el estado', () => {
